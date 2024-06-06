@@ -149,16 +149,23 @@ class LM(nn.Module):
         top_p: float = 0.9,
         max_new_tokens: int = 256,
         do_sample: bool = True,
-        ) -> str:
+        num_beams: int = 1,
+        num_return_sequences: int = 1
+        ) -> List[str]:
 
         '''
-        hf llm inference for single prompt. Yield single response in form of a string. 
+        hf llm inference for single prompt. Yield single response in form of a list of responses (len(list)>1 while num_return_sequences > 1). 
 
-        example context:
+        example context with num_return_sequences = 2:
         [
             {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
             {"role": "user", "content": "Who are you?"},
                 ]
+
+        response:[
+            " I am a large language model trained by Mistral AI....",
+            " I am a large language model trained by Mistral AI...."
+        ]
         '''
 
         tokenizer = self.tokenizer
@@ -172,7 +179,8 @@ class LM(nn.Module):
         input_ids = tokenizer.apply_chat_template(
             context,
             add_generation_prompt=True,
-            return_tensors="pt"
+            return_tensors="pt",
+            padding = True,
             ).to(model.device)
 
         outputs = model.generate(
@@ -182,10 +190,12 @@ class LM(nn.Module):
             do_sample=do_sample,
             temperature=temperature,
             top_p=top_p,
+            num_beams=num_beams,
+            num_return_sequences=num_return_sequences
         )
 
-        response = outputs[0][input_ids.shape[-1]:]
-        return tokenizer.decode(response, skip_special_tokens=True)
+        responses = outputs[...,input_ids.shape[-1]:] 
+        return tokenizer.batch_decode(responses, skip_special_tokens=True)
 
     @torch.no_grad()
     def hf_llm_generate_via_pipline(
@@ -195,24 +205,31 @@ class LM(nn.Module):
         top_p: float = 0.9,
         max_new_tokens: int = 256,
         do_sample: bool = True,
-        ) -> List[str]:
+        num_beams: int = 1,
+        num_return_sequences: int = 1
+        ) -> List[List[str]]:
 
         '''
         hf llm inference for a batch (list) of single prompts. Yield multiple responses in form of list of strings. 
 
-        example context:
+        example context with num_return_sequences = 2:
+        messages = [
+            [{"role": "user", "content": "Who are you?"}],
+            [{"role": "user", "content": "what is the capital of Germany?"}],
+        ]
+
+        this will yield
         [
             [
-                {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
-                {"role": "user", "content": "Who are you?"},
-            ],
+                " I am a large language model trained by Mistral AI....",
+                " I am a large language model trained by Mistral AI...."
+                ],
             [
-                {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
-                {"role": "user", "content": "Who are you?"},
-            ]
+                " The capital of Germany is Berlin...",
+                " The capital of Germany is Berlin...",
+                ],
         ]
         '''
-
 
         tokenizer = self.tokenizer
         model = self.model
@@ -230,8 +247,10 @@ class LM(nn.Module):
             eos_token_id=terminators,
             do_sample=do_sample,
             temperature=temperature,
-            top_p=top_p
+            top_p=top_p,
+            num_beams=num_beams,
+            num_return_sequences=num_return_sequences
         )
 
-        return [output[0]["generated_text"][-1]["content"] for output in outputs]
+        return [[alternative["generated_text"][-1]["content"] for alternative in output] for output in outputs ]
 
