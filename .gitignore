@@ -164,3 +164,20 @@ cython_debug/
 # specific folders/files
 **/test.py
 /TREC_iKAT_2023_Getting_Started.ipynb
+/.vscode
+/data/collections/*
+/data/embeddings/*
+/data/indexes/*
+#/data/qrels/*
+/results/**/metrics/per_query_metrics/*.json
+/results/**/metrics/*.json
+/results/**/per_query_metrics/*.json
+/alignir_env
+*.txt
+!requirements.txt
+**/test.py
+**/*.out
+**/*.log
+**/test.ipynb 
+#yijingjile
+/src/__pycache__

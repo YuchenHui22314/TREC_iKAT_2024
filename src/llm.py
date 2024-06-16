@@ -1,3 +1,4 @@
+import os
 import re
 import torch
 import copy
@@ -5,6 +6,9 @@ import time
 import random
 import numpy as np
 import torch.nn as nn
+from tqdm import tqdm
+
+from openai import OpenAI
 from transformers import (
     AutoTokenizer,
     AutoConfig,
@@ -16,7 +20,6 @@ from transformers import (
 from torch.utils.data import DataLoader
 from accelerate import Accelerator
 from typing import Mapping, Tuple, List, Optional, Union
-from tqdm import tqdm
 from collections import defaultdict
 from dataclasses import dataclass, asdict
 
@@ -25,16 +28,63 @@ logger = logging.get_logger(__name__)
 # Specify the custom cache directory
 cache_dir = "/data/rech/huiyuche/huggingface"
 
-# tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct",cache_dir = cache_dir)
-# model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct", cache_dir = cache_dir)
+class OpenAILM():
+    def __init__(self, 
+                 api_key, 
+                 model_name="gpt-3.5-turbo", 
+                 n=1, 
+                 max_tokens=512, 
+                 temperature=0, 
+                 top_p=1, 
+                 frequency_penalty=0.0, 
+                 presence_penalty=0.0, 
+                 stop=['\n\n\n'], 
+                 wait_till_success=False,
+                 logprobs = False
+                 ):
+        super().__init__(model_name, api_key)
+        self.api_key = api_key
+        self.model_name = model_name
+        self.n = n
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.top_p = top_p
+        self.frequency_penalty = frequency_penalty
+        self.presence_penalty = presence_penalty
+        self.stop = stop
+        self.wait_till_success = wait_till_success
+        self.logprobs = logprobs
+        self.client = OpenAI(
+            # This is the default and can be omitted
+            api_key=os.environ.get("OPENAI"),
+            )
+    
+    @staticmethod
+    def parse_response(response):
+        reformulated_query = response.choices[0].message.content
+        return reformulated_query
 
-
-# tokenizer = AutoTokenizer.from_pretrained(
-#     "mistralai/Mistral-7B-Instruct-v0.2", cache_dir=cache_dir
-# )
-# model = AutoModelForCausalLM.from_pretrained(
-#     "mistralai/Mistral-7B-Instruct-v0.2", cache_dir=cache_dir
-# )
+    def generate(self, prompt):
+        get_results = False
+        while not get_results:
+            try:
+                result = self.client.chat.completions.create(
+                            model=self.model_name,
+                            messages=prompt,
+                            temperature=self.temperature,
+                            logprobs=self.logprobs,
+                            top_p=self.top_p,
+                            n=self.n,
+                            max_tokens=self.max_tokens,
+                            stop=["\n\n\n"]
+                        )
+                get_results = True
+            except Exception as e:
+                if self.wait_till_success:
+                    time.sleep(1)
+                else:
+                    raise e
+        return self.parse_response(result)
 
 
 class LM(nn.Module):
@@ -257,4 +307,3 @@ class LM(nn.Module):
         )
 
         return [[alternative["generated_text"][-1]["content"] for alternative in output] for output in outputs ]
-
