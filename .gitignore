@@ -163,3 +163,4 @@ cython_debug/
 
 # specific folders/files
 **/test.py
+/TREC_iKAT_2023_Getting_Started.ipynb

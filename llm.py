@@ -45,10 +45,13 @@ class LM(nn.Module):
         padding_side="left",
         dtype="bf16",
         device_map=None,
-        use_flash_attention_2=False,
+        attn_implementation="flash_attention_2",
+        #use_flash_attention_2=False, (deprecated)
         access_token=None,
         cache_dir=cache_dir,
         accelerator: Accelerator = None,
+        load_in_8bit = False,
+        load_in_4bit = False
     ) -> None:
         super().__init__()
 
@@ -97,7 +100,8 @@ class LM(nn.Module):
                 torch_dtype=dtype,
                 trust_remote_code=True,
                 device_map=device_map,
-                use_flash_attention_2=use_flash_attention_2,
+                attn_implementation="flash_attention_2",
+                #use_flash_attention_2=False, (deprecated)
                 token=access_token,
             )
 
