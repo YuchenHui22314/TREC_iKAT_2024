@@ -84,27 +84,27 @@ class Reformulation:
 
 
 @dataclass
-class Topic:
+class Turn:
     '''
-    A class representing a topic.
+    A class representing a turn.
     Attributes:
         turn_id (str): exmaple: "9-1-3" 
         conversation_id (str): example: "9-1"
         title (str): The title of the topic.
-        current_utterance (str): The current utterance in the conversation.
-        current_response (str): The current response in the conversation.
-        response_provenance (List[str]): The provenance of the response.
-        oracle_utterance (str): The oracle utterance of the conversation.
-        context_uttrances (List[str]): The list of context utterances in the conversation.
+        current_utterance (str): The current turn utterance in the conversation.
+        current_response (str): The current turn response in the conversation.
+        response_provenance (List[str]): The provenance passage ids of the response.
+        oracle_utterance (str): The resolved current turn utterance (manually) 
+        context_uttrances (List[str]): The list of previous utterances in the conversation.
         ptkb (Dict[int, str]): The ptkb related to the conversation.
-        ptkb_provenance (List[str]): The list of ptkb provenances related to the conversation.
+        ptkb_provenance (List[str]): The list of ptkb annotated related to the current turn  
 
     Methods:
-        __init__: Initializes a new instance of the Topic class.
-        __str__: Returns a string representation of the Topic object.
-        __repr__: Returns a string representation of the Topic object.
-        to_dict: Converts the Topic object to a dictionary.
-        from_dict: Initializes the Topic object from a dictionary.
+        __init__: Initializes a new instance of the Turn class.
+        __str__: Returns a string representation of the Turn object.
+        __repr__: Returns a string representation of the Turn object.
+        to_dict: Converts the Turn object to a dictionary.
+        from_dict: Initializes the Turn object from a dictionary.
         find_reformulation: Finds a reformulation by its name.
         query_type_2_query: Generates/finds a query based on the specified query type.
 
@@ -124,14 +124,14 @@ class Topic:
     reformulations: List[Reformulation] = dataclasses.field(default_factory=list)
 
     def __str__(self) -> str:
-        print_str = f"id = {self.id}\n"
-        print_str += f"Topic: {self.topic}\n"
-        print_str += f"Description: {self.description}\n"
-        print_str += f"Narrative: {self.narrative}\n"
-        print_str += f"nb of reformulations: {len(self.reformulations)}\n"
-        print_str += f"Source: {self.source}\n"
 
+        print_str =  f"Turn ID: {self.turn_id}\n"
+        print_str += f"Title: {self.title}\n"
+        print_str += f"Current Utterance: {self.current_utterance}\n"
+        print_str += f"Oracle Utterance: {self.oracle_utterance}\n"
+        print_str += f"Number of reformulations: {len(self.reformulations)}\n"
         return print_str
+
     
     def __repr__(self) -> str:
         return self.__str__()
@@ -139,26 +139,25 @@ class Topic:
 
     def to_dict(self) -> Dict:
         '''
-        Converts the Topic object to a dictionary.
+        Converts the Turn object to a dictionary.
 
         Returns:
-            dict: The dictionary representation of the Topic object.
+            dict: The dictionary representation of the Turn object.
         '''
-        topic_dict = {}
-        if self.id is not None:
-            topic_dict["id"] = self.id
-        if self.domain is not None:
-            topic_dict["domain"] = self.domain
-        if self.topic is not None:
-            topic_dict["topic"] = self.topic
-        if self.description is not None:
-            topic_dict["description"] = self.description
-        if self.narrative is not None:
-            topic_dict["narrative"] = self.narrative
-        if self.source is not None:
-            topic_dict["source"] = self.source
-        if self.concepts is not None:
-            topic_dict["Concepts"] = self.concepts
+
+        turn_dict = {
+            "turn_id": self.turn_id,
+            "conversation_id": self.conversation_id,
+            "title": self.title,
+            "current_utterance": self.current_utterance,
+            "current_response": self.current_response,
+            "response_provenance": self.response_provenance,
+            "oracle_utterance": self.oracle_utterance,
+            "context_uttrances": self.context_utterances,
+            "ptkb": self.ptkb,
+            "ptkb_provenance": self.ptkb_provenance
+        }
+
         
         reformulations = []
         for reformulation in self.reformulations:
@@ -173,70 +172,59 @@ class Topic:
                         result_dict["retrieval_model"] = result.retrieval_model
                     if result.metrics is not None:
                         result_dict["metrics"] = result.metrics
+                    if result.reranker is not None:
+                        result_dict["reranker"] = result.reranker
                     if result.collection is not None:
                         result_dict["collection"] = result.collection   
                     reformulation_dict["results"].append(result_dict)
             reformulations.append(reformulation_dict)
         
-        topic_dict["reformulations"] = reformulations
+        turn_dict["reformulations"] = reformulations
 
-        return topic_dict
+        return turn_dict
 
-
-    def from_dict(self, topic_dict: Dict) -> None:
+    def from_ikat_topic_files(
+        self, 
+        ikat_topic_file: str
+    ) -> None:
+        
+    def from_dict(self, turn_dict: Dict) -> None:
     
         '''
-        Initializes the Topic object from a dictionary.
+        Initializes the Turn object from a dictionary.
 
         Args:
-            topic_dict (dict): The dictionary containing the topic information.
+            turn_dict (dict): The dictionary containing the turn information.
         '''
-        if "id" in topic_dict:
-            self.id = topic_dict["id"]
-        if "domain" in topic_dict:
-            self.domain = topic_dict["domain"]
-        if "Concepts" in topic_dict:
-            self.concepts = topic_dict["Concepts"]
-        if "topic" in topic_dict:
-            self.topic = topic_dict["topic"]
-        if "description" in topic_dict:
-            self.description = topic_dict["description"]
-        if "narrative" in topic_dict:
-            self.narrative = topic_dict["narrative"]
-        if "source" in topic_dict:
-            self.source = topic_dict["source"]
-        if "Concepts" in topic_dict:
-            self.concepts = topic_dict["Concepts"]
-        
+        self.turn_id = turn_dict["turn_id"]
+        self.conversation_id = turn_dict["conversation_id"]
+        self.title = turn_dict["title"]
+        self.current_utterance = turn_dict["current_utterance"]
+        self.current_response = turn_dict["current_response"]
+        self.response_provenance = turn_dict["response_provenance"]
+        self.oracle_utterance = turn_dict["oracle_utterance"]
+        self.context_utterances = turn_dict["context_utterances"]
+        self.ptkb = turn_dict["ptkb"]
+        self.ptkb_provenance = turn_dict["ptkb_provenance"]
+
         # determine what are the reformulations
         reformulations = []
 
-        # new format
-        if "reformulations" in topic_dict:
-            for reformulation in topic_dict["reformulations"]:
-                reformulation_obj = Reformulation(
-                    reformulation_name = reformulation["reformulation_name"],
-                    reformulated_query = reformulation["reformulated_query"],
-                    results=[]
-                )
+        for reformulation in turn_dict["reformulations"]:
+            reformulation_obj = Reformulation(
+                reformulation_name = reformulation["reformulation_name"],
+                reformulated_query = reformulation["reformulated_query"],
+                results=[]
+            )
 
-                for result_dict in reformulation["results"]:
-                    reformulation_obj.add_result(
-                        collection = result_dict["collection"],
-                        retrieval_model = result_dict["retrieval_model"],
-                        result_dict = result_dict["metrics"]
-                    )
-                reformulations.append(reformulation_obj)
-        else:
-            # old format
-            for key in topic_dict.keys():
-                if type(topic_dict[key]) == str:
-                    if "reformulated" in key or "pseudo_narrative" in key:
-                        reformulation = Reformulation()
-                        reformulation.reformulated_query = topic_dict[key]
-                        reformulation.reformulation_name = key
-                        reformulation.results = []
-                        reformulations.append(reformulation)
+            for result_dict in reformulation["results"]:
+                reformulation_obj.add_result(
+                    collection = result_dict["collection"],
+                    retrieval_model = result_dict["retrieval_model"],
+                    reranker = result_dict["reranker"],
+                    result_dict = result_dict["metrics"]
+                )
+            reformulations.append(reformulation_obj)
 
 
         self.reformulations = reformulations
@@ -260,7 +248,7 @@ class Topic:
         elif len(list_of_found_reformulations) == 1:
             return list_of_found_reformulations[0]
         else:
-            raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the topic object with id {self.id} and topic {self.topic}")
+            raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the turn object with id {self.turn_id}")
     
 
     def query_type_2_query(self, args):
@@ -322,40 +310,40 @@ class Topic:
         return final_query
 
 
-def save_topics_to_json(
-        topics: List[Topic],
-        output_topic_path: str
+def save_turns_to_json(
+        turns: List[Turn],
+        output_turn_path: str
         ) -> List[Dict]:
     '''
-    Save a list of Topic objects to a json file
+    Save a list of Turn objects to a json file
     '''
-    topic_list = [topic.to_dict() for topic in topics]
+    turn_list = [turn.to_dict() for turn in turns]
     
-    with open(output_topic_path, 'w') as f:
-        json.dump(topic_list, f, indent=4)
+    with open(output_turn_path, 'w') as f:
+        json.dump(turn, f, indent=4)
     
-    return topic_list
+    return turn_list
 
         
-def load_topics_from_json(
-        input_topic_path: str, 
+def load_turns_from_json(
+        input_turn_path: str, 
         range_start: int = 0,
         range_end: int = 150,
-        ) -> List[Topic]:
+        ) -> List[Turn]:
 
     ### read json file
-    with open(input_topic_path, 'r') as f:
-        topics = json.load(f)
+    with open(input_turn_path, 'r') as f:
+        turns = json.load(f)
     
-    ### resulting list of Topic objects
-    topic_objects = []
+    ### resulting list of Turn objects
+    turn_objects = []
     
-    for topic in topics[range_start:range_end]:
-        topic_object = Topic()
-        topic_object.from_dict(topic) 
-        topic_objects.append(topic_object)
+    for turn in turns[range_start:range_end]:
+        turn_object = Turn()
+        turn_object.from_dict(turn) 
+        turn_objects.append(turn_object)
     
-    return topic_objects
+    return turn_objects
     
 
 
