@@ -173,6 +173,7 @@ cython_debug/
 /results/**/metrics/per_query_metrics/*.json
 /results/**/metrics/*.json
 /results/**/per_query_metrics/*.json
+/results/test
 /alignir_env
 *.txt
 !requirements.txt
@@ -183,3 +184,4 @@ cython_debug/
 #yijingjile
 /src/__pycache__
 /logs
+/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/toy_qrel.txt

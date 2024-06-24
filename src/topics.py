@@ -1,26 +1,27 @@
 import json
 from typing import List, Dict
+from dataclasses import dataclass
 
+
+@dataclass
 class Result:
-    def __init__(self,
-        collection: str = None, # e.g. "AP"
-        retrieval_model: str = None, # e.g. "ANCE"
-        metrics: Dict[str, float] = None # e.g. {"ndcg": 0.5, "map": 0.6}
-        ) -> None:
+    collection: str = None  # e.g. "AP"
+    retrieval_model: str = None  # e.g. "ANCE"
+    reranker: str = None  # e.g. "rankllama"
+    metrics: Dict[str, float] = None  # e.g. {"ndcg": 0.5, "map": 0.6}
 
-        self.collection = collection
-        self.retrieval_model = retrieval_model
-        self.metrics = metrics
-    
     def __eq__(self, another_instance: any) -> bool:
         if isinstance(another_instance, Result):
             return (
                 self.collection == another_instance.collection 
                 and 
                 self.retrieval_model == another_instance.retrieval_model
-                )
+                and
+                self.reranker == another_instance.reranker
+            )
 
 
+@dataclass
 class Reformulation:
     '''
     class for this structure:
@@ -30,41 +31,41 @@ class Reformulation:
 
     results: [Result object1, Result object2, ...] 
     '''
-    
-    def __init__(self,
-                 reformulation_name: str = None,
-                 reformulated_query: str = None,
-                 results: List[Result] = []
-                 ) -> None:
+    reformulation_name: str = None
+    reformulated_query: str = None
+    results: List[Result] = dataclasses.field(default_factory=list)
 
-        self.reformulation_name = reformulation_name
-        self.reformulated_query = reformulated_query
-        self.results = results
     
-    def find_result(self, collection: str, retrieval_model: str) -> Result:
+    def find_result(
+        self, collection: str, 
+        retrieval_model: str,
+        reranker: str
+        ) -> Result:
         '''
         Finds a result by its collection and retrieval model.
 
         Args:
             collection (str): The collection of the result to find.
             retrieval_model (str): The retrieval model of the result to find.
+            reranker: The reranker of the result to find.
 
         Returns:
             Result: The found result object, or None if not found.
         '''
-        dummy_result = Result(collection, retrieval_model)
+        dummy_result = Result(collection, retrieval_model, reranker)
         list_of_found_results = [result for result in self.results if result == dummy_result] 
         if len(list_of_found_results) == 0:
             return None
         elif len(list_of_found_results) == 1:
             return list_of_found_results[0]
         else:
-            raise ValueError(f"Multiple results with the same collection {collection} and retrieval model {retrieval_model} found in the reformulation object with name {self.reformulation_name}")
+            raise ValueError(f"Multiple results with the same collection [{collection}] and retrieval model [{retrieval_model}] as well as reranker [{reranker}] found in the reformulation object with name [{self.reformulation_name}]")
     
     def add_result(
             self, 
             collection:str, 
             retrieval_model:str, 
+            reranker:str,
             result_dict: Dict) -> None:
         '''
         Adds a result to the reformulation.
@@ -72,9 +73,9 @@ class Reformulation:
         Args:
             result (Result): The result to add.
         '''
-        result_found = self.find_result(collection, retrieval_model)
+        result_found = self.find_result(collection, retrieval_model,reranker)
         if result_found is None:
-            result = Result(collection, retrieval_model, result_dict)
+            result = Result(collection, retrieval_model, result_dict,reranker)
             self.results.append(result)
         else:
             result_found.metrics = result_dict
@@ -82,19 +83,21 @@ class Reformulation:
     
 
 
+@dataclass
 class Topic:
     '''
     A class representing a topic.
-
     Attributes:
-        id (int): The ID of the topic.
-        domain (str): The domain of the topic.
-        topic (str): The topic description.
-        description (str): The description of the topic.
-        narrative (str): The narrative of the topic.
-        source (str): The source of the topic.
-        concepts (List[str]): The list of concepts related to the topic.
-        reformulations (List[Reformulation]): The list of reformulations for the topic.
+        turn_id (str): exmaple: "9-1-3" 
+        conversation_id (str): example: "9-1"
+        title (str): The title of the topic.
+        current_utterance (str): The current utterance in the conversation.
+        current_response (str): The current response in the conversation.
+        response_provenance (List[str]): The provenance of the response.
+        oracle_utterance (str): The oracle utterance of the conversation.
+        context_uttrances (List[str]): The list of context utterances in the conversation.
+        ptkb (Dict[int, str]): The ptkb related to the conversation.
+        ptkb_provenance (List[str]): The list of ptkb provenances related to the conversation.
 
     Methods:
         __init__: Initializes a new instance of the Topic class.
@@ -106,24 +109,19 @@ class Topic:
         query_type_2_query: Generates/finds a query based on the specified query type.
 
     '''
-    def __init__(self,
-                    id: int = None,
-                    domain: str = None,
-                    topic: str = None,
-                    description: str = None,
-                    narrative: str = None,
-                    source: str = None,
-                    concepts: List[str] = None,
-                    reformulations: List[Reformulation] = []
-                    ) -> None:
-        self.id = id
-        self.domain = domain
-        self.topic = topic
-        self.description = description
-        self.narrative = narrative
-        self.source = source
-        self.concepts = concepts
-        self.reformulations = reformulations
+    turn_id: str
+    conversation_id: str 
+    title: str
+    current_utterance: str
+    current_response: str
+    response_provenance: List[str] = dataclasses.field(default_factory=list)
+    oracle_utterance: str 
+    context_uttrances: List[str] = dataclasses.field(default_factory=list) 
+    ptkb: dict[int, str] = dataclasses.field(default_factory=dict)
+    ptkb_provenance: List[str] = dataclasses.field(default_factory=list)
+
+    # reformulations
+    reformulations: List[Reformulation] = dataclasses.field(default_factory=list)
 
     def __str__(self) -> str:
         print_str = f"id = {self.id}\n"
