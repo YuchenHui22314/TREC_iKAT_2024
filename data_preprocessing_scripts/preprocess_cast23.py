@@ -35,8 +35,7 @@ def convert_format(test_path, test_output_path):
             json_lines_data.append(json_line)
 
     with open(test_output_path, "w") as output_file:
-        for line in json_lines_data:
-            output_file.write(json.dumps(line) + "\n")
+        json.dump(json_lines_data, output_file, indent=4)
 
 
 def gen_raw_passage_collection(root_path):
@@ -83,14 +82,14 @@ def count_num(collection):
 
 
 if __name__ == '__main__':
-    test_path = "2023_test_topics.json"
-    test_output_path = "2023_test_topics_new.jsonl"
+    test_path = "/data/rech/huiyuche/TREC_iKAT_2024/data/topics/2023_ikat_test_topics.json"
+    test_output_path = "/data/rech/huiyuche/TREC_iKAT_2024/data/topics/2023_ikat_test_topics_flattened.json"
     collection = "cast23_collection.tsv"
     rewrite = "23test_response_rewite.jsonl"
     passage = "23testpassage_resloved_utterance.jsonl"
     new = "2023_test_topics_new_LLM.jsonl"
-    #convert_format(test_path, test_output_path)
+    convert_format(test_path, test_output_path)
     #root_path = "./collection"
     #gen_raw_passage_collection(root_path)
-    count_num(collection)
+    #count_num(collection)
     #combine_file(test_output_path, rewrite, passage, new)

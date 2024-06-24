@@ -19,29 +19,20 @@ import pytrec_eval
 
 
 
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
                         help="can be [ClueWeb_ikat]")
-    parser.add_argument("--topics", type=str, default="ikat_23_train", 
-                        help="can be [ikat_23_train]")
-    parser.add_argument("--input_query_path", type=str, default="../../data/topics/trec_fire_covid_data.json")
+    parser.add_argument("--topics", type=str, default="ikat_23_test", 
+                        help="can be [ikat_23_test,ikat_24_test]")
+    parser.add_argument("--input_query_path", type=str, default="../../data/topics/2023_ikat_test_topics_flattened.json")
     parser.add_argument("--index_dir_path", type=str, default="../../data/indexes/AP_sparse_index")
     parser.add_argument("--output_dir_path", type=str, default="../../results")
-    parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/AP_qrels.1-150.txt")
+    parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/trec.nist.gov_data_ikat_2023-ptkb-qrels.txt")
     
     parser.add_argument("--query_type", type=str, default="title", 
                         help="""can be [
-                            title, 
-                            description, 
-                            narrative, 
-                            title+description, 
-                            title+narrative, 
-                            description+narrative, 
-                            title+description+narrative,
-                            reformulation,
-                            pseudo_narraitve 
+                            ??
                             ]""")
 
     parser.add_argument("--retrieval_model", type=str, default="BM25",
@@ -240,23 +231,18 @@ if __name__ == "__main__":
     logger.info(args)
 
     # first generate an identifiable name for the ranking list
-    file_name_stem = f"{args.collection}-{args.query_type}-{args.retrieval_model}-top{args.top_k}"
+    file_name_stem = f"[{args.collection}]-[{args.topics}]-[{args.query_type}]-[{args.retrieval_model}]-[top{args.top_k}]"
 
-    # read metrics
+    # read metrics to report
     metrics_list = args.metrics.split(",")
     metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
 
+    # create necessary directories if they don't exist
+    subdirs = ["ranking", "metrics", "per_query_metrics"]
+    for subdir in subdirs:
+        path = os.path.join(args.output_dir_path, args.collection, args.topics, subdir)
+        os.makedirs(path, exist_ok=True)
         # create output dir if not exist
-    if not os.path.exists(args.output_dir_path):
-        os.makedirs(args.output_dir_path)
-    if not os.path.exists(os.path.join(args.output_dir_path, args.collection)):
-        os.makedirs(os.path.join(args.output_dir_path, args.collection))
-    if not os.path.exists(os.path.join(args.output_dir_path, args.collection,"ranking")):
-        os.makedirs(os.path.join(args.output_dir_path, args.collection,"ranking"))
-    if not os.path.exists(os.path.join(args.output_dir_path, args.collection, "metrics")):
-        os.makedirs(os.path.join(args.output_dir_path, args.collection, "metrics"))
-    if not os.path.exists(os.path.join(args.output_dir_path, args.collection, "per_query_metrics")):
-        os.makedirs(os.path.join(args.output_dir_path, args.collection, "per_query_metrics"))
 
     # evaluate
     query_metrics_dic, averaged_metrics, topic_list = get_eval_results(args)
@@ -279,7 +265,8 @@ if __name__ == "__main__":
 
     metrics_path = os.path.join(
         args.output_dir_path, 
-        args.collection, 
+        args.collection,
+        args.topics, 
         "metrics",
         file_name_stem + ".json")
 
@@ -287,6 +274,7 @@ if __name__ == "__main__":
     metrics_dict_path = os.path.join(
         args.output_dir_path,
         args.collection,
+        args.topics,
         "per_query_metrics",
         file_name_stem + "_dict.json")
 

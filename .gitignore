@@ -169,6 +169,7 @@ cython_debug/
 /data/embeddings/*
 /data/indexes/*
 #/data/qrels/*
+#/data/topics/*
 /results/**/metrics/per_query_metrics/*.json
 /results/**/metrics/*.json
 /results/**/per_query_metrics/*.json
@@ -181,3 +182,4 @@ cython_debug/
 **/test.ipynb 
 #yijingjile
 /src/__pycache__
+/logs
