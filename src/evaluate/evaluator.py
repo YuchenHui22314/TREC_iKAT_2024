@@ -4,6 +4,7 @@ import regex as re
 import string
 import numpy as np
 from collections import Counter
+from sacrebleu.metrics import BLEU
 
 def normalize_answer(s):
     def remove_articles(text):
@@ -63,6 +64,11 @@ def bleu4(pred_text, gold_text):
     bleu4_score = brevity_penalty * precision
     return bleu4_score
 
+def bleu(pred_text, gold_text):
+    b = BLEU()
+    #gold_text = list(gold_text)
+    bleu = b.corpus_score(pre_text, gold_text)
+    return bleu_score
 
 def rouge(pred_text, gold_text):
     pred_tokens = pred_text.split()
