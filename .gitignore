@@ -185,3 +185,4 @@ cython_debug/
 /src/__pycache__
 /logs
 /data/rech/huiyuche/TREC_iKAT_2024/data/qrels/toy_qrel.txt
+/test

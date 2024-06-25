@@ -1,6 +1,6 @@
 import json
 from typing import List, Dict
-from dataclasses import dataclass
+from dataclasses import dataclass, field 
 
 
 @dataclass
@@ -33,7 +33,7 @@ class Reformulation:
     '''
     reformulation_name: str = None
     reformulated_query: str = None
-    results: List[Result] = dataclasses.field(default_factory=list)
+    results: List[Result] = field(default_factory=list)
 
     
     def find_result(
@@ -109,19 +109,19 @@ class Turn:
         query_type_2_query: Generates/finds a query based on the specified query type.
 
     '''
-    turn_id: str
-    conversation_id: str 
-    title: str
-    current_utterance: str
-    current_response: str
-    response_provenance: List[str] = dataclasses.field(default_factory=list)
-    oracle_utterance: str 
-    context_uttrances: List[str] = dataclasses.field(default_factory=list) 
-    ptkb: dict[int, str] = dataclasses.field(default_factory=dict)
-    ptkb_provenance: List[str] = dataclasses.field(default_factory=list)
+    turn_id: str = None
+    conversation_id: str = None
+    title: str = None
+    current_utterance: str = None
+    current_response: str = None
+    oracle_utterance: str = None
+    response_provenance: List[str] = field(default_factory=list)
+    context_utterances: List[str] = field(default_factory=list) 
+    ptkb: dict[int, str] = field(default_factory=dict)
+    ptkb_provenance: List[str] = field(default_factory=list)
 
     # reformulations
-    reformulations: List[Reformulation] = dataclasses.field(default_factory=list)
+    reformulations: List[Reformulation] = field(default_factory=list)
 
     def __str__(self) -> str:
 
@@ -136,6 +136,47 @@ class Turn:
     def __repr__(self) -> str:
         return self.__str__()
     
+    def find_reformulation(self, reformulation_name: str) -> Reformulation:
+        '''
+        Finds a reformulation by its name.
+
+        Args:
+            reformulation_name (str): The name of the reformulation to find.
+
+        Returns:
+            Reformulation: The found reformulation object, or None if not found.
+
+        Raises:
+            ValueError: If multiple reformulations with the same name are found.
+        '''
+        list_of_found_reformulations = [reformulation for reformulation in self.reformulations if reformulation.reformulation_name == reformulation_name]
+        if len(list_of_found_reformulations) == 0:
+            return None
+        elif len(list_of_found_reformulations) == 1:
+            return list_of_found_reformulations[0]
+        else:
+            raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the turn object with id {self.turn_id}")
+    
+    def add_reformulation(
+            self,
+            reformulation_name: str,
+            reformulated_query: str
+    ) -> None:
+        '''
+        Adds a reformulation to the turn.
+
+        Args:
+            reformulation (Reformulation): The reformulation to add.
+        '''
+        reformulation_found = self.find_reformulation(reformulation_name)
+        if reformulation_found is None:
+            self.reformulations.append(
+            Reformulation(
+                reformulated_query = reformulated_query,
+                reformulation_name = reformulation_name,
+                results = []
+                )
+            )
 
     def to_dict(self) -> Dict:
         '''
@@ -183,10 +224,7 @@ class Turn:
 
         return turn_dict
 
-    def from_ikat_topic_files(
-        self, 
-        ikat_topic_file: str
-    ) -> None:
+
         
     def from_dict(self, turn_dict: Dict) -> None:
     
@@ -229,26 +267,6 @@ class Turn:
 
         self.reformulations = reformulations
     
-    def find_reformulation(self, reformulation_name: str) -> Reformulation:
-        '''
-        Finds a reformulation by its name.
-
-        Args:
-            reformulation_name (str): The name of the reformulation to find.
-
-        Returns:
-            Reformulation: The found reformulation object, or None if not found.
-
-        Raises:
-            ValueError: If multiple reformulations with the same name are found.
-        '''
-        list_of_found_reformulations = [reformulation for reformulation in self.reformulations if reformulation.reformulation_name == reformulation_name]
-        if len(list_of_found_reformulations) == 0:
-            return None
-        elif len(list_of_found_reformulations) == 1:
-            return list_of_found_reformulations[0]
-        else:
-            raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the turn object with id {self.turn_id}")
     
 
     def query_type_2_query(self, args):
@@ -346,6 +364,44 @@ def load_turns_from_json(
     return turn_objects
     
 
+def load_turns_from_ikat_topic_files(
+    ikat_topic_file: str
+) -> List[Turn]:
+    '''
+    Load a list of Turn objects from the iKAT topic files. Source: preprocess_cast23.py by Fengran 
+    '''
+    with open(ikat_topic_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    
+    list_of_turns = []
+
+    # Iterate through each item in the original data
+    for item in data:
+        queries = []
+        number = item["number"]
+        title = item["title"]
+        ptkb = item["ptkb"]
+        for turn in item["turns"]:
+            if turn['turn_id'] == '1':
+                queries = []
+            turn_id = f"{number}-{turn['turn_id']}"
+            queries.append(turn["utterance"])
+            turn_object = Turn(
+                turn_id = turn_id,
+                conversation_id = number,
+                title = title,
+                current_utterance = turn["utterance"],
+                current_response = turn["response"],
+                response_provenance = turn["response_provenance"],
+                oracle_utterance = turn["resolved_utterance"],
+                context_utterances = queries[:-1],
+                ptkb = ptkb,
+                ptkb_provenance = turn["ptkb_provenance"]
+            )
+            list_of_turns.append(turn_object)
+    
+    return list_of_turns
 
                  
                 
