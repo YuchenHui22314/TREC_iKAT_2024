@@ -1,4 +1,3 @@
-
 import pickle
 import sys
 import logging
@@ -7,10 +6,21 @@ import os
 import numpy as np
 import json
 from typing import Mapping, Tuple, List, Optional, Union
+import tqdm
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 # sys.path.append('../')
-from topics import Topic, Reformulation, Result, load_topics_from_json, save_topics_to_json
+from topics import (
+    Turn, 
+    Result,
+    Reformulation,
+    save_turns_to_json, 
+    load_turns_from_json,
+    filter_ikat_23_evaluated_turns,
+    query_type_2_query,
+    query_type_rewrite
+    )
+
 
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
@@ -34,7 +44,7 @@ def get_args():
     parser.add_argument("--topics", type=str, default="ikat_23_test", 
                         help="can be [ikat_23_test,ikat_24_test]")
 
-    parser.add_argument("--input_query_path", type=str, default="../../data/topics/2023_ikat_test_topics_flattened.json")
+    parser.add_argument("--input_query_path", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat_2023_test_turns.json")
 
     parser.add_argument("--index_dir_path", type=str, default="../../data/indexes/AP_sparse_index")
 
@@ -58,23 +68,39 @@ def get_args():
 
     #parser.add_argument("--rel_threshold", type=int, default="1")
 
-    parser.add_argument("--run_reformulate", action="store_true", help="if we will call a rewrite to rewrite the query when no reformulation corresponding to the query_type is found.")
-    parser.add_argument("--save_metrics_to_object",  action="store_true", help="if we will save metrics to topic object.")
+    parser.add_argument("--save_metrics_to_object",  action="store_true", help="if we will save metrics to turn object.")
     args = parser.parse_args()
 
     #########################
     # project related config
     ########################
 
-    parser.add_argument("--rewrite_model", type=str, default="gpt-4-turbo",
-                        help="can be [gpt-4-turbo]")
+    parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
+                        help="can be [no_rewrite, gpt-4-turbo]")
 
-    parser.add_argument("--query_type", type=str, default="title", 
+    parser.add_argument("--retrieval_query_type", type=str, default="current_utterance", 
                         help="""can be [
-                            ??
+                            "current_utterance",
+                            "oracle_utterance",
                             ]""")
 
-    parser.add_argument("--prompt_type", type = str, default="real_narrative_prompt", help="could be one of [few_shot_narrative_prompt, complex_few_shot_narrative_prompt, real_narrative_prompt, complex_real_narrative_prompt,'few_shot_pseudo_narrative_only_prompt','complex_few_shot_pseudo_narrative_only_prompt'],see promptor.py for more details")
+    parser.add_argument("--reranking_query_type", type=str, default="current_utterance", 
+                        help="""can be [
+                            "current_utterance",
+                            "oracle_utterance",
+                            ]""")
+
+    parser.add_argument("--generation_query_type", type=str, default="current_utterance", 
+                        help="""can be [
+                            "current_utterance",
+                            "oracle_utterance",
+                            ]""")
+
+    parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
+    [no_prompt,
+
+        ] 
+    """)
 
 
 
@@ -84,51 +110,55 @@ def get_args():
     
 def get_query_list(args):
 
-    topic_list = []
+    turn_list = []
     query_list = []
     qid_list_string = []
+    reranking_query_list = []
+    generation_query_list = []
 
     '''
-    load topics from json file. Output format:
-    topic_list: List[Topic] 
-    query_list: List[str] 
+    load turns from json file. Output format:
+    retrieval_query_list: List[str] 
+    reranking_query_list: List[str]
+    generation_query_list: List[str]
     qid_list_string: List[str]
+    turn_list: List[Turn] 
     '''
 
 
     # TODO: add ikat processing
     # apply collection specific processing
-    if args.collection == "AP":
-        topic_list = load_topics_from_json(
+    if args.topics == "ikat_23_test":
+        turn_list = load_turns_from_json(
             input_topic_path=args.input_query_path,
             range_start=0,
             range_end=-1
             )
+        
+        # filter out the non-evaluated turns
+        evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
 
-        # note that qid starts from 1, not 0. but list index starts from 0.
-        qid_list_string = [str(i+1) for i in range(0, 150)]
+        qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
 
-        # generate id list
-        qid_list = [i for i in range(0, 150)]
-
-        qid_list_string = [str(qid + 1) for qid in qid_list]
-
-        # AP specific check
-        assert topic_list[149].topic =="U.S. Political Campaign Financing", f"Last topic is not U.S. Political Campaign Financing but {topic_list[149].topic}, which is not right."
+        # ikat 23 specific check
+        assert turn_list[0].current_utterance =="Can you help me find a diet for myself?", f"The first turn first utterance is {turn_list[0].current_utterance} instead of 'Can you help me find a diet for myself?'"
 
         # load query/reformulated query according to query type.
         # possible to call a llm to rewrite the query at this step.
-        args.original_query_type = args.query_type
-        query_list = [topic.query_type_2_query(args) for topic in topic_list[0:150]]
+        args.retrieval_query_type = query_type_rewrite(args.retrieval_query_type) 
+        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type) for turn in evaluated_turn_list]
+        args.reranking_query_type = query_type_rewrite(args.reranking_query_type)
+        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type) for turn in evaluated_turn_list]
+        args.generation_query_type = query_type_rewrite(args.generation_query_type)
+        generation_query_list = [turn.query_type_2_query(args.generation_query_type) for turn in evaluated_turn_list]
     
 
 
-    assert len(query_list) != 0, "No queries found, args.collection may be wrong"
-    assert len(query_list) == len(qid_list_string), "Number of queries and qid_list_string not match"
-    # assert len(query_list) == len(topic_list), "Number of topics and qid_list_string not match"
+    assert len(retrieval_query_list) != 0, "No queries found, args.topics may be wrong"
+    assert len(retrieval_query_list) == len(qid_list_string), "Number of queries and qid_list_string not match"
 
     
-    return query_list, qid_list_string, topic_list
+    return retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list
 
 def get_eval_results(args):
 
@@ -137,13 +167,15 @@ def get_eval_results(args):
     ###############
 
     logger.info("Checking args...")
-    assert args.topics in ["ikat_23_train",], f"Invalid topics {args.topics}"
+    assert args.topics in ["ikat_23_test",], f"Invalid topics {args.topics}"
     assert args.collection in ["ClueWeb_ikat",], f"Invalid collection {args.collection}"
     assert args.retrieval_model in ["BM25", "ance", "dpr"], f"Invalid retrieval model {args.retrieval_model}"
     assert args.reranker in ["rankllama"], f"Invalid reranker {args.reranker}"
-    assert args.query_type in ["title", "description", "narrative", "title+description", "title+narrative", "description+narrative", "title+description+narrative","reformulation","pseudo_narrative"], f"query type {args.query_type} is not an invalid query_type"
+    assert args.retrieval_query_type in ["current_utterance", "oracle_utterance"], f"retrieve query type {args.retrieval_query_type} is not an invalid query_type"
+    assert args.reranking_query_type in ["current_utterance", "oracle_utterance"], f"reranking query type {args.reranking_query_type} is not an invalid query_type"
+    assert args.generation_query_type in ["current_utterance", "oracle_utterance"], f"generation query type {args.generation_query_type} is not an invalid query_type"
 
-    assert args.prompt_type in ['few_shot_narrative_prompt', 'complex_few_shot_narrative_prompt', 'real_narrative_prompt', 'complex_real_narrative_prompt', 'few_shot_pseudo_narrative_only_prompt','complex_few_shot_pseudo_narrative_only_prompt'],f"Prompt type {args.prompt_type} is not implemented."
+    #assert args.prompt_type in ['few_shot_narrative_prompt', 'complex_few_shot_narrative_prompt', 'real_narrative_prompt', 'complex_real_narrative_prompt', 'few_shot_pseudo_narrative_only_prompt','complex_few_shot_pseudo_narrative_only_prompt'],f"Prompt type {args.prompt_type} is not implemented."
 
 
 
@@ -158,14 +190,14 @@ def get_eval_results(args):
 
 
     ###################################################
-    # get query list and qid list as well as Topic list
+    # get query list and qid list as well as Turn list
     ##################################################
 
-    logger.info(f"loading quries, run_reformulate is {args.run_reformulate}...")
+    logger.info(f"loading quries")
 
-    # the reason to get topic list is to add per-query 
+    # the reason to get turn list is to add per-query 
     # search results. 
-    query_list, qid_list_string, topic_list = get_query_list(args)
+    retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list = get_query_list(args)
 
         
     ##############################
@@ -177,7 +209,7 @@ def get_eval_results(args):
         logger.info("BM 25 searching...")
         searcher = LuceneSearcher(args.index_dir_path)
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
-        hits = searcher.batch_search(query_list, qid_list_string, k = args.top_k, threads = 40)
+        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
 
     # dense search
     elif args.retrieval_model in ["ance", "dpr"]:
@@ -186,7 +218,8 @@ def get_eval_results(args):
             args.index_dir_path,
             args.dense_query_encoder_path 
         )
-        hits = searcher.batch_search(query_list, qid_list_string, k = args.top_k, threads = 40)
+        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
+
 
     ##############################
     # TODO: reranking
@@ -195,6 +228,7 @@ def get_eval_results(args):
     if args.reranker == "None":
         pass
     elif args.reranker == "rankllama":
+        logger.info(f"{args.reranker} reranking...")
         pass
 
 
@@ -247,23 +281,27 @@ def get_eval_results(args):
     for qid in query_metrics_dic.keys():
         query_metrics_dic[qid]["num_rel"] = sum([1 for doc in qrel[qid].values() if doc > 0])
 
-    return query_metrics_dic, averaged_metrics, topic_list
+    return query_metrics_dic, averaged_metrics, turn_list
 
 if __name__ == "__main__":
 
+    ##########
     # get args
+    ##########
     args = get_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
     logger.info(args)
 
-    # first generate an identifiable name for the ranking list
-    file_name_stem = f"[{args.collection}]-[{args.topics}]-[{args.query_type}]-[{args.retrieval_model}]-[top{args.top_k}]"
+    #########################################################
+    # first generate an identifiable name for current run
+    #########################################################
+    file_name_stem = f"[{args.collection}]-[{args.topics}]-S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}][{args.retrieval_model}]-[{args.reranker}]-[top{args.top_k}]"
+
     # folder path where the evaluation results will be saved
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)
 
-
-    # create necessary directories if they don't exist
+    # create necessary directories 
     subdirs = ["ranking", "metrics", "per_query_metrics"]
     for subdir in subdirs:
         # create output dir if not exist
@@ -275,12 +313,6 @@ if __name__ == "__main__":
         base_folder,
         "ranking",
         file_name_stem + ".txt")
-
-    # ikat format metrics file path
-    ikat_output_file_path = os.path.join(
-        base_folder,
-        "trec_passage_reranking",
-        file_name_stem + ".json") ## TODO: json or else.
 
     metrics_path = os.path.join(
         base_folder,
@@ -297,19 +329,28 @@ if __name__ == "__main__":
     metrics_list = args.metrics.split(",")
     metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
 
+    ##########################
     # evaluate
-    query_metrics_dic, averaged_metrics, topic_list = get_eval_results(args)
+    query_metrics_dic, averaged_metrics, turn_list = get_eval_results(args)
+    ##########################
 
     # write results to topic list and save.
     if args.save_metrics_to_object:
         for qid, result_dict in query_metrics_dic.items():
-            for topic in topic_list:
-                if str(topic.id) == qid:
-                    reformulation = topic.find_reformulation(args.query_type)
-                    assert reformulation != None, f"Reformulation {args.query_type} not found in topic {topic.id}"
-                    reformulation.add_result(args.collection, args.retrieval_model, result_dict)
-        save_topics_to_json(
-            topic_list,
+            for turn in turn_list:
+                if str(turn.turn_id) == qid:
+                    turn.add_result(
+                        args.collection, 
+                        args.retrieval_model, 
+                        args.reranker,
+                        args.retrieval_query_type,
+                        args.reranking_query_type,
+                        args.generation_query_type,
+                        result_dict
+                    )
+
+        save_turns_to_json(
+            turn_list,
             args.input_query_path
         )
 
@@ -334,12 +375,11 @@ if __name__ == "__main__":
             f"{metric_name}.txt")
         
         # append a line in this file in the following format:
-        # {collection} {query_type} {retrieval_model} {top_k} {metric_value}
         with open(metric_file_path, "a") as f:
-            f.write(f"[{args.collection}] [{args.topics}] [{args.query_type}] [{args.retrieval_model}] [{args.top_k}] [{averaged_metrics[metric_name]}]\n")
+            f.write(file_name_stem[:-1] + f"-[{averaged_metrics[metric_name]}]\n")
 
 
     logger.info("done.")
     
         
-        
+         

@@ -1,6 +1,7 @@
 import json
-from typing import List, Dict
-from dataclasses import dataclass, field 
+from typing import List, Dict, Tuple
+from dataclasses import dataclass, field, asdict 
+from constants import IKAT_23_EVALUATED_TURNS
 
 
 @dataclass
@@ -8,6 +9,9 @@ class Result:
     collection: str = None  # e.g. "AP"
     retrieval_model: str = None  # e.g. "ANCE"
     reranker: str = None  # e.g. "rankllama"
+    retrieval_query_type: str = None # e.g. what is UdeM?
+    reranking_query_type: str = None # e.g. what is UdeM? Specifically, what is the history of UdeM?
+    generation_query_type: str = None # e.g. please provide me with information about UdeM
     metrics: Dict[str, float] = None  # e.g. {"ndcg": 0.5, "map": 0.6}
 
     def __eq__(self, another_instance: any) -> bool:
@@ -18,6 +22,12 @@ class Result:
                 self.retrieval_model == another_instance.retrieval_model
                 and
                 self.reranker == another_instance.reranker
+                and 
+                self.retrieval_query_type == another_instance.retrieval_query
+                and
+                self.reranking_query_type == another_instance.reranking_query
+                and
+                self.generation_query_type == another_instance.generation_query
             )
 
 
@@ -29,57 +39,12 @@ class Reformulation:
 
     reformulated_query: "The document discusses a pending antitrust case. To be relevant, a document will discuss a pending antitrust case and will identify the alleged violation as well as the government entity investigating the case. Identification of the industry and the companies involved is optional. The antitrust investigation must be a result of a complaint, NOT as part of a routine review.",
 
-    results: [Result object1, Result object2, ...] 
     '''
     reformulation_name: str = None
     reformulated_query: str = None
-    results: List[Result] = field(default_factory=list)
 
     
-    def find_result(
-        self, collection: str, 
-        retrieval_model: str,
-        reranker: str
-        ) -> Result:
-        '''
-        Finds a result by its collection and retrieval model.
-
-        Args:
-            collection (str): The collection of the result to find.
-            retrieval_model (str): The retrieval model of the result to find.
-            reranker: The reranker of the result to find.
-
-        Returns:
-            Result: The found result object, or None if not found.
-        '''
-        dummy_result = Result(collection, retrieval_model, reranker)
-        list_of_found_results = [result for result in self.results if result == dummy_result] 
-        if len(list_of_found_results) == 0:
-            return None
-        elif len(list_of_found_results) == 1:
-            return list_of_found_results[0]
-        else:
-            raise ValueError(f"Multiple results with the same collection [{collection}] and retrieval model [{retrieval_model}] as well as reranker [{reranker}] found in the reformulation object with name [{self.reformulation_name}]")
     
-    def add_result(
-            self, 
-            collection:str, 
-            retrieval_model:str, 
-            reranker:str,
-            result_dict: Dict) -> None:
-        '''
-        Adds a result to the reformulation.
-
-        Args:
-            result (Result): The result to add.
-        '''
-        result_found = self.find_result(collection, retrieval_model,reranker)
-        if result_found is None:
-            result = Result(collection, retrieval_model, result_dict,reranker)
-            self.results.append(result)
-        else:
-            result_found.metrics = result_dict
-
     
 
 
@@ -123,6 +88,9 @@ class Turn:
     # reformulations
     reformulations: List[Reformulation] = field(default_factory=list)
 
+    # results:
+    results: List[Result] = field(default_factory=list)
+
     def __str__(self) -> str:
 
         print_str =  f"Turn ID: {self.turn_id}\n"
@@ -130,11 +98,51 @@ class Turn:
         print_str += f"Current Utterance: {self.current_utterance}\n"
         print_str += f"Oracle Utterance: {self.oracle_utterance}\n"
         print_str += f"Number of reformulations: {len(self.reformulations)}\n"
+        print_str += f"Number of results: {len(self.results)}\n"
         return print_str
 
     
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def find_result(
+        self, 
+        collection: str, 
+        retrieval_model: str,
+        reranker: str,
+        retrieval_query_type: str,
+        reranking_query_type: str,
+        generation_query_type: str
+        ) -> Result:
+        '''
+        Finds a result by its collection and retrieval model, reranker, retrieval query type, reranking query type, and generation query type.
+
+        Args:
+            collection (str): The collection of the result to find.
+            retrieval_model (str): The retrieval model of the result to find.
+            reranker: The reranker of the result to find.
+            retrieval_query_type: The retrieval query type of the result to find.
+            reranking_query_type: The reranking query type of the result to find.
+            generation_query_type: The generation query type of the result to find.
+
+        Returns:
+            Result: The found result object, or None if not found.
+        '''
+        dummy_result = Result(
+            collection, 
+            retrieval_model, 
+            reranker,
+            retrieval_query_type,
+            reranking_query_type,
+            generation_query_type
+            )
+        list_of_found_results = [result for result in self.results if result == dummy_result] 
+        if len(list_of_found_results) == 0:
+            return None
+        elif len(list_of_found_results) == 1:
+            return list_of_found_results[0]
+        else:
+            raise ValueError(f"Multiple results with the same collection [{collection}], retrieval model [{retrieval_model}] reranker [{reranker}], retrieval query type [{retrieval_query_type}], reranking query type [{reranking_query_type}], generation query type [{generation_query_type}] found in the Turn object with id [{self.turn_id}]")
     
     def find_reformulation(self, reformulation_name: str) -> Reformulation:
         '''
@@ -157,6 +165,45 @@ class Turn:
         else:
             raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the turn object with id {self.turn_id}")
     
+    def add_result(
+            self, 
+            collection:str, 
+            retrieval_model:str, 
+            reranker:str,
+            retrieval_query_type:str,
+            reranking_query_type:str,
+            generation_query_type:str,
+            metrics_dict: Dict
+            ) -> None:
+        '''
+        Adds a result to the Turn.
+
+        Args:
+            result (Result): The result to add.
+        '''
+        result_found = self.find_result(
+            collection, 
+            retrieval_model,
+            reranker,
+            retrieval_query_type,
+            reranking_query_type,
+            generation_query_type
+            )
+        if result_found is None:
+            result = Result(
+            collection, 
+            retrieval_model,
+            reranker,
+            retrieval_query_type,
+            reranking_query_type,
+            generation_query_type,
+            metrics_dict
+            )
+            self.results.append(result)
+        else:
+            result_found.metrics = result_dict
+        
+
     def add_reformulation(
             self,
             reformulation_name: str,
@@ -174,57 +221,62 @@ class Turn:
             Reformulation(
                 reformulated_query = reformulated_query,
                 reformulation_name = reformulation_name,
-                results = []
                 )
             )
 
-    def to_dict(self) -> Dict:
+    def query_type_rewrite(
+        original_query_type:str,
+    ) -> str:
+            if original_query_type == "reformulation":
+            ## TODO: TBD for CIR
+                query_type = f'reformulated_description_by_[{args.rewrite_model}]_using_[{args.prompt_type}]'
+            else:
+                querytype = original_query_type
+            
+            return query_type
+
+    def query_type_2_query(
+        self, 
+        original_query_type: str, 
+        ) -> str:
         '''
-        Converts the Turn object to a dictionary.
+        Generates a query based on the specified query type.
+
+        Args:
+            original_query_type (str): The query type to generate the query for.
+            run_reformulate (bool): Whether to run reformulation or not.
 
         Returns:
-            dict: The dictionary representation of the Turn object.
+            str: The generated/found query.
+
+        Raises:
+            ValueError: If the specified query type is not supported.
         '''
+        query_type = original_query_type
+        run_reformulate = args.run_reformulate
+        final_query = ""
 
-        turn_dict = {
-            "turn_id": self.turn_id,
-            "conversation_id": self.conversation_id,
-            "title": self.title,
-            "current_utterance": self.current_utterance,
-            "current_response": self.current_response,
-            "response_provenance": self.response_provenance,
-            "oracle_utterance": self.oracle_utterance,
-            "context_uttrances": self.context_utterances,
-            "ptkb": self.ptkb,
-            "ptkb_provenance": self.ptkb_provenance
-        }
+        if query_type == "current_utterance":
+            final_query = self.context_utterances
+        elif query_type == "oracle_utterance":
+            final_query = self.oracle_utterance
+        else:
+            raise ValueError(f"query_type {query_type} not supported")
 
-        
-        reformulations = []
-        for reformulation in self.reformulations:
-            reformulation_dict = {}
-            if reformulation.reformulation_name is not None:
-                reformulation_dict["reformulation_name"] = reformulation.reformulation_name
-                reformulation_dict["reformulated_query"] = reformulation.reformulated_query
-                reformulation_dict["results"] = []
-                for result in reformulation.results:
-                    result_dict = {}
-                    if result.retrieval_model is not None:
-                        result_dict["retrieval_model"] = result.retrieval_model
-                    if result.metrics is not None:
-                        result_dict["metrics"] = result.metrics
-                    if result.reranker is not None:
-                        result_dict["reranker"] = result.reranker
-                    if result.collection is not None:
-                        result_dict["collection"] = result.collection   
-                    reformulation_dict["results"].append(result_dict)
-            reformulations.append(reformulation_dict)
-        
-        turn_dict["reformulations"] = reformulations
+        # check if we have already added this version to the json file
+        reformulation = self.find_reformulation(query_type)
 
-        return turn_dict
+        if reformulation is not None:
+            final_query = reformulation.reformulated_query
+        else:
+            self.reformulations.append(
+                Reformulation(
+                    reformulated_query = final_query,
+                    reformulation_name = query_type,
+                    )
+                )
 
-
+        return final_query
         
     def from_dict(self, turn_dict: Dict) -> None:
     
@@ -245,89 +297,28 @@ class Turn:
         self.ptkb = turn_dict["ptkb"]
         self.ptkb_provenance = turn_dict["ptkb_provenance"]
 
-        # determine what are the reformulations
-        reformulations = []
 
         for reformulation in turn_dict["reformulations"]:
-            reformulation_obj = Reformulation(
+            self.add_reformulation(
                 reformulation_name = reformulation["reformulation_name"],
                 reformulated_query = reformulation["reformulated_query"],
-                results=[]
             )
 
-            for result_dict in reformulation["results"]:
-                reformulation_obj.add_result(
-                    collection = result_dict["collection"],
-                    retrieval_model = result_dict["retrieval_model"],
-                    reranker = result_dict["reranker"],
-                    result_dict = result_dict["metrics"]
-                )
-            reformulations.append(reformulation_obj)
+        for result_dict in turn_dict["results"]:
+            self.add_result(
+                collection = result_dict["collection"],
+                retrieval_model = result_dict["retrieval_model"],
+                reranker = result_dict["reranker"],
+                retrieval_query_type = result_dict["retrieval_query_type"],
+                reranking_query_type = result_dict["reranking_query_type"],
+                generation_query_type = result_dict["generation_query_type"],
+                metrics_dict = result_dict["metrics"]
+            )
+        
 
 
-        self.reformulations = reformulations
     
     
-
-    def query_type_2_query(self, args):
-        '''
-        Generates a query based on the specified query type.
-
-        Args:
-            args: The arguments containing the query type and other parameters.
-
-        Returns:
-            str: The generated/found query.
-
-        Raises:
-            ValueError: If the specified query type is not supported.
-        '''
-        query_type = args.original_query_type
-        run_reformulate = args.run_reformulate
-        final_query = ""
-
-        if query_type == "title":
-            final_query = self.topic
-        elif query_type == "description":
-            final_query = self.description
-        elif query_type == "narrative":
-            final_query = self.narrative
-        elif query_type == "title+description":
-            final_query = self.topic + ", " + self.description
-        elif query_type == "title+narrative":
-            final_query = self.topic + ", " + self.narrative
-        elif query_type == "description+narrative":
-            final_query = self.description + ", " + self.narrative
-        elif query_type == "title+description+narrative":
-            final_query = self.topic + ", " + self.description + ", " + self.narrative
-        elif query_type == "reformulation":
-            args.query_type = f'reformulated_description_by_[{args.rewrite_model}]_using_[{args.prompt_type}]'
-        elif query_type == "pseudo_narrative":
-            args.query_type = f'pseudo_narrative_by_[{args.rewrite_model}]_using_[{args.prompt_type}]'
-        else:
-            raise ValueError(f"query_type {query_type} not supported")
-
-        # check if we have already added this version to the json file
-        reformulation = self.find_reformulation(args.query_type)
-
-        if reformulation is not None:
-            final_query = reformulation.reformulated_query
-        else:
-            if run_reformulate:
-                ## TODO, if we want to rewrite the query, we should do it here.
-                # final_qeury = rewrite....
-                pass
-            self.reformulations.append(
-                Reformulation(
-                    reformulated_query = final_query,
-                    reformulation_name = args.query_type,
-                    results = []
-                    )
-                )
-
-        return final_query
-
-
 def save_turns_to_json(
         turns: List[Turn],
         output_turn_path: str
@@ -335,18 +326,18 @@ def save_turns_to_json(
     '''
     Save a list of Turn objects to a json file
     '''
-    turn_list = [turn.to_dict() for turn in turns]
+    turn_list = [turn.asdict() for turn in turns]
     
     with open(output_turn_path, 'w') as f:
         json.dump(turn, f, indent=4)
     
     return turn_list
 
-        
+            
 def load_turns_from_json(
         input_turn_path: str, 
         range_start: int = 0,
-        range_end: int = 150,
+        range_end: int = -1,
         ) -> List[Turn]:
 
     ### read json file
@@ -402,6 +393,27 @@ def load_turns_from_ikat_topic_files(
             list_of_turns.append(turn_object)
     
     return list_of_turns
+
+def filter_ikat_23_evaluated_turns(
+    turns: List[Turn]
+    ) -> List[Turn]:
+
+        '''
+        Filter the turns to only include the evaluated turns in iKAT 23
+        '''
+
+        filtered_turns = []
+        for turn in turns:
+            if turn.turn_id in IKAT_23_EVALUATED_TURNS:
+                filtered_turns.append(turn)
+        return filtered_turns
+
+    
+
+
+
+                 
+                
 
                  
                 
