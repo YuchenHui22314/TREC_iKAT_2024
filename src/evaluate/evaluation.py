@@ -39,7 +39,7 @@ def get_args():
     ########################
 
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
-                        help="can be [ClueWeb_ikat]")
+                        help="can be [ClueWeb22B_ikat]")
 
     parser.add_argument("--topics", type=str, default="ikat_23_test", 
                         help="can be [ikat_23_test,ikat_24_test]")

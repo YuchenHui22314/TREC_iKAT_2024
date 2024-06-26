@@ -31,7 +31,8 @@
             4,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-1-2",
@@ -67,7 +68,8 @@
             4,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-1-3",
@@ -99,7 +101,8 @@
         "ptkb_provenance": [
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-1-4",
@@ -133,7 +136,8 @@
             "10": "I'm an Android user."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-1-5",
@@ -166,7 +170,8 @@
             "10": "I'm an Android user."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-1-6",
@@ -198,7 +203,8 @@
             "10": "I'm an Android user."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-1",
@@ -226,7 +232,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-2",
@@ -256,7 +263,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-3",
@@ -293,7 +301,8 @@
             5,
             10
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-4",
@@ -326,7 +335,8 @@
         "ptkb_provenance": [
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-5",
@@ -361,7 +371,8 @@
             6,
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-6",
@@ -394,7 +405,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-7",
@@ -428,7 +440,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-8",
@@ -464,7 +477,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-9",
@@ -501,7 +515,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-10",
@@ -536,7 +551,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-11",
@@ -577,7 +593,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "9-2-12",
@@ -616,7 +633,8 @@
             "11": "I don't like surgical solutions."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-1",
@@ -648,7 +666,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-2",
@@ -679,7 +698,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-3",
@@ -711,7 +731,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-4",
@@ -743,7 +764,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-5",
@@ -781,7 +803,8 @@
             8,
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-6",
@@ -817,7 +840,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-7",
@@ -856,7 +880,8 @@
         "ptkb_provenance": [
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-8",
@@ -894,7 +919,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-9",
@@ -934,7 +960,8 @@
         "ptkb_provenance": [
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-10",
@@ -970,7 +997,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-11",
@@ -1013,7 +1041,8 @@
             10,
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-12",
@@ -1063,7 +1092,8 @@
         "ptkb_provenance": [
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-13",
@@ -1104,7 +1134,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-14",
@@ -1151,7 +1182,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-15",
@@ -1195,7 +1227,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-16",
@@ -1240,7 +1273,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-17",
@@ -1285,7 +1319,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-18",
@@ -1336,7 +1371,8 @@
             8,
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-19",
@@ -1387,7 +1423,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-20",
@@ -1435,7 +1472,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-1-21",
@@ -1482,7 +1520,8 @@
             "12": "I want a TV that is okay for light and size of my living room."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-1",
@@ -1513,7 +1552,8 @@
             2,
             10
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-2",
@@ -1542,7 +1582,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-3",
@@ -1572,7 +1613,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-4",
@@ -1600,7 +1642,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-5",
@@ -1633,7 +1676,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-6",
@@ -1667,7 +1711,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-7",
@@ -1702,7 +1747,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-8",
@@ -1737,7 +1783,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-9",
@@ -1774,7 +1821,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-10",
@@ -1811,7 +1859,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-11",
@@ -1848,7 +1897,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-12",
@@ -1886,7 +1936,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-13",
@@ -1928,7 +1979,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-14",
@@ -1972,7 +2024,8 @@
         "ptkb_provenance": [
             10
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-2-15",
@@ -2011,7 +2064,8 @@
             "10": "I enjoy experimenting with fusion cuisine."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-1",
@@ -2042,7 +2096,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-2",
@@ -2077,7 +2132,8 @@
         "ptkb_provenance": [
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-3",
@@ -2116,7 +2172,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-4",
@@ -2151,7 +2208,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-5",
@@ -2194,7 +2252,8 @@
         "ptkb_provenance": [
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-6",
@@ -2242,7 +2301,8 @@
             14,
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-7",
@@ -2287,7 +2347,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-8",
@@ -2330,7 +2391,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-9",
@@ -2372,7 +2434,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "10-3-10",
@@ -2413,7 +2476,8 @@
             "17": "We eat Salmon at least once a week."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-1",
@@ -2444,7 +2508,8 @@
         "ptkb_provenance": [
             13
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-2",
@@ -2477,7 +2542,8 @@
             "15": "My cousin and I go to the gym together."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-3",
@@ -2511,7 +2577,8 @@
             "15": "My cousin and I go to the gym together."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-4",
@@ -2548,7 +2615,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-5",
@@ -2587,7 +2655,8 @@
             "15": "My cousin and I go to the gym together."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-6",
@@ -2622,7 +2691,8 @@
             "15": "My cousin and I go to the gym together."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-7",
@@ -2660,7 +2730,8 @@
             "15": "My cousin and I go to the gym together."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-8",
@@ -2701,7 +2772,8 @@
         "ptkb_provenance": [
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-1-9",
@@ -2741,7 +2813,8 @@
             "15": "My cousin and I go to the gym together."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-1",
@@ -2781,7 +2854,8 @@
             8,
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-2",
@@ -2811,7 +2885,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-3",
@@ -2845,7 +2920,8 @@
             3,
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-4",
@@ -2877,7 +2953,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-5",
@@ -2907,7 +2984,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-6",
@@ -2942,7 +3020,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-7",
@@ -2976,7 +3055,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-8",
@@ -3013,7 +3093,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-9",
@@ -3049,7 +3130,8 @@
         "ptkb_provenance": [
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-10",
@@ -3087,7 +3169,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "11-2-11",
@@ -3125,7 +3208,8 @@
             "11": "I've traveled for business."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-1",
@@ -3147,7 +3231,8 @@
         "ptkb_provenance": [
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-2",
@@ -3174,7 +3259,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-3",
@@ -3205,7 +3291,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-4",
@@ -3234,7 +3321,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-5",
@@ -3265,7 +3353,8 @@
             "6": "I have recently started my job as a teacher."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-6",
@@ -3297,7 +3386,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-7",
@@ -3326,7 +3416,8 @@
             "6": "I have recently started my job as a teacher."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-8",
@@ -3354,7 +3445,8 @@
             "6": "I have recently started my job as a teacher."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-9",
@@ -3385,7 +3477,8 @@
             "6": "I have recently started my job as a teacher."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-10",
@@ -3420,7 +3513,8 @@
             "6": "I have recently started my job as a teacher."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-11",
@@ -3460,7 +3554,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-1-12",
@@ -3495,7 +3590,8 @@
             "6": "I have recently started my job as a teacher."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-1",
@@ -3525,7 +3621,8 @@
             9,
             10
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-2",
@@ -3558,7 +3655,8 @@
         "ptkb_provenance": [
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-3",
@@ -3593,7 +3691,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-4",
@@ -3621,7 +3720,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-5",
@@ -3662,7 +3762,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-6",
@@ -3694,7 +3795,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-7",
@@ -3725,7 +3827,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-8",
@@ -3759,7 +3862,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-9",
@@ -3798,7 +3902,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-10",
@@ -3835,7 +3940,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-11",
@@ -3874,7 +3980,8 @@
         "ptkb_provenance": [
             10
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "12-2-12",
@@ -3910,7 +4017,8 @@
             "10": "I live in California."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-1",
@@ -3943,7 +4051,8 @@
             1,
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-2",
@@ -3972,7 +4081,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-3",
@@ -4002,7 +4112,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-4",
@@ -4033,7 +4144,8 @@
             "9": "I have bought a book named Can't Hurt Me by David Goggins."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-5",
@@ -4065,7 +4177,8 @@
         "ptkb_provenance": [
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-6",
@@ -4106,7 +4219,8 @@
         "ptkb_provenance": [
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-7",
@@ -4146,7 +4260,8 @@
             "9": "I have bought a book named Can't Hurt Me by David Goggins."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "13-1-8",
@@ -4177,7 +4292,8 @@
             "9": "I have bought a book named Can't Hurt Me by David Goggins."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-1",
@@ -4201,7 +4317,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-2",
@@ -4229,7 +4346,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-3",
@@ -4258,7 +4376,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-4",
@@ -4288,7 +4407,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-5",
@@ -4319,7 +4439,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-6",
@@ -4349,7 +4470,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-7",
@@ -4382,7 +4504,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-8",
@@ -4421,7 +4544,8 @@
             6,
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-9",
@@ -4458,7 +4582,8 @@
         "ptkb_provenance": [
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-10",
@@ -4495,7 +4620,8 @@
             9,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-11",
@@ -4532,7 +4658,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-12",
@@ -4570,7 +4697,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-13",
@@ -4610,7 +4738,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-14",
@@ -4651,7 +4780,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-15",
@@ -4692,7 +4822,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-16",
@@ -4732,7 +4863,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-17",
@@ -4780,7 +4912,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-18",
@@ -4824,7 +4957,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-1-19",
@@ -4870,7 +5004,8 @@
             "10": "I live in a big city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-1",
@@ -4895,7 +5030,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-2",
@@ -4943,7 +5079,8 @@
             2,
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-3",
@@ -4981,7 +5118,8 @@
             5,
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-4",
@@ -5012,7 +5150,8 @@
         "ptkb_provenance": [
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-5",
@@ -5048,7 +5187,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-6",
@@ -5091,7 +5231,8 @@
             5,
             3
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-7",
@@ -5130,7 +5271,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-8",
@@ -5165,7 +5307,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-9",
@@ -5207,7 +5350,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-10",
@@ -5244,7 +5388,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-11",
@@ -5282,7 +5427,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "14-2-12",
@@ -5322,7 +5468,8 @@
             "11": "I live in the UK."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-1",
@@ -5345,7 +5492,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-2",
@@ -5370,7 +5518,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-3",
@@ -5396,7 +5545,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-4",
@@ -5421,7 +5571,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-5",
@@ -5449,7 +5600,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-6",
@@ -5478,7 +5630,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-7",
@@ -5513,7 +5666,8 @@
             7,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-8",
@@ -5548,7 +5702,8 @@
             7,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-9",
@@ -5583,7 +5738,8 @@
             7,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-10",
@@ -5632,7 +5788,8 @@
             7,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-11",
@@ -5670,7 +5827,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-12",
@@ -5712,7 +5870,8 @@
             2,
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-13",
@@ -5748,7 +5907,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-14",
@@ -5785,7 +5945,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-1-15",
@@ -5823,7 +5984,8 @@
             "7": "The \"Friends\" series was terrific, Jennifer Aniston and Lisa Kudrow were the best stars!."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-1",
@@ -5853,7 +6015,8 @@
             2,
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-2",
@@ -5886,7 +6049,8 @@
             7,
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-3",
@@ -5914,7 +6078,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-4",
@@ -5949,7 +6114,8 @@
             7,
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-5",
@@ -5982,7 +6148,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-6",
@@ -6012,7 +6179,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-7",
@@ -6044,7 +6212,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-8",
@@ -6074,7 +6243,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-9",
@@ -6108,7 +6278,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-10",
@@ -6147,7 +6318,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "15-2-11",
@@ -6182,7 +6354,8 @@
             "8": "I've seen Avatar, Spiderman, Iron Man, and Inception and gave them 5 stars."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-1",
@@ -6209,7 +6382,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-2",
@@ -6236,7 +6410,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-3",
@@ -6266,7 +6441,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-4",
@@ -6297,7 +6473,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-5",
@@ -6331,7 +6508,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-6",
@@ -6364,7 +6542,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-7",
@@ -6399,7 +6578,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-8",
@@ -6436,7 +6616,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-9",
@@ -6475,7 +6656,8 @@
         "ptkb_provenance": [
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-10",
@@ -6516,7 +6698,8 @@
             2,
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-11",
@@ -6554,7 +6737,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-12",
@@ -6600,7 +6784,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-13",
@@ -6643,7 +6828,8 @@
             2,
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-1-14",
@@ -6685,7 +6871,8 @@
             "11": "I am stressed at work."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-1",
@@ -6714,7 +6901,8 @@
             "11": "I went to the Alps and love it."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-2",
@@ -6745,7 +6933,8 @@
             "11": "I went to the Alps and love it."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-3",
@@ -6778,7 +6967,8 @@
             "11": "I went to the Alps and love it."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-4",
@@ -6810,7 +7000,8 @@
             "11": "I went to the Alps and love it."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-5",
@@ -6843,7 +7034,8 @@
             "11": "I went to the Alps and love it."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-6",
@@ -6878,7 +7070,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-7",
@@ -6914,7 +7107,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-8",
@@ -6955,7 +7149,8 @@
             7,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-9",
@@ -6997,7 +7192,8 @@
             7,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-10",
@@ -7036,7 +7232,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-11",
@@ -7078,7 +7275,8 @@
         "ptkb_provenance": [
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-12",
@@ -7115,7 +7313,8 @@
             "11": "I went to the Alps and love it."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "16-2-13",
@@ -7158,7 +7357,8 @@
         "ptkb_provenance": [
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-1",
@@ -7186,7 +7386,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-2",
@@ -7213,7 +7414,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-3",
@@ -7246,7 +7448,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-4",
@@ -7283,7 +7486,8 @@
             9,
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-5",
@@ -7314,7 +7518,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-6",
@@ -7346,7 +7551,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-7",
@@ -7381,7 +7587,8 @@
         "ptkb_provenance": [
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-8",
@@ -7425,7 +7632,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-9",
@@ -7462,7 +7670,8 @@
             9,
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-10",
@@ -7500,7 +7709,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-11",
@@ -7540,7 +7750,8 @@
             8,
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-1-12",
@@ -7575,7 +7786,8 @@
             "9": "I have purchased the Photoshop application."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-1",
@@ -7598,7 +7810,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-2",
@@ -7631,7 +7844,8 @@
             6,
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-3",
@@ -7657,7 +7871,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-4",
@@ -7690,7 +7905,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-5",
@@ -7724,7 +7940,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-6",
@@ -7758,7 +7975,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-7",
@@ -7796,7 +8014,8 @@
             4,
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-8",
@@ -7829,7 +8048,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-9",
@@ -7866,7 +8086,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-10",
@@ -7902,7 +8123,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-11",
@@ -7943,7 +8165,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-12",
@@ -7985,7 +8208,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-13",
@@ -8025,7 +8249,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-14",
@@ -8062,7 +8287,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-15",
@@ -8104,7 +8330,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-2-16",
@@ -8145,7 +8372,8 @@
             "9": "We go bouldering weekly with my friend, Andrew."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-1",
@@ -8173,7 +8401,8 @@
         "ptkb_provenance": [
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-2",
@@ -8203,7 +8432,8 @@
         "ptkb_provenance": [
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-3",
@@ -8238,7 +8468,8 @@
             5,
             10
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-4",
@@ -8270,7 +8501,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-5",
@@ -8307,7 +8539,8 @@
             2,
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-6",
@@ -8341,7 +8574,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-7",
@@ -8377,7 +8611,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-8",
@@ -8416,7 +8651,8 @@
         "ptkb_provenance": [
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-9",
@@ -8457,7 +8693,8 @@
         "ptkb_provenance": [
             9
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-10",
@@ -8497,7 +8734,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-11",
@@ -8537,7 +8775,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-12",
@@ -8579,7 +8818,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-13",
@@ -8621,7 +8861,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-14",
@@ -8665,7 +8906,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-15",
@@ -8709,7 +8951,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-16",
@@ -8758,7 +9001,8 @@
             5,
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-17",
@@ -8803,7 +9047,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "17-3-18",
@@ -8847,7 +9092,8 @@
             "12": "I'm a fan of Greta Thunberg."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-1",
@@ -8876,7 +9122,8 @@
         "ptkb_provenance": [
             5
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-2",
@@ -8902,7 +9149,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-3",
@@ -8931,7 +9179,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-4",
@@ -8966,7 +9215,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-5",
@@ -8998,7 +9248,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-6",
@@ -9031,7 +9282,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-7",
@@ -9066,7 +9318,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-8",
@@ -9101,7 +9354,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-9",
@@ -9137,7 +9391,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-10",
@@ -9177,7 +9432,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-11",
@@ -9214,7 +9470,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-12",
@@ -9252,7 +9509,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-13",
@@ -9291,7 +9549,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-14",
@@ -9331,7 +9590,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-15",
@@ -9374,7 +9634,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-1-16",
@@ -9414,7 +9675,8 @@
             "10": "I'm active in the stock market."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-1",
@@ -9444,7 +9706,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-2",
@@ -9474,7 +9737,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-3",
@@ -9507,7 +9771,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-4",
@@ -9539,7 +9804,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-5",
@@ -9569,7 +9835,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-6",
@@ -9603,7 +9870,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-7",
@@ -9640,7 +9908,8 @@
         "ptkb_provenance": [
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-8",
@@ -9677,7 +9946,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-9",
@@ -9716,7 +9986,8 @@
         "ptkb_provenance": [
             2
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-10",
@@ -9754,7 +10025,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-11",
@@ -9794,7 +10066,8 @@
         "ptkb_provenance": [
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-12",
@@ -9836,7 +10109,8 @@
         "ptkb_provenance": [
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "18-2-13",
@@ -9874,7 +10148,8 @@
             "11": "I watch lots of documentaries."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-1",
@@ -9896,7 +10171,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-2",
@@ -9929,7 +10205,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-3",
@@ -9958,7 +10235,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-4",
@@ -9991,7 +10269,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-5",
@@ -10028,7 +10307,8 @@
         "ptkb_provenance": [
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-6",
@@ -10066,7 +10346,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-7",
@@ -10102,7 +10383,8 @@
         "ptkb_provenance": [
             7
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-8",
@@ -10134,7 +10416,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-9",
@@ -10170,7 +10453,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-10",
@@ -10206,7 +10490,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-11",
@@ -10243,7 +10528,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-12",
@@ -10284,7 +10570,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-13",
@@ -10319,7 +10606,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-14",
@@ -10357,7 +10645,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-15",
@@ -10398,7 +10687,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-16",
@@ -10439,7 +10729,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-17",
@@ -10483,7 +10774,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "19-1-18",
@@ -10523,7 +10815,8 @@
             "8": "I usually commute to work by bus."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-1",
@@ -10550,7 +10843,8 @@
         "ptkb_provenance": [
             1
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-2",
@@ -10583,7 +10877,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-3",
@@ -10614,7 +10909,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-4",
@@ -10645,7 +10941,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-5",
@@ -10678,7 +10975,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-6",
@@ -10712,7 +11010,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-7",
@@ -10747,7 +11046,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-8",
@@ -10783,7 +11083,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-9",
@@ -10822,7 +11123,8 @@
         "ptkb_provenance": [
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-10",
@@ -10864,7 +11166,8 @@
         "ptkb_provenance": [
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-11",
@@ -10905,7 +11208,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-12",
@@ -10950,7 +11254,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-1-13",
@@ -10988,7 +11293,8 @@
             "11": "I am vegetarian."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-1",
@@ -11016,7 +11322,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-2",
@@ -11047,7 +11354,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-3",
@@ -11078,7 +11386,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-4",
@@ -11114,7 +11423,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-5",
@@ -11147,7 +11457,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-6",
@@ -11183,7 +11494,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-7",
@@ -11222,7 +11534,8 @@
         "ptkb_provenance": [
             11
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-8",
@@ -11270,7 +11583,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-9",
@@ -11313,7 +11627,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-10",
@@ -11358,7 +11673,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-11",
@@ -11400,7 +11716,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-12",
@@ -11444,7 +11761,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-13",
@@ -11490,7 +11808,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-14",
@@ -11535,7 +11854,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-15",
@@ -11579,7 +11899,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "20-2-16",
@@ -11621,7 +11942,8 @@
             "12": "I live in the city."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-1",
@@ -11648,7 +11970,8 @@
             "11": "I was sick with the Coronavirus omicron variant."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-2",
@@ -11680,7 +12003,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-3",
@@ -11717,7 +12041,8 @@
             8,
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-4",
@@ -11755,7 +12080,8 @@
             10,
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-5",
@@ -11792,7 +12118,8 @@
             11,
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-6",
@@ -11828,7 +12155,8 @@
             8,
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-7",
@@ -11862,7 +12190,8 @@
         "ptkb_provenance": [
             8
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-8",
@@ -11900,7 +12229,8 @@
             8,
             4
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-9",
@@ -11934,7 +12264,8 @@
             "11": "I was sick with the Coronavirus omicron variant."
         },
         "ptkb_provenance": [],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     },
     {
         "turn_id": "21-1-10",
@@ -11974,6 +12305,7 @@
             4,
             6
         ],
-        "reformulations": []
+        "reformulations": [],
+        "results": []
     }
 ]
