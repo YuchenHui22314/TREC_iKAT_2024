@@ -4,7 +4,7 @@
 collection="ClueWeb_ikat"
 topics="ikat_23_test"
 input_query_path="../../data/topics/ikat_2023_test.json"
-index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2/"
+index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 retrieval_model="BM25"

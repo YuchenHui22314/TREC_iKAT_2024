@@ -230,6 +230,10 @@ def get_eval_results(args):
         )
         hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
 
+    ##############################
+    # TODO: add splade
+    ##############################
+
 
     ##############################
     # TODO: reranking
@@ -266,6 +270,13 @@ def get_eval_results(args):
     # TODO: Export to ikat format
     ##############################
 
+    ##############################
+    # TODO: enable without evaluation 
+    ##############################
+
+    ##############################
+    # TODO: add run_name 
+    ##############################
 
     ##############################
     # use pytrec_eval to evaluate
