@@ -7,6 +7,7 @@ import numpy as np
 import json
 from typing import Mapping, Tuple, List, Optional, Union
 import tqdm
+from dataclasses import asdict
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 # sys.path.append('../')
@@ -17,8 +18,6 @@ from topics import (
     save_turns_to_json, 
     load_turns_from_json,
     filter_ikat_23_evaluated_turns,
-    query_type_2_query,
-    query_type_rewrite
     )
 
 
@@ -44,32 +43,31 @@ def get_args():
     parser.add_argument("--topics", type=str, default="ikat_23_test", 
                         help="can be [ikat_23_test,ikat_24_test]")
 
-    parser.add_argument("--input_query_path", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat_2023_test_turns.json")
+    parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
 
-    parser.add_argument("--index_dir_path", type=str, default="../../data/indexes/AP_sparse_index")
+    parser.add_argument("--index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
 
     parser.add_argument("--output_dir_path", type=str, default="../../results")
 
-    parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/trec.nist.gov_data_ikat_2023-ptkb-qrels.txt")
+    parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
     
     parser.add_argument("--retrieval_model", type=str, default="BM25",
                         help="can be [BM25, ance, dpr]")
 
-    parser.add_argument("--reranker", type=str, default="rankllama",
-                        help="can be ['None', rankllama,]")
+    parser.add_argument("--reranker", type=str, default="none",
+                        help="can be ['none', rankllama,]")
 
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage",
                         help="should be a huggingface face format folder/link to a model") 
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
     parser.add_argument("--top_k", type=int, default="1000")
-    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100",
+    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100,recall.1000")
 
     #parser.add_argument("--rel_threshold", type=int, default="1")
 
     parser.add_argument("--save_metrics_to_object",  action="store_true", help="if we will save metrics to turn object.")
-    args = parser.parse_args()
 
     #########################
     # project related config
@@ -78,22 +76,25 @@ def get_args():
     parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
                         help="can be [no_rewrite, gpt-4-turbo]")
 
-    parser.add_argument("--retrieval_query_type", type=str, default="current_utterance", 
+    parser.add_argument("--retrieval_query_type", type=str, default="oracle_utterance", 
                         help="""can be [
                             "current_utterance",
                             "oracle_utterance",
+                            "reformulation"
                             ]""")
 
-    parser.add_argument("--reranking_query_type", type=str, default="current_utterance", 
+    parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
                         help="""can be [
                             "current_utterance",
                             "oracle_utterance",
+                            "reformulation"
                             ]""")
 
-    parser.add_argument("--generation_query_type", type=str, default="current_utterance", 
+    parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
                         help="""can be [
                             "current_utterance",
                             "oracle_utterance",
+                            "reformulation"
                             ]""")
 
     parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
@@ -104,9 +105,20 @@ def get_args():
 
 
 
+    args = parser.parse_args()
     return args
 
 
+def query_type_rewrite(
+    original_query_type:str,
+) -> str:
+        if original_query_type == "reformulation":
+        ## TODO: TBD for CIR
+            query_type = f'reformulated_description_by_[{args.rewrite_model}]_using_[{args.prompt_type}]'
+        else:
+            query_type = original_query_type
+        
+        return query_type
     
 def get_query_list(args):
 
@@ -125,9 +137,7 @@ def get_query_list(args):
     turn_list: List[Turn] 
     '''
 
-
-    # TODO: add ikat processing
-    # apply collection specific processing
+    # apply topic specific processing
     if args.topics == "ikat_23_test":
         turn_list = load_turns_from_json(
             input_topic_path=args.input_query_path,
@@ -170,7 +180,7 @@ def get_eval_results(args):
     assert args.topics in ["ikat_23_test",], f"Invalid topics {args.topics}"
     assert args.collection in ["ClueWeb_ikat",], f"Invalid collection {args.collection}"
     assert args.retrieval_model in ["BM25", "ance", "dpr"], f"Invalid retrieval model {args.retrieval_model}"
-    assert args.reranker in ["rankllama"], f"Invalid reranker {args.reranker}"
+    assert args.reranker in ["rankllama","none"], f"Invalid reranker {args.reranker}"
     assert args.retrieval_query_type in ["current_utterance", "oracle_utterance"], f"retrieve query type {args.retrieval_query_type} is not an invalid query_type"
     assert args.reranking_query_type in ["current_utterance", "oracle_utterance"], f"reranking query type {args.reranking_query_type} is not an invalid query_type"
     assert args.generation_query_type in ["current_utterance", "oracle_utterance"], f"generation query type {args.generation_query_type} is not an invalid query_type"
@@ -274,6 +284,8 @@ def get_eval_results(args):
     query_metrics_dic = evaluator.evaluate(run)
 
     # average metrics
+    metrics = {metric : [metrics[metric] for metrics in query_metrics_dic.values()] for metric in metrics_list_key_form}   
+
     averaged_metrics = { metric : np.average(metric_list) for metric, metric_list in metrics.items() }
 
     # for each query, add the number of relevant documents in query_metrics_dic
@@ -296,7 +308,7 @@ if __name__ == "__main__":
     #########################################################
     # first generate an identifiable name for current run
     #########################################################
-    file_name_stem = f"[{args.collection}]-[{args.topics}]-S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}][{args.retrieval_model}]-[{args.reranker}]-[top{args.top_k}]"
+    file_name_stem = f"[{args.collection}]-[{args.topics}]-S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}]-[{args.reranker}]-[top{args.top_k}]"
 
     # folder path where the evaluation results will be saved
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)
@@ -376,7 +388,7 @@ if __name__ == "__main__":
         
         # append a line in this file in the following format:
         with open(metric_file_path, "a") as f:
-            f.write(file_name_stem[:-1] + f"-[{averaged_metrics[metric_name]}]\n")
+            f.write(file_name_stem + f"-[{averaged_metrics[metric_name]}]\n")
 
 
     logger.info("done.")

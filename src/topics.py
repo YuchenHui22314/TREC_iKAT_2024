@@ -23,11 +23,11 @@ class Result:
                 and
                 self.reranker == another_instance.reranker
                 and 
-                self.retrieval_query_type == another_instance.retrieval_query
+                self.retrieval_query_type == another_instance.retrieval_query_type
                 and
-                self.reranking_query_type == another_instance.reranking_query
+                self.reranking_query_type == another_instance.reranking_query_type
                 and
-                self.generation_query_type == another_instance.generation_query
+                self.generation_query_type == another_instance.generation_query_type
             )
 
 
@@ -201,7 +201,7 @@ class Turn:
             )
             self.results.append(result)
         else:
-            result_found.metrics = result_dict
+            result_found.metrics = metrics_dict
         
 
     def add_reformulation(
@@ -224,16 +224,6 @@ class Turn:
                 )
             )
 
-    def query_type_rewrite(
-        original_query_type:str,
-    ) -> str:
-            if original_query_type == "reformulation":
-            ## TODO: TBD for CIR
-                query_type = f'reformulated_description_by_[{args.rewrite_model}]_using_[{args.prompt_type}]'
-            else:
-                querytype = original_query_type
-            
-            return query_type
 
     def query_type_2_query(
         self, 
@@ -253,7 +243,6 @@ class Turn:
             ValueError: If the specified query type is not supported.
         '''
         query_type = original_query_type
-        run_reformulate = args.run_reformulate
         final_query = ""
 
         if query_type == "current_utterance":
@@ -326,22 +315,22 @@ def save_turns_to_json(
     '''
     Save a list of Turn objects to a json file
     '''
-    turn_list = [turn.asdict() for turn in turns]
+    turn_list = [asdict(turn) for turn in turns]
     
     with open(output_turn_path, 'w') as f:
-        json.dump(turn, f, indent=4)
+        json.dump(turn_list, f, indent=4)
     
     return turn_list
 
             
 def load_turns_from_json(
-        input_turn_path: str, 
+        input_topic_path: str, 
         range_start: int = 0,
         range_end: int = -1,
         ) -> List[Turn]:
 
     ### read json file
-    with open(input_turn_path, 'r') as f:
+    with open(input_topic_path, 'r') as f:
         turns = json.load(f)
     
     ### resulting list of Turn objects
