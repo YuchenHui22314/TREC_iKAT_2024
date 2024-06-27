@@ -6,11 +6,12 @@ import os
 import numpy as np
 import json
 from typing import Mapping, Tuple, List, Optional, Union
-import tqdm
+from tqdm import tqdm
 from dataclasses import asdict
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
-# sys.path.append('../')
+#sys.path.append('../')
+
 from topics import (
     Turn, 
     Result,
@@ -20,6 +21,7 @@ from topics import (
     filter_ikat_23_evaluated_turns,
     )
 
+from rerank import load_rankllama, rerank_rankllama 
 
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
@@ -52,10 +54,13 @@ def get_args():
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
     
     parser.add_argument("--retrieval_model", type=str, default="BM25",
-                        help="can be [BM25, ance, dpr]")
+                        help="can be [BM25, ance, dpr, splade]")
 
     parser.add_argument("--reranker", type=str, default="none",
                         help="can be ['none', rankllama,]")
+    
+    parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
+    ## TODO: unify -- cache_dir and --dense_query_encoder_path
 
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage",
                         help="should be a huggingface face format folder/link to a model") 
@@ -176,10 +181,10 @@ def get_eval_results(args):
     # check args
     ###############
 
-    logger.info("Checking args...")
+    print("Checking args...")
     assert args.topics in ["ikat_23_test",], f"Invalid topics {args.topics}"
     assert args.collection in ["ClueWeb_ikat",], f"Invalid collection {args.collection}"
-    assert args.retrieval_model in ["BM25", "ance", "dpr"], f"Invalid retrieval model {args.retrieval_model}"
+    assert args.retrieval_model in ["BM25", "ance", "dpr", "splade"], f"Invalid retrieval model {args.retrieval_model}"
     assert args.reranker in ["rankllama","none"], f"Invalid reranker {args.reranker}"
     assert args.retrieval_query_type in ["current_utterance", "oracle_utterance"], f"retrieve query type {args.retrieval_query_type} is not an invalid query_type"
     assert args.reranking_query_type in ["current_utterance", "oracle_utterance"], f"reranking query type {args.reranking_query_type} is not an invalid query_type"
@@ -203,7 +208,7 @@ def get_eval_results(args):
     # get query list and qid list as well as Turn list
     ##################################################
 
-    logger.info(f"loading quries")
+    print(f"loading quries")
 
     # the reason to get turn list is to add per-query 
     # search results. 
@@ -216,19 +221,20 @@ def get_eval_results(args):
 
     # sparse search
     if args.retrieval_model == "BM25":
-        logger.info("BM 25 searching...")
+        print("BM 25 searching...")
         searcher = LuceneSearcher(args.index_dir_path)
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
         hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
 
     # dense search
     elif args.retrieval_model in ["ance", "dpr"]:
-        logger.info(f"{args.retrieval_model} searching...")
+        print(f"{args.retrieval_model} searching...")
         searcher = FaissSearcher(
             args.index_dir_path,
             args.dense_query_encoder_path 
         )
         hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
+
 
     ##############################
     # TODO: add splade
@@ -236,14 +242,32 @@ def get_eval_results(args):
 
 
     ##############################
-    # TODO: reranking
+    # reranking
     ##############################
-    # hits ...
-    if args.reranker == "None":
-        pass
-    elif args.reranker == "rankllama":
-        logger.info(f"{args.reranker} reranking...")
-        pass
+
+
+    if not args.reranker == "none":
+
+        print(f"{args.reranker} reranking")
+
+        # generate a qid-reranking_query dictionary
+        reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(qid_list_string, reranking_query_list)}
+
+    if args.reranker == "rankllama":
+        print("loading rankllama model")
+        tokenizer, model = load_rankllama(args.cache_dir)
+        print("reranking")
+        for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
+            reranking_query = reranking_query_dic[qid]
+            reranked_scores = rerank_rankllama(
+                reranking_query,
+                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit],
+                tokenizer,
+                model
+            )
+            assert len(reranked_scores) == len(hit), f"reranked scores length {len(reranked_scores)} not equal to hit length {len(hit)}"
+            for i in range(len(hit)):
+                hit[i].score = reranked_scores[i]
 
 
     ##############################
@@ -290,7 +314,7 @@ def get_eval_results(args):
         run = pytrec_eval.parse_run(f_run)
 
     # then evaluate
-    logger.info("trec_eval evaluating...")
+    print("trec_eval evaluating...")
     evaluator = pytrec_eval.RelevanceEvaluator(qrel, set(metrics_list))
     query_metrics_dic = evaluator.evaluate(run)
 
@@ -314,7 +338,7 @@ if __name__ == "__main__":
     args = get_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
-    logger.info(args)
+    print(args)
 
     #########################################################
     # first generate an identifiable name for current run
@@ -378,7 +402,7 @@ if __name__ == "__main__":
         )
 
     # save metrics
-    logger.info("saving results...")
+    print("saving results...")
 
 
     # save metrics  
@@ -402,7 +426,7 @@ if __name__ == "__main__":
             f.write(file_name_stem + f"-[{averaged_metrics[metric_name]}]\n")
 
 
-    logger.info("done.")
+    print("done.")
     
         
          

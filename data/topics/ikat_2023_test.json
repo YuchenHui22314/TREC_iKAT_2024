@@ -16455,5 +16455,81 @@
         ],
         "reformulations": [],
         "results": []
+    },
+    {
+        "turn_id": "21-1-9",
+        "conversation_id": "21-1",
+        "title": "The next pandemic",
+        "current_utterance": "I need a drink.",
+        "current_response": "What kind of drink do you like?",
+        "oracle_utterance": "I need a drink to calm down.",
+        "response_provenance": [],
+        "context_utterances": [
+            "Yesterday I showed the movie Contagion in my class and we had a very long discussion. The students were mesmerized by a movie that preceded the recent pandemic by nearly a decade. It was quite an emotional experience for all of us. Later I noticed a chyron on the TV screen at home that read: WHO chief: the world must be ready for the next pandemic. What was this about?",
+            "Strengthening how?",
+            "As if the world is an equal playing field, what about the poor?",
+            "You betcha.",
+            "I was afraid of that. Aside from what seems to me like empty promises, what really can be done?",
+            "You don't say, I'm utterly shocked.",
+            "Sorry pal, for a second I forgot that I'm communicating with a conversational interface. I was being facetious, which I can be at times.",
+            "Well, what do you need world-renowned experts for? Anyone who hasn't had their heads in the sand, didn't allow crazy politics to wash their brains, and had a little bit of respect for science could have come up with similar conclusions. Heck, I could have written them in a jiffy. What a sad state of affairs! More bad news?"
+        ],
+        "ptkb": {
+            "1": "I read a lot (scientific articles, newspapers, and nonfiction).",
+            "2": "I traveled to Mexico last week.",
+            "3": "My sister will be in town next week.",
+            "4": "I'm very interested in futurology.",
+            "5": "I'm into Italian wines.",
+            "6": "I am a volunteer firefighter.",
+            "7": "I like shopping.",
+            "8": "I have an undergrad degree in public health.",
+            "9": "I watch lots of documentaries.",
+            "10": "I'm a science high school teacher.",
+            "11": "I was sick with the Coronavirus omicron variant."
+        },
+        "ptkb_provenance": [],
+        "reformulations": [],
+        "results": []
+    },
+    {
+        "turn_id": "21-1-10",
+        "conversation_id": "21-1",
+        "title": "The next pandemic",
+        "current_utterance": "No no, I mean I need a drink to calm down. Is there anything I can do?",
+        "current_response": "Preparation is something that you do ahead of time. After a disaster hits, you're stuck with whatever preparation you have. If people haven't properly prepared, everybody is scrambling to meet their needs at the moment, leading to shortages of essential supplies for citizens and hospitals as well as strained supply chains. Households need to learn preparedness and survival skills, which include basic medical knowledge, food preservation techniques, and strategies for building and regaining physical and economic security. One simple thing you can do is keep an extra supply of the dry and canned goods your household consumes the most. If you want to take it to the next level and grow some of your own food. People should learn basic financial literacy, including how to make a budget, spend effectively, save, and not waste. Focusing and investing in household-level pandemic preparation could substantially reduce the toll of the next pandemic.",
+        "oracle_utterance": "No no, I mean I need a drink to calm down. Is there anything that I and other individuals can do to mitigate such possible global failure?",
+        "response_provenance": [
+            "clueweb22-en0028-67-00583:1"
+        ],
+        "context_utterances": [
+            "Yesterday I showed the movie Contagion in my class and we had a very long discussion. The students were mesmerized by a movie that preceded the recent pandemic by nearly a decade. It was quite an emotional experience for all of us. Later I noticed a chyron on the TV screen at home that read: WHO chief: the world must be ready for the next pandemic. What was this about?",
+            "Strengthening how?",
+            "As if the world is an equal playing field, what about the poor?",
+            "You betcha.",
+            "I was afraid of that. Aside from what seems to me like empty promises, what really can be done?",
+            "You don't say, I'm utterly shocked.",
+            "Sorry pal, for a second I forgot that I'm communicating with a conversational interface. I was being facetious, which I can be at times.",
+            "Well, what do you need world-renowned experts for? Anyone who hasn't had their heads in the sand, didn't allow crazy politics to wash their brains, and had a little bit of respect for science could have come up with similar conclusions. Heck, I could have written them in a jiffy. What a sad state of affairs! More bad news?",
+            "I need a drink."
+        ],
+        "ptkb": {
+            "1": "I read a lot (scientific articles, newspapers, and nonfiction).",
+            "2": "I traveled to Mexico last week.",
+            "3": "My sister will be in town next week.",
+            "4": "I'm very interested in futurology.",
+            "5": "I'm into Italian wines.",
+            "6": "I am a volunteer firefighter.",
+            "7": "I like shopping.",
+            "8": "I have an undergrad degree in public health.",
+            "9": "I watch lots of documentaries.",
+            "10": "I'm a science high school teacher.",
+            "11": "I was sick with the Coronavirus omicron variant."
+        },
+        "ptkb_provenance": [
+            4,
+            6
+        ],
+        "reformulations": [],
+        "results": []
     }
 ]

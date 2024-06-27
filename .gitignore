@@ -180,7 +180,7 @@ cython_debug/
 **/test.py
 **/*.out
 **/*.log
-**/test.ipynb 
+#**/test.ipynb 
 #yijingjile
 /src/__pycache__
 /logs

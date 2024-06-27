@@ -2,6 +2,7 @@ import json
 from typing import List, Dict, Tuple
 from dataclasses import dataclass, field, asdict 
 from constants import IKAT_23_EVALUATED_TURNS
+from tqdm import tqdm
 
 
 @dataclass
@@ -336,7 +337,12 @@ def load_turns_from_json(
     ### resulting list of Turn objects
     turn_objects = []
     
-    for turn in turns[range_start:range_end]:
+    if range_end == -1:
+        turns = turns[range_start:]
+    else:
+        turns = turns[range_start : range_end + 1]
+
+    for turn in turns:
         turn_object = Turn()
         turn_object.from_dict(turn) 
         turn_objects.append(turn_object)
