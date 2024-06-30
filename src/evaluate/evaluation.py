@@ -8,6 +8,7 @@ import json
 from typing import Mapping, Tuple, List, Optional, Union
 from tqdm import tqdm
 from dataclasses import asdict
+from rank_gpt import run_retriever, sliding_windows
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
@@ -21,7 +22,12 @@ from topics import (
     filter_ikat_23_evaluated_turns,
     )
 
-from rerank import load_rankllama, rerank_rankllama 
+from rerank import (
+    load_rankllama, 
+    rerank_rankllama,
+    hits_2_rankgpt_list
+    )
+    
 
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
@@ -56,18 +62,31 @@ def get_args():
     parser.add_argument("--retrieval_model", type=str, default="BM25",
                         help="can be [BM25, ance, dpr, splade]")
 
-    parser.add_argument("--reranker", type=str, default="none",
-                        help="can be ['none', rankllama,]")
-    
+    # hugging_face cache_dir
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
     ## TODO: unify -- cache_dir and --dense_query_encoder_path
 
+    # where is dense encoder
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage",
                         help="should be a huggingface face format folder/link to a model") 
+
+
+    parser.add_argument("--reranker", type=str, default="none",
+                        help="can be ['none', rankllama, rankgpt]")
+    # rankGPT
+    parser.add_argument("--rankgpt_llm", type=str, default="gpt-3.5-turbo",
+                        help="can be ['gpt-3.5-turbo',]")
+    parser.add_argument("--window_size", type=int, default="5") 
+    parser.add_argument("--step", type=int, default="1") 
+
+    # BM25 parameters
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
+
+    # TODO: RM3 parameters
+
     parser.add_argument("--top_k", type=int, default="1000")
-    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100",
+    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.100,recall.1000, recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100,recall.1000")
 
     #parser.add_argument("--rel_threshold", type=int, default="1")
@@ -75,7 +94,7 @@ def get_args():
     parser.add_argument("--save_metrics_to_object",  action="store_true", help="if we will save metrics to turn object.")
 
     #########################
-    # project related config
+    # ikat 2024 project related config
     ########################
 
     parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
@@ -108,6 +127,7 @@ def get_args():
         ] 
     """)
 
+    parser.add_argument("--just_rank_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list save metrics to turn object.")
 
 
     args = parser.parse_args()
@@ -185,7 +205,7 @@ def get_eval_results(args):
     assert args.topics in ["ikat_23_test",], f"Invalid topics {args.topics}"
     assert args.collection in ["ClueWeb_ikat",], f"Invalid collection {args.collection}"
     assert args.retrieval_model in ["BM25", "ance", "dpr", "splade"], f"Invalid retrieval model {args.retrieval_model}"
-    assert args.reranker in ["rankllama","none"], f"Invalid reranker {args.reranker}"
+    assert args.reranker in ["rankllama","none", "rankgpt"], f"Invalid reranker {args.reranker}"
     assert args.retrieval_query_type in ["current_utterance", "oracle_utterance"], f"retrieve query type {args.retrieval_query_type} is not an invalid query_type"
     assert args.reranking_query_type in ["current_utterance", "oracle_utterance"], f"reranking query type {args.reranking_query_type} is not an invalid query_type"
     assert args.generation_query_type in ["current_utterance", "oracle_utterance"], f"generation query type {args.generation_query_type} is not an invalid query_type"
@@ -221,6 +241,9 @@ def get_eval_results(args):
 
     # sparse search
     if args.retrieval_model == "BM25":
+    ##############################
+    # TODO: RM3
+    ##############################
         print("BM 25 searching...")
         searcher = LuceneSearcher(args.index_dir_path)
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
@@ -254,10 +277,13 @@ def get_eval_results(args):
         reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(qid_list_string, reranking_query_list)}
 
     if args.reranker == "rankllama":
+
         print("loading rankllama model")
         tokenizer, model = load_rankllama(args.cache_dir)
+
         print("reranking")
         for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
+
             reranking_query = reranking_query_dic[qid]
             reranked_scores = rerank_rankllama(
                 reranking_query,
@@ -266,8 +292,11 @@ def get_eval_results(args):
                 model
             )
             assert len(reranked_scores) == len(hit), f"reranked scores length {len(reranked_scores)} not equal to hit length {len(hit)}"
+
             for i in range(len(hit)):
                 hit[i].score = reranked_scores[i]
+                # sort the hits by score
+            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
 
     ##############################
@@ -290,10 +319,20 @@ def get_eval_results(args):
                     ))
                 f.write('\n')
 
-    ##############################
-    # TODO: Export to ikat format
-    ##############################
+    # read qrels
+    with open(args.qrel_file_path, 'r') as f_qrel:
+        qrel = pytrec_eval.parse_qrel(f_qrel)
+    # read ranking list
+    with open(ranking_list_path, 'r') as f_run:
+        run = pytrec_eval.parse_run(f_run)
 
+    ##############################
+    #  Export to ikat format
+    ##############################
+    if args.just_rank_no_evaluate:
+        print("generating ikat format results...")
+
+        exit("ikat format results saved.")
     ##############################
     # TODO: enable without evaluation 
     ##############################
@@ -303,15 +342,13 @@ def get_eval_results(args):
     ##############################
 
     ##############################
+    # TODO: evaluate ptkb ranking list 
+    ##############################
+
+    ##############################
     # use pytrec_eval to evaluate
     ##############################
 
-    # read qrels
-    with open(args.qrel_file_path, 'r') as f_qrel:
-        qrel = pytrec_eval.parse_qrel(f_qrel)
-    # read ranking list
-    with open(ranking_list_path, 'r') as f_run:
-        run = pytrec_eval.parse_run(f_run)
 
     # then evaluate
     print("trec_eval evaluating...")
@@ -349,7 +386,7 @@ if __name__ == "__main__":
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)
 
     # create necessary directories 
-    subdirs = ["ranking", "metrics", "per_query_metrics"]
+    subdirs = ["ranking", "metrics", "per_query_metrics", "ikat_format_output"]
     for subdir in subdirs:
         # create output dir if not exist
         path = os.path.join(base_folder, subdir)
@@ -371,6 +408,12 @@ if __name__ == "__main__":
         base_folder,
         "per_query_metrics",
         file_name_stem + "_dict.json")
+
+    # save ikat format output
+    metrics_path = os.path.join(
+        base_folder,
+        "ikat_format_output",
+        file_name_stem + ".json")
 
     # read metrics 
     metrics_list = args.metrics.split(",")
@@ -427,6 +470,4 @@ if __name__ == "__main__":
 
 
     print("done.")
-    
         
-         

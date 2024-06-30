@@ -1,8 +1,9 @@
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from peft import PeftModel, PeftConfig
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Dict
 import numpy as np
+import json
 
 cache_dir = "/data/rech/huiyuche/huggingface"
 
@@ -89,3 +90,38 @@ def rerank_rankllama(
             scores.extend(list(part_scores))
 
     return scores
+
+def hits_2_rankgpt_list(
+    searcher: Any,
+    query_dict: Dict[str, str],
+    hits_dict: Dict[str, List[Any]]
+    ) -> Tuple[Dict[str, List[Dict[str, Any]]], Dict[str, List[Dict[str, Any]]]]:
+
+
+    rankgpt_list = []
+    new_hits_dict = {}
+
+    for qid, query in query_dict.items():
+        hits = hits_dict[qid]
+        new_hits_dict[qid] = []
+        rankgpt_list.append({'query': query, 'hits': []})
+
+        # assuming that hits are sorted by rank
+        for rank, hit in enumerate(hits):
+            # get passage text
+            content = json.loads(searcher.doc(hit.docid).raw())
+            content = content['contents']
+            content = ' '.join(content.split())
+
+            document_hit_dict = {
+                'content': content,
+                'qid': qid, 
+                'docid': hit.docid, 
+                'rank': rank, 
+                'score': hit.score}
+
+            rankgpt_list[-1]['hits'].append(document_hit_dict)
+            
+            new_hits_dict[qid].append(document_hit_dict)
+
+    return rankgpt_list, new_hits_dict

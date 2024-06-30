@@ -125,6 +125,24 @@
                     "ndcg_cut_10": 0.5293856728621718,
                     "num_rel": 116
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1335627219050628,
+                    "P_5": 0.2,
+                    "P_10": 0.4,
+                    "recall_100": 0.22413793103448276,
+                    "ndcg_cut_3": 0.23463936301137822,
+                    "ndcg_cut_5": 0.16958010263680806,
+                    "ndcg_cut_10": 0.25733510259655307,
+                    "num_rel": 116
+                }
             }
         ]
     },
@@ -182,6 +200,24 @@
                     "ndcg_cut_3": 0.5307212739772434,
                     "ndcg_cut_5": 0.5222030810488597,
                     "ndcg_cut_10": 0.5446954110463366,
+                    "num_rel": 29
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.03465012364906336,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.27586206896551724,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 29
                 }
             }
@@ -242,6 +278,24 @@
                     "ndcg_cut_10": 0.0823938729121353,
                     "num_rel": 48
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.03536977676968254,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.16666666666666666,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.04512647629987242,
+                    "num_rel": 48
+                }
             }
         ]
     },
@@ -297,6 +351,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.05091627452967052,
                     "ndcg_cut_10": 0.09113497938656243,
+                    "num_rel": 38
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05844062851099214,
+                    "P_5": 0.4,
+                    "P_10": 0.2,
+                    "recall_100": 0.18421052631578946,
+                    "ndcg_cut_3": 0.312852484015171,
+                    "ndcg_cut_5": 0.3279183737386732,
+                    "ndcg_cut_10": 0.23811237859670698,
                     "num_rel": 38
                 }
             }
@@ -383,6 +455,24 @@
                     "ndcg_cut_10": 0.6883429915546473,
                     "num_rel": 103
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.11129351637949655,
+                    "P_5": 0.0,
+                    "P_10": 0.3,
+                    "recall_100": 0.18446601941747573,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.15963798370559082,
+                    "num_rel": 103
+                }
             }
         ]
     },
@@ -445,6 +535,24 @@
                     "ndcg_cut_10": 0.019757445692950605,
                     "num_rel": 128
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0599511409925254,
+                    "P_5": 0.6,
+                    "P_10": 0.4,
+                    "recall_100": 0.125,
+                    "ndcg_cut_3": 0.1352669425211465,
+                    "ndcg_cut_5": 0.2676442593476826,
+                    "ndcg_cut_10": 0.21961992329533594,
+                    "num_rel": 128
+                }
             }
         ]
     },
@@ -501,6 +609,24 @@
                     "ndcg_cut_3": 0.2655788107456709,
                     "ndcg_cut_5": 0.24033111422939352,
                     "ndcg_cut_10": 0.22792614670313716,
+                    "num_rel": 111
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.06907332873337088,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.14414414414414414,
+                    "ndcg_cut_3": 0.1409483247803037,
+                    "ndcg_cut_5": 0.10795118372096169,
+                    "ndcg_cut_10": 0.15661698059812376,
                     "num_rel": 111
                 }
             }
@@ -561,6 +687,24 @@
                     "ndcg_cut_3": 0.0986939703219551,
                     "ndcg_cut_5": 0.07132875491150918,
                     "ndcg_cut_10": 0.046287481291184845,
+                    "num_rel": 75
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0007208532061473239,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.013333333333333334,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 75
                 }
             }
@@ -651,6 +795,24 @@
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.03571428571428571,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 56
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.003302199527766176,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.05357142857142857,
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
@@ -755,6 +917,24 @@
                     "ndcg_cut_10": 0.7442476255071656,
                     "num_rel": 43
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.410769666396257,
+                    "P_5": 0.6,
+                    "P_10": 0.6,
+                    "recall_100": 0.7441860465116279,
+                    "ndcg_cut_3": 0.5865984075284455,
+                    "ndcg_cut_5": 0.5893500357141714,
+                    "ndcg_cut_10": 0.5889407047000178,
+                    "num_rel": 43
+                }
             }
         ]
     },
@@ -855,6 +1035,24 @@
                     "ndcg_cut_3": 0.5,
                     "ndcg_cut_5": 0.501996288478394,
                     "ndcg_cut_10": 0.529391341590241,
+                    "num_rel": 100
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.06101364534327139,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.15,
+                    "ndcg_cut_3": 0.23463936301137822,
+                    "ndcg_cut_5": 0.18221064515766836,
+                    "ndcg_cut_10": 0.18693490370758165,
                     "num_rel": 100
                 }
             }
@@ -986,6 +1184,24 @@
                     "ndcg_cut_10": 0.0713924199148886,
                     "num_rel": 18
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.12278800514994688,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.5,
+                    "ndcg_cut_3": 0.058659840752844555,
+                    "ndcg_cut_5": 0.043832797042590986,
+                    "ndcg_cut_10": 0.10708862987233289,
+                    "num_rel": 18
+                }
             }
         ]
     },
@@ -1041,6 +1257,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
+                    "num_rel": 7
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.14285714285714285,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.14285714285714285,
+                    "ndcg_cut_3": 0.46927872602275644,
+                    "ndcg_cut_5": 0.36297209628774124,
+                    "ndcg_cut_10": 0.3226011484953325,
                     "num_rel": 7
                 }
             }
@@ -1176,6 +1410,24 @@
                     "ndcg_cut_10": 0.3779405648605947,
                     "num_rel": 5
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.14545454545454545,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 1.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.15613555918610514,
+                    "num_rel": 5
+                }
             }
         ]
     },
@@ -1238,6 +1490,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
+                    "num_rel": 4
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.13970588235294118,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.5,
+                    "ndcg_cut_3": 0.49186387954915173,
+                    "ndcg_cut_5": 0.45377519962203827,
+                    "ndcg_cut_10": 0.45377519962203827,
                     "num_rel": 4
                 }
             }
@@ -1342,6 +1612,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
+                    "num_rel": 8
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05498366013071895,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.25,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.1356547246789459,
+                    "ndcg_cut_10": 0.20507806120333993,
                     "num_rel": 8
                 }
             }
@@ -1449,6 +1737,24 @@
                     "ndcg_cut_10": 0.6143812250961284,
                     "num_rel": 73
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2780933166995681,
+                    "P_5": 0.2,
+                    "P_10": 0.4,
+                    "recall_100": 0.5068493150684932,
+                    "ndcg_cut_3": 0.1973879406439102,
+                    "ndcg_cut_5": 0.14265750982301836,
+                    "ndcg_cut_10": 0.24445404786773328,
+                    "num_rel": 73
+                }
             }
         ]
     },
@@ -1522,6 +1828,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.05968602240696155,
+                    "num_rel": 50
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0661138578527615,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.2,
+                    "ndcg_cut_3": 0.38009376671593426,
+                    "ndcg_cut_5": 0.2899845889212568,
+                    "ndcg_cut_10": 0.28780170831620455,
                     "num_rel": 50
                 }
             }
@@ -1638,6 +1962,24 @@
                     "ndcg_cut_10": 0.22285516198793295,
                     "num_rel": 84
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08495146604958885,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.16666666666666666,
+                    "ndcg_cut_3": 0.4692787260227565,
+                    "ndcg_cut_5": 0.4273469754009279,
+                    "ndcg_cut_10": 0.3961581157172088,
+                    "num_rel": 84
+                }
             }
         ]
     },
@@ -1705,6 +2047,24 @@
                     "ndcg_cut_3": 0.2960819109658652,
                     "ndcg_cut_5": 0.2383238023489836,
                     "ndcg_cut_10": 0.20124128603893987,
+                    "num_rel": 12
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05197848435974239,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.4166666666666667,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.03653189259486731,
+                    "ndcg_cut_10": 0.030847632400821657,
                     "num_rel": 12
                 }
             }
@@ -1821,6 +2181,24 @@
                     "ndcg_cut_3": 0.23463936301137822,
                     "ndcg_cut_5": 0.24261427755816128,
                     "ndcg_cut_10": 0.29705821088756457,
+                    "num_rel": 34
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.277248943805642,
+                    "P_5": 0.8,
+                    "P_10": 0.6,
+                    "recall_100": 0.4411764705882353,
+                    "ndcg_cut_3": 0.8826803184943108,
+                    "ndcg_cut_5": 0.7840048711692542,
+                    "ndcg_cut_10": 0.65341800854877,
                     "num_rel": 34
                 }
             }
@@ -2000,6 +2378,24 @@
                     "ndcg_cut_10": 0.22025403298594598,
                     "num_rel": 39
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.3507917699027613,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.6666666666666666,
+                    "ndcg_cut_3": 0.7653606369886217,
+                    "ndcg_cut_5": 0.5896635574688203,
+                    "ndcg_cut_10": 0.5210998732951857,
+                    "num_rel": 39
+                }
             }
         ]
     },
@@ -2165,6 +2561,24 @@
                     "ndcg_cut_10": 0.4763315075692434,
                     "num_rel": 23
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.4725636709462478,
+                    "P_5": 0.6,
+                    "P_10": 0.7,
+                    "recall_100": 0.6956521739130435,
+                    "ndcg_cut_3": 0.5535340503161801,
+                    "ndcg_cut_5": 0.5477279334065154,
+                    "ndcg_cut_10": 0.6504493966554933,
+                    "num_rel": 23
+                }
             }
         ]
     },
@@ -2252,6 +2666,24 @@
                     "ndcg_cut_10": 1.0,
                     "num_rel": 132
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.07593727703464764,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.1590909090909091,
+                    "ndcg_cut_3": 0.46927872602275644,
+                    "ndcg_cut_5": 0.3391602052736161,
+                    "ndcg_cut_10": 0.22009176629808017,
+                    "num_rel": 132
+                }
             }
         ]
     },
@@ -2311,6 +2743,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 33
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.33900502551272427,
+                    "P_5": 0.8,
+                    "P_10": 0.8,
+                    "recall_100": 0.48484848484848486,
+                    "ndcg_cut_3": 0.44646594968382,
+                    "ndcg_cut_5": 0.46391516855019876,
+                    "ndcg_cut_10": 0.5369941173388633,
+                    "num_rel": 33
+                }
             }
         ]
     },
@@ -2358,6 +2808,24 @@
                 "collection": "ClueWeb_ikat",
                 "retrieval_model": "BM25",
                 "reranker": "none",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 2
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
                 "retrieval_query_type": "oracle_utterance",
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
@@ -2507,6 +2975,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 2
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 1.0,
+                    "P_5": 0.4,
+                    "P_10": 0.2,
+                    "recall_100": 1.0,
+                    "ndcg_cut_3": 1.0,
+                    "ndcg_cut_5": 1.0,
+                    "ndcg_cut_10": 1.0,
+                    "num_rel": 2
+                }
             }
         ]
     },
@@ -2649,6 +3135,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.04373502583744726,
                     "ndcg_cut_10": 0.030400723800218677,
+                    "num_rel": 34
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.14933207681385047,
+                    "P_5": 0.4,
+                    "P_10": 0.5,
+                    "recall_100": 0.29411764705882354,
+                    "ndcg_cut_3": 0.1564262420075855,
+                    "ndcg_cut_5": 0.2591217516005785,
+                    "ndcg_cut_10": 0.38999332688548055,
                     "num_rel": 34
                 }
             }
@@ -2948,6 +3452,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 33
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.005834802792564818,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.09090909090909091,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 33
+                }
             }
         ]
     },
@@ -3021,6 +3543,24 @@
                     "ndcg_cut_10": 0.046650892278416324,
                     "num_rel": 77
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04056687847176002,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.09090909090909091,
+                    "ndcg_cut_3": 0.312852484015171,
+                    "ndcg_cut_5": 0.22610680351574405,
+                    "ndcg_cut_10": 0.1499069094438149,
+                    "num_rel": 77
+                }
             }
         ]
     },
@@ -3089,6 +3629,24 @@
                     "ndcg_cut_3": 0.4049765583210164,
                     "ndcg_cut_5": 0.4275038527696858,
                     "ndcg_cut_10": 0.5704873768588339,
+                    "num_rel": 137
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.015549095827209083,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 0.051094890510948905,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.16298674397888838,
                     "num_rel": 137
                 }
             }
@@ -3200,6 +3758,24 @@
                     "ndcg_cut_3": 0.6618326436971338,
                     "ndcg_cut_5": 0.6705194513943121,
                     "ndcg_cut_10": 0.6010691274875883,
+                    "num_rel": 22
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.39469052840261515,
+                    "P_5": 0.4,
+                    "P_10": 0.6,
+                    "recall_100": 0.8181818181818182,
+                    "ndcg_cut_3": 0.5265657011759873,
+                    "ndcg_cut_5": 0.4311979183137281,
+                    "ndcg_cut_10": 0.49558736675062603,
                     "num_rel": 22
                 }
             }
@@ -3369,6 +3945,24 @@
                     "ndcg_cut_10": 0.4802954547415584,
                     "num_rel": 44
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.42104722301502595,
+                    "P_5": 0.8,
+                    "P_10": 0.8,
+                    "recall_100": 0.5681818181818182,
+                    "ndcg_cut_3": 0.8549208510262275,
+                    "ndcg_cut_5": 0.7363689027211854,
+                    "ndcg_cut_10": 0.7263645801567808,
+                    "num_rel": 44
+                }
             }
         ]
     },
@@ -3429,6 +4023,24 @@
                     "ndcg_cut_3": 0.7653606369886217,
                     "ndcg_cut_5": 0.7183368720136839,
                     "ndcg_cut_10": 0.5466654097819643,
+                    "num_rel": 15
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.20875691556629938,
+                    "P_5": 0.6,
+                    "P_10": 0.3,
+                    "recall_100": 0.3333333333333333,
+                    "ndcg_cut_3": 0.7653606369886217,
+                    "ndcg_cut_5": 0.7269646325453768,
+                    "ndcg_cut_10": 0.5532312682674643,
                     "num_rel": 15
                 }
             }
@@ -3495,6 +4107,24 @@
                     "ndcg_cut_10": 0.05886610400269325,
                     "num_rel": 51
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.01706951648255953,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.0784313725490196,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.15416868446868615,
+                    "ndcg_cut_10": 0.10828075925487264,
+                    "num_rel": 51
+                }
             }
         ]
     },
@@ -3553,6 +4183,24 @@
                     "ndcg_cut_3": 0.44646594968382,
                     "ndcg_cut_5": 0.5036616280830467,
                     "ndcg_cut_10": 0.4088041797885317,
+                    "num_rel": 25
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08592221487680249,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.44,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.05886610400269325,
                     "num_rel": 25
                 }
             }
@@ -3616,6 +4264,24 @@
                     "ndcg_cut_3": 0.41340159247155434,
                     "ndcg_cut_5": 0.2987763160529316,
                     "ndcg_cut_10": 0.19388538544807457,
+                    "num_rel": 66
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.003102255874593695,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.045454545454545456,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 66
                 }
             }
@@ -3684,6 +4350,24 @@
                     "ndcg_cut_10": 0.3246938429101066,
                     "num_rel": 20
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08948478307695566,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.3,
+                    "ndcg_cut_3": 0.38009376671593426,
+                    "ndcg_cut_5": 0.2899845889212568,
+                    "ndcg_cut_10": 0.2807943246870356,
+                    "num_rel": 20
+                }
             }
         ]
     },
@@ -3747,6 +4431,24 @@
                     "ndcg_cut_3": 0.5311576214913418,
                     "ndcg_cut_5": 0.5217718058645199,
                     "ndcg_cut_10": 0.4247109931592963,
+                    "num_rel": 31
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.4655606781985734,
+                    "P_5": 0.8,
+                    "P_10": 0.6,
+                    "recall_100": 0.9354838709677419,
+                    "ndcg_cut_3": 0.9213669182023797,
+                    "ndcg_cut_5": 0.8289962143693556,
+                    "ndcg_cut_10": 0.6965213025458399,
                     "num_rel": 31
                 }
             }
@@ -3845,6 +4547,24 @@
                     "ndcg_cut_10": 0.708635984768737,
                     "num_rel": 35
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.20887525186952413,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.37142857142857144,
+                    "ndcg_cut_3": 0.2818966495606074,
+                    "ndcg_cut_5": 0.3392074364058883,
+                    "ndcg_cut_10": 0.35543200790998486,
+                    "num_rel": 35
+                }
             }
         ]
     },
@@ -3902,6 +4622,24 @@
                     "ndcg_cut_3": 1.0,
                     "ndcg_cut_5": 0.8687949224876582,
                     "ndcg_cut_10": 0.7041249493150387,
+                    "num_rel": 7
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.47061803444782163,
+                    "P_5": 0.4,
+                    "P_10": 0.5,
+                    "recall_100": 0.8571428571428571,
+                    "ndcg_cut_3": 0.7039180890341347,
+                    "ndcg_cut_5": 0.5087403079104241,
+                    "ndcg_cut_10": 0.6763983326482911,
                     "num_rel": 7
                 }
             }
@@ -4063,6 +4801,24 @@
                     "ndcg_cut_10": 0.5256035310304586,
                     "num_rel": 50
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.3065526266263318,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.52,
+                    "ndcg_cut_3": 0.7294661149577071,
+                    "ndcg_cut_5": 0.6789804689839908,
+                    "ndcg_cut_10": 0.6341445536704098,
+                    "num_rel": 50
+                }
             }
         ]
     },
@@ -4123,6 +4879,24 @@
                     "ndcg_cut_3": 1.0,
                     "ndcg_cut_5": 0.8539316501572937,
                     "ndcg_cut_10": 0.8405387738508526,
+                    "num_rel": 20
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.19785038062053176,
+                    "P_5": 0.2,
+                    "P_10": 0.3,
+                    "recall_100": 0.5,
+                    "ndcg_cut_3": 0.46927872602275644,
+                    "ndcg_cut_5": 0.3391602052736161,
+                    "ndcg_cut_10": 0.35354934392288145,
                     "num_rel": 20
                 }
             }
@@ -4264,6 +5038,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 2
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 2
+                }
             }
         ]
     },
@@ -4337,6 +5129,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.04868944994756881,
                     "ndcg_cut_10": 0.034755005731077454,
+                    "num_rel": 68
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.03036426452913201,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.07352941176470588,
+                    "ndcg_cut_3": 0.1564262420075855,
+                    "ndcg_cut_5": 0.11305340175787203,
+                    "ndcg_cut_10": 0.10944405419074449,
                     "num_rel": 68
                 }
             }
@@ -4425,6 +5235,24 @@
                     "ndcg_cut_10": 0.06468563038804104,
                     "num_rel": 80
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05377913752913753,
+                    "P_5": 0.8,
+                    "P_10": 0.5,
+                    "recall_100": 0.1,
+                    "ndcg_cut_3": 0.20290041378171972,
+                    "ndcg_cut_5": 0.2353926397493903,
+                    "ndcg_cut_10": 0.17815949398137054,
+                    "num_rel": 80
+                }
             }
         ]
     },
@@ -4479,6 +5307,24 @@
                     "ndcg_cut_3": 0.1564262420075855,
                     "ndcg_cut_5": 0.11305340175787203,
                     "ndcg_cut_10": 0.1467278441987201,
+                    "num_rel": 55
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.07200364773558127,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.21818181818181817,
+                    "ndcg_cut_3": 0.2960819109658653,
+                    "ndcg_cut_5": 0.30145631640942205,
+                    "ndcg_cut_10": 0.3473867133793372,
                     "num_rel": 55
                 }
             }
@@ -4536,6 +5382,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
+                    "num_rel": 104
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.010615179911792595,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.038461538461538464,
+                    "ndcg_cut_3": 0.2960819109658653,
+                    "ndcg_cut_5": 0.21398626473452753,
+                    "ndcg_cut_10": 0.1388624438735545,
                     "num_rel": 104
                 }
             }
@@ -4653,6 +5517,24 @@
                     "ndcg_cut_10": 0.7297006555451437,
                     "num_rel": 84
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.292647867848569,
+                    "P_5": 0.4,
+                    "P_10": 0.5,
+                    "recall_100": 0.42857142857142855,
+                    "ndcg_cut_3": 0.1973879406439102,
+                    "ndcg_cut_5": 0.18639253566046562,
+                    "ndcg_cut_10": 0.33897241632866776,
+                    "num_rel": 84
+                }
             }
         ]
     },
@@ -4711,6 +5593,24 @@
                     "ndcg_cut_3": 0.7653606369886218,
                     "ndcg_cut_5": 0.6992148198508501,
                     "ndcg_cut_10": 0.6389515773766238,
+                    "num_rel": 87
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2234773875659662,
+                    "P_5": 0.6,
+                    "P_10": 0.6,
+                    "recall_100": 0.3448275862068966,
+                    "ndcg_cut_3": 0.7653606369886218,
+                    "ndcg_cut_5": 0.6992148198508501,
+                    "ndcg_cut_10": 0.667826288911027,
                     "num_rel": 87
                 }
             }
@@ -4879,6 +5779,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 24
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.016714086053708697,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.16666666666666666,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.07890361543645519,
+                    "num_rel": 24
+                }
             }
         ]
     },
@@ -4926,6 +5844,24 @@
                 "collection": "ClueWeb_ikat",
                 "retrieval_model": "BM25",
                 "reranker": "none",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 24
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
                 "retrieval_query_type": "oracle_utterance",
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
@@ -5034,6 +5970,24 @@
                     "ndcg_cut_10": 0.16593888468172974,
                     "num_rel": 92
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.047872922997901524,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.16304347826086957,
+                    "ndcg_cut_3": 0.2960819109658653,
+                    "ndcg_cut_5": 0.2577212905719748,
+                    "ndcg_cut_10": 0.23086427128637987,
+                    "num_rel": 92
+                }
             }
         ]
     },
@@ -5089,6 +6043,24 @@
                     "ndcg_cut_3": 0.25,
                     "ndcg_cut_5": 0.22938339238559374,
                     "ndcg_cut_10": 0.1808899153014952,
+                    "num_rel": 65
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.03673535351767065,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.16923076923076924,
+                    "ndcg_cut_3": 0.22206143322439892,
+                    "ndcg_cut_5": 0.17244317617113594,
+                    "ndcg_cut_10": 0.12008859049118341,
                     "num_rel": 65
                 }
             }
@@ -5182,6 +6154,24 @@
                     "ndcg_cut_10": 0.5307399277514663,
                     "num_rel": 101
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.031064011954496016,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.06930693069306931,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 101
+                }
             }
         ]
     },
@@ -5246,6 +6236,24 @@
                     "ndcg_cut_10": 0.2579407120945551,
                     "num_rel": 117
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04674552237266521,
+                    "P_5": 0.6,
+                    "P_10": 0.3,
+                    "recall_100": 0.09401709401709402,
+                    "ndcg_cut_3": 0.7653606369886218,
+                    "ndcg_cut_5": 0.6992148198508501,
+                    "ndcg_cut_10": 0.45374257454118544,
+                    "num_rel": 117
+                }
             }
         ]
     },
@@ -5295,6 +6303,24 @@
                 "collection": "ClueWeb_ikat",
                 "retrieval_model": "BM25",
                 "reranker": "none",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 94
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
                 "retrieval_query_type": "oracle_utterance",
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
@@ -5370,6 +6396,24 @@
                     "ndcg_cut_3": 0.1352669425211465,
                     "ndcg_cut_5": 0.2720954600738085,
                     "ndcg_cut_10": 0.20744695943711597,
+                    "num_rel": 61
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1401625023131649,
+                    "P_5": 0.6,
+                    "P_10": 0.3,
+                    "recall_100": 0.3114754098360656,
+                    "ndcg_cut_3": 0.6618326436971338,
+                    "ndcg_cut_5": 0.6148416117678385,
+                    "ndcg_cut_10": 0.41374348314657267,
                     "num_rel": 61
                 }
             }
@@ -5467,6 +6511,24 @@
                     "ndcg_cut_10": 0.11809621122425377,
                     "num_rel": 90
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.11860779475462847,
+                    "P_5": 0.6,
+                    "P_10": 0.6,
+                    "recall_100": 0.2111111111111111,
+                    "ndcg_cut_3": 0.2653606369886217,
+                    "ndcg_cut_5": 0.2573857224418387,
+                    "ndcg_cut_10": 0.2513435579857093,
+                    "num_rel": 90
+                }
             }
         ]
     },
@@ -5547,6 +6609,24 @@
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.11392405063291139,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 79
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.011386569300662277,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0379746835443038,
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
@@ -5641,6 +6721,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 34
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.00044358999966709946,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 34
+                }
             }
         ]
     },
@@ -5705,6 +6803,24 @@
                     "ndcg_cut_3": 0.0786330817976201,
                     "ndcg_cut_5": 0.10087587794573627,
                     "ndcg_cut_10": 0.24766254159896647,
+                    "num_rel": 10
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08836520358951969,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.5,
+                    "ndcg_cut_3": 0.06231524298268359,
+                    "ndcg_cut_5": 0.049556694047622,
+                    "ndcg_cut_10": 0.041525612089319985,
                     "num_rel": 10
                 }
             }
@@ -5888,6 +7004,24 @@
                     "ndcg_cut_10": 0.04258451164533935,
                     "num_rel": 90
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0035214236205930176,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.03333333333333333,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 90
+                }
             }
         ]
     },
@@ -5941,6 +7075,24 @@
                     "ndcg_cut_3": 0.058659840752844555,
                     "ndcg_cut_5": 0.042395025659202015,
                     "ndcg_cut_10": 0.029524052806063444,
+                    "num_rel": 30
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.005924355259616989,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.1,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 30
                 }
             }
@@ -5997,6 +7149,24 @@
                     "ndcg_cut_3": 0.4065271355259746,
                     "ndcg_cut_5": 0.3482822979503552,
                     "ndcg_cut_10": 0.2669820582467595,
+                    "num_rel": 32
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.19180903072292513,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.375,
+                    "ndcg_cut_3": 0.9376847570173164,
+                    "ndcg_cut_5": 0.7181651831258007,
+                    "ndcg_cut_10": 0.6416061530269195,
                     "num_rel": 32
                 }
             }
@@ -6088,6 +7258,24 @@
                     "ndcg_cut_10": 0.09396555552455615,
                     "num_rel": 50
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.21545610465415263,
+                    "P_5": 0.8,
+                    "P_10": 0.6,
+                    "recall_100": 0.34,
+                    "ndcg_cut_3": 1.0,
+                    "ndcg_cut_5": 0.8687949224876581,
+                    "ndcg_cut_10": 0.7530922179357677,
+                    "num_rel": 50
+                }
             }
         ]
     },
@@ -6147,6 +7335,24 @@
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.1111111111111111,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 45
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0020933423208304752,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.022222222222222223,
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
@@ -6212,6 +7418,24 @@
                     "ndcg_cut_3": 0.29329920376422275,
                     "ndcg_cut_5": 0.27757766705218095,
                     "ndcg_cut_10": 0.28426555307311857,
+                    "num_rel": 99
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.09840151196798816,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.1919191919191919,
+                    "ndcg_cut_3": 0.23463936301137822,
+                    "ndcg_cut_5": 0.30078518014914984,
+                    "ndcg_cut_10": 0.3234189244614449,
                     "num_rel": 99
                 }
             }
@@ -6314,6 +7538,24 @@
                     "ndcg_cut_10": 0.5340227446484601,
                     "num_rel": 81
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2043400837021912,
+                    "P_5": 0.6,
+                    "P_10": 0.8,
+                    "recall_100": 0.2962962962962963,
+                    "ndcg_cut_3": 0.46927872602275644,
+                    "ndcg_cut_5": 0.42617340898485867,
+                    "ndcg_cut_10": 0.5753880335602324,
+                    "num_rel": 81
+                }
             }
         ]
     },
@@ -6375,6 +7617,24 @@
                     "ndcg_cut_3": 0.1572661635952402,
                     "ndcg_cut_5": 0.1943017802168331,
                     "ndcg_cut_10": 0.220125495436377,
+                    "num_rel": 72
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.23404688995878478,
+                    "P_5": 0.8,
+                    "P_10": 0.9,
+                    "recall_100": 0.3055555555555556,
+                    "ndcg_cut_3": 0.5608371868441523,
+                    "ndcg_cut_5": 0.6183560408131191,
+                    "ndcg_cut_10": 0.6949563521229164,
                     "num_rel": 72
                 }
             }
@@ -6440,6 +7700,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.15548449904997466,
                     "ndcg_cut_10": 0.1112676532997773,
+                    "num_rel": 54
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.07492554843994643,
+                    "P_5": 0.6,
+                    "P_10": 0.3,
+                    "recall_100": 0.18518518518518517,
+                    "ndcg_cut_3": 0.4692787260227565,
+                    "ndcg_cut_5": 0.4218880092014957,
+                    "ndcg_cut_10": 0.3019110523942157,
                     "num_rel": 54
                 }
             }
@@ -6508,6 +7786,24 @@
                     "ndcg_cut_10": 0.34870923560365974,
                     "num_rel": 49
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.09298878908965885,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.20408163265306123,
+                    "ndcg_cut_3": 0.5608371868441523,
+                    "ndcg_cut_5": 0.42954067236293086,
+                    "ndcg_cut_10": 0.36038142793783035,
+                    "num_rel": 49
+                }
             }
         ]
     },
@@ -6572,6 +7868,24 @@
                     "ndcg_cut_3": 0.6326803184943108,
                     "ndcg_cut_5": 0.6033232280080162,
                     "ndcg_cut_10": 0.6378287544462085,
+                    "num_rel": 69
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.16943527034030517,
+                    "P_5": 0.6,
+                    "P_10": 0.4,
+                    "recall_100": 0.3188405797101449,
+                    "ndcg_cut_3": 0.5740204777414663,
+                    "ndcg_cut_5": 0.5460649300184496,
+                    "ndcg_cut_10": 0.4274110557882852,
                     "num_rel": 69
                 }
             }
@@ -6688,6 +8002,24 @@
                     "ndcg_cut_10": 0.3266102682790373,
                     "num_rel": 29
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2203870676383049,
+                    "P_5": 0.4,
+                    "P_10": 0.5,
+                    "recall_100": 0.5862068965517241,
+                    "ndcg_cut_3": 0.25603181613369436,
+                    "ndcg_cut_5": 0.3101300815411914,
+                    "ndcg_cut_10": 0.4043502148822694,
+                    "num_rel": 29
+                }
             }
         ]
     },
@@ -6755,6 +8087,24 @@
                     "ndcg_cut_3": 0.8240204777414663,
                     "ndcg_cut_5": 0.6320585831280223,
                     "ndcg_cut_10": 0.5492741848704228,
+                    "num_rel": 38
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.23339046630056076,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.5,
+                    "ndcg_cut_3": 0.23463936301137822,
+                    "ndcg_cut_5": 0.4140522606137709,
+                    "ndcg_cut_10": 0.41255853222620575,
                     "num_rel": 38
                 }
             }
@@ -6826,6 +8176,24 @@
                     "ndcg_cut_3": 0.6666666666666667,
                     "ndcg_cut_5": 0.5038537728714634,
                     "ndcg_cut_10": 0.45367483277720655,
+                    "num_rel": 32
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2849790603099341,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.5625,
+                    "ndcg_cut_3": 0.625704968030342,
+                    "ndcg_cut_5": 0.6101014889254496,
+                    "ndcg_cut_10": 0.5889150738618371,
                     "num_rel": 32
                 }
             }
@@ -6927,6 +8295,24 @@
                     "ndcg_cut_10": 0.21740760836499995,
                     "num_rel": 75
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0007866607451536806,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.013333333333333334,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 75
+                }
             }
         ]
     },
@@ -6990,6 +8376,24 @@
                     "ndcg_cut_10": 0.33437813775271646,
                     "num_rel": 64
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.03262037887431338,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.140625,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 64
+                }
             }
         ]
     },
@@ -7041,6 +8445,24 @@
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 12
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0021929824561403508,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.08333333333333333,
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
@@ -7105,6 +8527,24 @@
                     "ndcg_cut_3": 0.23981246656813146,
                     "ndcg_cut_5": 0.18295990522760897,
                     "ndcg_cut_10": 0.25777412967732455,
+                    "num_rel": 32
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2023739188386688,
+                    "P_5": 0.4,
+                    "P_10": 0.6,
+                    "recall_100": 0.40625,
+                    "ndcg_cut_3": 0.6199062332840657,
+                    "ndcg_cut_5": 0.47294449414886575,
+                    "ndcg_cut_10": 0.5823199351067252,
                     "num_rel": 32
                 }
             }
@@ -7175,6 +8615,24 @@
                     "ndcg_cut_10": 0.046287481291184845,
                     "num_rel": 66
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.002516862981979261,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.030303030303030304,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.02445464069978668,
+                    "num_rel": 66
+                }
             }
         ]
     },
@@ -7239,6 +8697,24 @@
                     "ndcg_cut_10": 0.3410873153011195,
                     "num_rel": 28
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.008153893343880152,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.03571428571428571,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 28
+                }
             }
         ]
     },
@@ -7297,6 +8773,24 @@
                     "ndcg_cut_3": 0.20670079623577717,
                     "ndcg_cut_5": 0.33554837169397866,
                     "ndcg_cut_10": 0.2720878882677589,
+                    "num_rel": 40
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.19981826528909571,
+                    "P_5": 0.8,
+                    "P_10": 0.6,
+                    "recall_100": 0.25,
+                    "ndcg_cut_3": 0.8240204777414663,
+                    "ndcg_cut_5": 0.7513932247537021,
+                    "ndcg_cut_10": 0.6145032463507942,
                     "num_rel": 40
                 }
             }
@@ -7366,6 +8860,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 7
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.024311034398856412,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.2857142857142857,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 7
+                }
             }
         ]
     },
@@ -7426,6 +8938,24 @@
                     "ndcg_cut_3": 0.0986939703219551,
                     "ndcg_cut_5": 0.07132875491150918,
                     "ndcg_cut_10": 0.05091516310842829,
+                    "num_rel": 41
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.062244471241669506,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.24390243902439024,
+                    "ndcg_cut_3": 0.23463936301137825,
+                    "ndcg_cut_5": 0.16958010263680803,
+                    "ndcg_cut_10": 0.1465055179216542,
                     "num_rel": 41
                 }
             }
@@ -7491,6 +9021,24 @@
                     "ndcg_cut_10": 0.8249300472933947,
                     "num_rel": 98
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.23788979592972861,
+                    "P_5": 1.0,
+                    "P_10": 0.9,
+                    "recall_100": 0.30612244897959184,
+                    "ndcg_cut_3": 1.0,
+                    "ndcg_cut_5": 1.0,
+                    "ndcg_cut_10": 0.92663607790064,
+                    "num_rel": 98
+                }
             }
         ]
     },
@@ -7554,6 +9102,24 @@
                     "ndcg_cut_3": 0.7499999999999999,
                     "ndcg_cut_5": 0.7273871039071996,
                     "ndcg_cut_10": 0.7317084492691971,
+                    "num_rel": 77
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.28863660400789115,
+                    "P_5": 1.0,
+                    "P_10": 0.8,
+                    "recall_100": 0.37662337662337664,
+                    "ndcg_cut_3": 0.7499999999999999,
+                    "ndcg_cut_5": 0.841105307201667,
+                    "ndcg_cut_10": 0.7685775650128376,
                     "num_rel": 77
                 }
             }
@@ -7630,6 +9196,24 @@
                     "ndcg_cut_10": 0.19033591269298492,
                     "num_rel": 26
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.21896718177074515,
+                    "P_5": 0.4,
+                    "P_10": 0.7,
+                    "recall_100": 0.5384615384615384,
+                    "ndcg_cut_3": 0.17597952225853367,
+                    "ndcg_cut_5": 0.27763538304277313,
+                    "ndcg_cut_10": 0.5152885944450669,
+                    "num_rel": 26
+                }
             }
         ]
     },
@@ -7679,6 +9263,24 @@
                     "ndcg_cut_3": 1.0,
                     "ndcg_cut_5": 1.0,
                     "ndcg_cut_10": 0.7575996575855367,
+                    "num_rel": 31
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.5445975142524333,
+                    "P_5": 1.0,
+                    "P_10": 0.8,
+                    "recall_100": 0.7419354838709677,
+                    "ndcg_cut_3": 1.0,
+                    "ndcg_cut_5": 1.0,
+                    "ndcg_cut_10": 0.8579809428223729,
                     "num_rel": 31
                 }
             }
@@ -7760,6 +9362,24 @@
                     "ndcg_cut_10": 0.16344730019597292,
                     "num_rel": 35
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.5057417190323612,
+                    "P_5": 1.0,
+                    "P_10": 0.8,
+                    "recall_100": 0.6571428571428571,
+                    "ndcg_cut_3": 0.4049765583210164,
+                    "ndcg_cut_5": 0.5460393112346246,
+                    "ndcg_cut_10": 0.5045932834761901,
+                    "num_rel": 35
+                }
             }
         ]
     },
@@ -7812,6 +9432,24 @@
                     "ndcg_cut_3": 1.0,
                     "ndcg_cut_5": 0.9085294828962065,
                     "ndcg_cut_10": 0.6597133113683123,
+                    "num_rel": 36
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.5701711071610845,
+                    "P_5": 1.0,
+                    "P_10": 1.0,
+                    "recall_100": 0.6944444444444444,
+                    "ndcg_cut_3": 0.901306029678045,
+                    "ndcg_cut_5": 0.9202279900626544,
+                    "ndcg_cut_10": 0.9146986509115176,
                     "num_rel": 36
                 }
             }
@@ -8078,6 +9716,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 38
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.002008540323145116,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 38
+                }
             }
         ]
     },
@@ -8137,6 +9793,24 @@
                     "ndcg_cut_3": 0.3278940537283545,
                     "ndcg_cut_5": 0.2880578556030525,
                     "ndcg_cut_10": 0.31355295208877915,
+                    "num_rel": 22
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.6904562887201853,
+                    "P_5": 1.0,
+                    "P_10": 0.9,
+                    "recall_100": 0.9090909090909091,
+                    "ndcg_cut_3": 0.5934728644740254,
+                    "ndcg_cut_5": 0.614791254288531,
+                    "ndcg_cut_10": 0.6007647514297142,
                     "num_rel": 22
                 }
             }
@@ -8199,6 +9873,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
+                    "num_rel": 14
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1626984126984127,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.35714285714285715,
+                    "ndcg_cut_3": 0.2960819109658653,
+                    "ndcg_cut_5": 0.28942573667276916,
+                    "ndcg_cut_10": 0.2904379302431226,
                     "num_rel": 14
                 }
             }
@@ -8264,6 +9956,24 @@
                     "ndcg_cut_10": 0.20877271093718403,
                     "num_rel": 13
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.24576875172028417,
+                    "P_5": 0.2,
+                    "P_10": 0.3,
+                    "recall_100": 0.8461538461538461,
+                    "ndcg_cut_3": 0.13291299131469791,
+                    "ndcg_cut_5": 0.10918487464734661,
+                    "ndcg_cut_10": 0.1897601642015026,
+                    "num_rel": 13
+                }
             }
         ]
     },
@@ -8319,6 +10029,24 @@
                     "ndcg_cut_10": 0.03922476038061262,
                     "num_rel": 53
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1884921281298892,
+                    "P_5": 0.6,
+                    "P_10": 0.7,
+                    "recall_100": 0.32075471698113206,
+                    "ndcg_cut_3": 0.2850703250369507,
+                    "ndcg_cut_5": 0.3103688293053499,
+                    "ndcg_cut_10": 0.4590136613255536,
+                    "num_rel": 53
+                }
             }
         ]
     },
@@ -8369,6 +10097,24 @@
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
                     "map": 0.0007372160677141002,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 14
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0009584304292264902,
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.0,
@@ -8466,6 +10212,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 57
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.07910182306339943,
+                    "P_5": 0.6,
+                    "P_10": 0.3,
+                    "recall_100": 0.14035087719298245,
+                    "ndcg_cut_3": 0.834835908247115,
+                    "ndcg_cut_5": 0.6369205939929844,
+                    "ndcg_cut_10": 0.4964599047782557,
+                    "num_rel": 57
+                }
             }
         ]
     },
@@ -8553,6 +10317,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.06363350253634713,
                     "ndcg_cut_10": 0.05040763008640552,
+                    "num_rel": 49
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.06261355676454725,
+                    "P_5": 0.2,
+                    "P_10": 0.4,
+                    "recall_100": 0.14285714285714285,
+                    "ndcg_cut_3": 0.19004688335796713,
+                    "ndcg_cut_5": 0.16449021784600187,
+                    "ndcg_cut_10": 0.3012498490101523,
                     "num_rel": 49
                 }
             }
@@ -8678,6 +10460,24 @@
                     "ndcg_cut_10": 0.22949654190617833,
                     "num_rel": 38
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.21027407303814524,
+                    "P_5": 0.6,
+                    "P_10": 0.4,
+                    "recall_100": 0.39473684210526316,
+                    "ndcg_cut_3": 0.41340159247155434,
+                    "ndcg_cut_5": 0.37342770073130593,
+                    "ndcg_cut_10": 0.31282371295693884,
+                    "num_rel": 38
+                }
             }
         ]
     },
@@ -8742,6 +10542,24 @@
                     "ndcg_cut_10": 0.4051963987467903,
                     "num_rel": 9
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.4159892992880114,
+                    "P_5": 0.6,
+                    "P_10": 0.3,
+                    "recall_100": 0.5555555555555556,
+                    "ndcg_cut_3": 0.617319681505689,
+                    "ndcg_cut_5": 0.4774770439198113,
+                    "ndcg_cut_10": 0.38598750542736127,
+                    "num_rel": 9
+                }
             }
         ]
     },
@@ -8800,6 +10618,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0614282670793279,
+                    "num_rel": 39
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.06668365287248444,
+                    "P_5": 0.4,
+                    "P_10": 0.2,
+                    "recall_100": 0.1282051282051282,
+                    "ndcg_cut_3": 0.4720614332243989,
+                    "ndcg_cut_5": 0.3665822187630992,
+                    "ndcg_cut_10": 0.2652154092110667,
                     "num_rel": 39
                 }
             }
@@ -8913,6 +10749,24 @@
                     "ndcg_cut_10": 0.7054310843423883,
                     "num_rel": 23
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.28512693263874644,
+                    "P_5": 0.2,
+                    "P_10": 0.4,
+                    "recall_100": 0.782608695652174,
+                    "ndcg_cut_3": 0.26582598262939583,
+                    "ndcg_cut_5": 0.21836974929469322,
+                    "ndcg_cut_10": 0.3758157540754571,
+                    "num_rel": 23
+                }
             }
         ]
     },
@@ -8961,6 +10815,24 @@
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
                     "map": 0.01286626981748933,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.2,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 10
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.010100156975156975,
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.2,
@@ -9028,6 +10900,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 11
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.030589731235731766,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.18181818181818182,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.06943122193677727,
+                    "num_rel": 11
+                }
             }
         ]
     },
@@ -9086,6 +10976,24 @@
                     "ndcg_cut_10": 0.553024134231123,
                     "num_rel": 45
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.3961037954957568,
+                    "P_5": 0.6,
+                    "P_10": 0.7,
+                    "recall_100": 0.6666666666666666,
+                    "ndcg_cut_3": 0.4692787260227565,
+                    "ndcg_cut_5": 0.5182657203022359,
+                    "ndcg_cut_10": 0.48131825135343775,
+                    "num_rel": 45
+                }
             }
         ]
     },
@@ -9141,6 +11049,24 @@
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 7
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.004250320706016908,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.14285714285714285,
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
@@ -9208,6 +11134,24 @@
                     "ndcg_cut_10": 0.3842023509200439,
                     "num_rel": 25
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2567146314495816,
+                    "P_5": 0.6,
+                    "P_10": 0.4,
+                    "recall_100": 0.44,
+                    "ndcg_cut_3": 0.7653606369886217,
+                    "ndcg_cut_5": 0.6992148198508501,
+                    "ndcg_cut_10": 0.49042453559086546,
+                    "num_rel": 25
+                }
             }
         ]
     },
@@ -9267,6 +11211,24 @@
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 6
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.007246376811594203,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.16666666666666666,
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
@@ -9336,6 +11298,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.12025967902718647,
+                    "num_rel": 40
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1268132114020911,
+                    "P_5": 0.2,
+                    "P_10": 0.4,
+                    "recall_100": 0.375,
+                    "ndcg_cut_3": 0.20151514190050246,
+                    "ndcg_cut_5": 0.15979138559512832,
+                    "ndcg_cut_10": 0.2925016529607414,
                     "num_rel": 40
                 }
             }
@@ -9448,6 +11428,24 @@
                     "ndcg_cut_10": 0.4178714521488294,
                     "num_rel": 62
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.10758488127463474,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.20967741935483872,
+                    "ndcg_cut_3": 0.23463936301137822,
+                    "ndcg_cut_5": 0.24261427755816128,
+                    "ndcg_cut_10": 0.30515682825531476,
+                    "num_rel": 62
+                }
             }
         ]
     },
@@ -9516,6 +11514,24 @@
                     "ndcg_cut_10": 0.1758541419870796,
                     "num_rel": 21
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.09483182095146223,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 0.47619047619047616,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.15667831547677646,
+                    "num_rel": 21
+                }
             }
         ]
     },
@@ -9581,6 +11597,24 @@
                     "ndcg_cut_3": 0.20151514190050246,
                     "ndcg_cut_5": 0.15979138559512832,
                     "ndcg_cut_10": 0.23819899697658278,
+                    "num_rel": 16
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2029432414014487,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.8125,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.113813114479808,
                     "num_rel": 16
                 }
             }
@@ -10222,6 +12256,24 @@
                     "ndcg_cut_10": 0.2822189089303117,
                     "num_rel": 67
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.03448777387853206,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.14925373134328357,
+                    "ndcg_cut_3": 0.541067770084586,
+                    "ndcg_cut_5": 0.40628204030219606,
+                    "ndcg_cut_10": 0.27339812933481045,
+                    "num_rel": 67
+                }
             }
         ]
     },
@@ -10276,6 +12328,24 @@
                     "ndcg_cut_3": 0.0740204777414663,
                     "ndcg_cut_5": 0.18841746177856486,
                     "ndcg_cut_10": 0.23556220077740156,
+                    "num_rel": 48
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0674276972156258,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.2708333333333333,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.10955126238202985,
+                    "ndcg_cut_10": 0.14930287348495713,
                     "num_rel": 48
                 }
             }
@@ -10369,6 +12439,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.08736519465159523,
+                    "num_rel": 48
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.06575501990391854,
+                    "P_5": 0.2,
+                    "P_10": 0.5,
+                    "recall_100": 0.16666666666666666,
+                    "ndcg_cut_3": 0.3145323271904804,
+                    "ndcg_cut_5": 0.2408977693892108,
+                    "ndcg_cut_10": 0.4439347825837104,
                     "num_rel": 48
                 }
             }
@@ -10478,6 +12566,24 @@
                     "ndcg_cut_10": 0.4472539411173282,
                     "num_rel": 82
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.011722328561948296,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.06097560975609756,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 82
+                }
             }
         ]
     },
@@ -10539,6 +12645,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.0,
+                    "num_rel": 25
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0663424711547543,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.28,
+                    "ndcg_cut_3": 0.1973879406439102,
+                    "ndcg_cut_5": 0.14265750982301836,
+                    "ndcg_cut_10": 0.09916288995176918,
                     "num_rel": 25
                 }
             }
@@ -10604,6 +12728,24 @@
                     "ndcg_cut_3": 0.12463048596536717,
                     "ndcg_cut_5": 0.2062328260306595,
                     "ndcg_cut_10": 0.16440683636589634,
+                    "num_rel": 25
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.041709764054582744,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.28,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 25
                 }
             }
@@ -10724,6 +12866,24 @@
                     "ndcg_cut_10": 0.07480972555321615,
                     "num_rel": 133
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0035087972703790834,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.03007518796992481,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.07303417492135322,
+                    "ndcg_cut_10": 0.048984652772180844,
+                    "num_rel": 133
+                }
             }
         ]
     },
@@ -10809,6 +12969,24 @@
                     "ndcg_cut_10": 0.8793521180639723,
                     "num_rel": 129
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.3282465009800777,
+                    "P_5": 0.6,
+                    "P_10": 0.7,
+                    "recall_100": 0.3875968992248062,
+                    "ndcg_cut_3": 0.17597952225853367,
+                    "ndcg_cut_5": 0.33514014749389226,
+                    "ndcg_cut_10": 0.4629571034932689,
+                    "num_rel": 129
+                }
             }
         ]
     },
@@ -10866,6 +13044,24 @@
                     "ndcg_cut_3": 0.41061888526991186,
                     "ndcg_cut_5": 0.5010044320481091,
                     "ndcg_cut_10": 0.35639757953822326,
+                    "num_rel": 82
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.06771927492315252,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 0.21951219512195122,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.08862068384393444,
                     "num_rel": 82
                 }
             }
@@ -10966,6 +13162,24 @@
                     "ndcg_cut_10": 0.20436662668128655,
                     "num_rel": 23
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.016908212560386472,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 0.08695652173913043,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.16413412589050266,
+                    "num_rel": 23
+                }
             }
         ]
     },
@@ -11060,6 +13274,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.14097739917452187,
                     "ndcg_cut_10": 0.11668933823267463,
+                    "num_rel": 43
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08945047892307029,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.23255813953488372,
+                    "ndcg_cut_3": 0.3086598407528445,
+                    "ndcg_cut_5": 0.23969170388138036,
+                    "ndcg_cut_10": 0.29065278464795796,
                     "num_rel": 43
                 }
             }
@@ -11165,6 +13397,24 @@
                     "ndcg_cut_10": 0.19951457947817786,
                     "num_rel": 31
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.041265678913250496,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.2903225806451613,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 31
+                }
             }
         ]
     },
@@ -11232,6 +13482,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 24
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0012630732219821154,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 24
+                }
             }
         ]
     },
@@ -11284,6 +13552,24 @@
                 "collection": "ClueWeb_ikat",
                 "retrieval_model": "BM25",
                 "reranker": "none",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 16
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
                 "retrieval_query_type": "oracle_utterance",
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
@@ -11400,6 +13686,24 @@
                     "ndcg_cut_3": 1.0,
                     "ndcg_cut_5": 0.795760747566305,
                     "ndcg_cut_10": 0.5738477325193179,
+                    "num_rel": 73
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.02236050460360835,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.0821917808219178,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.032855541833552986,
                     "num_rel": 73
                 }
             }
@@ -11564,6 +13868,24 @@
                     "ndcg_cut_10": 0.07678279529108115,
                     "num_rel": 37
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0010937177436675931,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.02702702702702703,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 37
+                }
             }
         ]
     },
@@ -11619,6 +13941,24 @@
                     "ndcg_cut_3": 0.46927872602275644,
                     "ndcg_cut_5": 0.3391602052736161,
                     "ndcg_cut_10": 0.24990129315950466,
+                    "num_rel": 39
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2524226048404947,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.4358974358974359,
+                    "ndcg_cut_3": 0.5307212739772434,
+                    "ndcg_cut_5": 0.5624359865921276,
+                    "ndcg_cut_10": 0.5097658260554543,
                     "num_rel": 39
                 }
             }
@@ -11716,6 +14056,24 @@
                     "ndcg_cut_3": 0.6787956981029196,
                     "ndcg_cut_5": 0.7485617054310499,
                     "ndcg_cut_10": 0.6418943798409367,
+                    "num_rel": 48
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.11705896438030146,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.2708333333333333,
+                    "ndcg_cut_3": 0.1696989245257299,
+                    "ndcg_cut_5": 0.13284008937902195,
+                    "ndcg_cut_10": 0.12027047972092232,
                     "num_rel": 48
                 }
             }
@@ -12347,6 +14705,24 @@
                     "ndcg_cut_10": 0.7432262726522397,
                     "num_rel": 162
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.044733666171982114,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.08024691358024691,
+                    "ndcg_cut_3": 0.6666666666666667,
+                    "ndcg_cut_5": 0.4818177150966345,
+                    "ndcg_cut_10": 0.36157601028002323,
+                    "num_rel": 162
+                }
             }
         ]
     },
@@ -12440,6 +14816,24 @@
                     "ndcg_cut_10": 0.7132555793693535,
                     "num_rel": 99
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.22574389112780274,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.30303030303030304,
+                    "ndcg_cut_3": 0.49114476627467096,
+                    "ndcg_cut_5": 0.40808822407371087,
+                    "ndcg_cut_10": 0.42454741800712037,
+                    "num_rel": 99
+                }
             }
         ]
     },
@@ -12496,6 +14890,24 @@
                     "ndcg_cut_3": 0.6089343949810363,
                     "ndcg_cut_5": 0.668677045657751,
                     "ndcg_cut_10": 0.6720192802471271,
+                    "num_rel": 92
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.20106761892096386,
+                    "P_5": 0.8,
+                    "P_10": 0.6,
+                    "recall_100": 0.2826086956521739,
+                    "ndcg_cut_3": 0.7653606369886218,
+                    "ndcg_cut_5": 0.6505253699032811,
+                    "ndcg_cut_10": 0.5233212471366921,
                     "num_rel": 92
                 }
             }
@@ -12594,6 +15006,24 @@
                     "ndcg_cut_10": 0.3456801082598791,
                     "num_rel": 40
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.17718888409869,
+                    "P_5": 0.4,
+                    "P_10": 0.4,
+                    "recall_100": 0.425,
+                    "ndcg_cut_3": 0.6087012413451591,
+                    "ndcg_cut_5": 0.4570672953399706,
+                    "ndcg_cut_10": 0.4717453892381429,
+                    "num_rel": 40
+                }
             }
         ]
     },
@@ -12653,6 +15083,24 @@
                     "ndcg_cut_3": 0.38009376671593426,
                     "ndcg_cut_5": 0.34607526506072817,
                     "ndcg_cut_10": 0.39190337819696025,
+                    "num_rel": 59
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1304762624165023,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.3220338983050847,
+                    "ndcg_cut_3": 0.23981246656813146,
+                    "ndcg_cut_5": 0.37029425220401097,
+                    "ndcg_cut_10": 0.2818400475841872,
                     "num_rel": 59
                 }
             }
@@ -12720,6 +15168,24 @@
                     "ndcg_cut_10": 0.19935427077491868,
                     "num_rel": 101
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05790314825042445,
+                    "P_5": 0.2,
+                    "P_10": 0.4,
+                    "recall_100": 0.1485148514851485,
+                    "ndcg_cut_3": 0.2960819109658653,
+                    "ndcg_cut_5": 0.21398626473452753,
+                    "ndcg_cut_10": 0.301624330072896,
+                    "num_rel": 101
+                }
             }
         ]
     },
@@ -12780,6 +15246,24 @@
                     "ndcg_cut_3": 0.23463936301137825,
                     "ndcg_cut_5": 0.3156484524795145,
                     "ndcg_cut_10": 0.300031010209349,
+                    "num_rel": 52
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0815856442979271,
+                    "P_5": 0.0,
+                    "P_10": 0.4,
+                    "recall_100": 0.19230769230769232,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.18451042385411462,
                     "num_rel": 52
                 }
             }
@@ -12843,6 +15327,24 @@
                     "ndcg_cut_3": 0.23463936301137825,
                     "ndcg_cut_5": 0.21826955258437686,
                     "ndcg_cut_10": 0.20789622805994604,
+                    "num_rel": 108
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05290645937237303,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.12037037037037036,
+                    "ndcg_cut_3": 0.1564262420075855,
+                    "ndcg_cut_5": 0.20052345343276654,
+                    "ndcg_cut_10": 0.15221074167857038,
                     "num_rel": 108
                 }
             }
@@ -12950,6 +15452,24 @@
                     "ndcg_cut_10": 0.528753127226371,
                     "num_rel": 109
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.143366475503964,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.21100917431192662,
+                    "ndcg_cut_3": 0.7039180890341348,
+                    "ndcg_cut_5": 0.6548086577531306,
+                    "ndcg_cut_10": 0.5505554485684813,
+                    "num_rel": 109
+                }
             }
         ]
     },
@@ -13016,6 +15536,24 @@
                     "ndcg_cut_3": 0.4692787260227565,
                     "ndcg_cut_5": 0.5677441826810954,
                     "ndcg_cut_10": 0.43398472629762846,
+                    "num_rel": 70
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.16144253155807778,
+                    "P_5": 0.6,
+                    "P_10": 0.7,
+                    "recall_100": 0.2571428571428571,
+                    "ndcg_cut_3": 0.7653606369886218,
+                    "ndcg_cut_5": 0.6505253699032811,
+                    "ndcg_cut_10": 0.6825060135986462,
                     "num_rel": 70
                 }
             }
@@ -13179,6 +15717,24 @@
                     "ndcg_cut_10": 0.13009337146961453,
                     "num_rel": 63
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.09393102239210213,
+                    "P_5": 0.4,
+                    "P_10": 0.2,
+                    "recall_100": 0.20634920634920634,
+                    "ndcg_cut_3": 0.1564262420075855,
+                    "ndcg_cut_5": 0.15678842759531927,
+                    "ndcg_cut_10": 0.10174496131323371,
+                    "num_rel": 63
+                }
             }
         ]
     },
@@ -13302,6 +15858,24 @@
                     "ndcg_cut_10": 0.24357167558224943,
                     "num_rel": 40
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08835610580460874,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.3,
+                    "ndcg_cut_3": 0.541067770084586,
+                    "ndcg_cut_5": 0.40628204030219606,
+                    "ndcg_cut_10": 0.29869057824087036,
+                    "num_rel": 40
+                }
             }
         ]
     },
@@ -13364,6 +15938,24 @@
                     "ndcg_cut_10": 0.30746960303738025,
                     "num_rel": 79
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.28228327301305584,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.3924050632911392,
+                    "ndcg_cut_3": 0.9217868789962073,
+                    "ndcg_cut_5": 0.7536699234409101,
+                    "ndcg_cut_10": 0.695496142933831,
+                    "num_rel": 79
+                }
             }
         ]
     },
@@ -13424,6 +16016,24 @@
                     "ndcg_cut_3": 0.0986939703219551,
                     "ndcg_cut_5": 0.07132875491150918,
                     "ndcg_cut_10": 0.09556397826300238,
+                    "num_rel": 44
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04917797948995093,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.20454545454545456,
+                    "ndcg_cut_3": 0.07821312100379275,
+                    "ndcg_cut_5": 0.05652670087893601,
+                    "ndcg_cut_10": 0.08296944234086487,
                     "num_rel": 44
                 }
             }
@@ -13613,6 +16223,24 @@
                     "ndcg_cut_10": 0.14410604409033156,
                     "num_rel": 92
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.02880289217148087,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.15217391304347827,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.04416948230292602,
+                    "num_rel": 92
+                }
             }
         ]
     },
@@ -13733,6 +16361,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 23
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04881177892805998,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.08695652173913043,
+                    "ndcg_cut_3": 0.46927872602275644,
+                    "ndcg_cut_5": 0.3391602052736161,
+                    "ndcg_cut_10": 0.22009176629808017,
+                    "num_rel": 23
+                }
             }
         ]
     },
@@ -13779,6 +16425,24 @@
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
                     "map": 0.001177856301531213,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 3
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0012578616352201257,
                     "P_5": 0.0,
                     "P_10": 0.0,
                     "recall_100": 0.0,
@@ -13883,6 +16547,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 5
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.08461920623214163,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 0.6,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.2188505885308512,
+                    "num_rel": 5
+                }
             }
         ]
     },
@@ -13946,6 +16628,24 @@
                     "ndcg_cut_10": 0.23504554941448536,
                     "num_rel": 9
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.1296748870315849,
+                    "P_5": 0.2,
+                    "P_10": 0.3,
+                    "recall_100": 0.3333333333333333,
+                    "ndcg_cut_3": 0.2960819109658652,
+                    "ndcg_cut_5": 0.21398626473452756,
+                    "ndcg_cut_10": 0.29320160657630423,
+                    "num_rel": 9
+                }
             }
         ]
     },
@@ -14005,6 +16705,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.17675122227794665,
+                    "num_rel": 14
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04804699537194722,
+                    "P_5": 0.0,
+                    "P_10": 0.2,
+                    "recall_100": 0.35714285714285715,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.19509678602597672,
                     "num_rel": 14
                 }
             }
@@ -14176,6 +16894,24 @@
                     "ndcg_cut_10": 0.0,
                     "num_rel": 3
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0029220779220779218,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 3
+                }
             }
         ]
     },
@@ -14240,6 +16976,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.07539623924207248,
                     "ndcg_cut_10": 0.07539623924207248,
+                    "num_rel": 3
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.19239145229345309,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.6666666666666666,
+                    "ndcg_cut_3": 0.49186387954915173,
+                    "ndcg_cut_5": 0.49186387954915173,
+                    "ndcg_cut_10": 0.49186387954915173,
                     "num_rel": 3
                 }
             }
@@ -14341,6 +17095,24 @@
                     "ndcg_cut_10": 0.6023097498746202,
                     "num_rel": 78
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.05847772101226951,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.15384615384615385,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.047220041779149124,
+                    "num_rel": 78
+                }
             }
         ]
     },
@@ -14405,6 +17177,24 @@
                     "ndcg_cut_3": 0.46927872602275644,
                     "ndcg_cut_5": 0.6508205185601091,
                     "ndcg_cut_10": 0.6508205185601091,
+                    "num_rel": 3
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.3822477177399457,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.6666666666666666,
+                    "ndcg_cut_3": 0.46927872602275644,
+                    "ndcg_cut_5": 0.46927872602275644,
+                    "ndcg_cut_10": 0.46927872602275644,
                     "num_rel": 3
                 }
             }
@@ -14516,6 +17306,24 @@
                     "ndcg_cut_3": 0.19489645113615822,
                     "ndcg_cut_5": 0.2331448833249787,
                     "ndcg_cut_10": 0.2331448833249787,
+                    "num_rel": 5
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.11989646012901826,
+                    "P_5": 0.2,
+                    "P_10": 0.2,
+                    "recall_100": 0.6,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.06503412051815856,
+                    "ndcg_cut_10": 0.12491638246015987,
                     "num_rel": 5
                 }
             }
@@ -14709,6 +17517,24 @@
                     "ndcg_cut_10": 0.8165901947515999,
                     "num_rel": 77
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2691756258089613,
+                    "P_5": 0.6,
+                    "P_10": 0.7,
+                    "recall_100": 0.36363636363636365,
+                    "ndcg_cut_3": 0.7039180890341347,
+                    "ndcg_cut_5": 0.639945385422766,
+                    "ndcg_cut_10": 0.702728403557943,
+                    "num_rel": 77
+                }
             }
         ]
     },
@@ -14765,6 +17591,24 @@
                     "ndcg_cut_3": 0.7039180890341347,
                     "ndcg_cut_5": 0.7860137352654724,
                     "ndcg_cut_10": 0.6470538417566039,
+                    "num_rel": 56
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.23706102715022787,
+                    "P_5": 0.6,
+                    "P_10": 0.5,
+                    "recall_100": 0.375,
+                    "ndcg_cut_3": 0.7653606369886217,
+                    "ndcg_cut_5": 0.6992148198508501,
+                    "ndcg_cut_10": 0.5933607200949346,
                     "num_rel": 56
                 }
             }
@@ -14824,6 +17668,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.20641593223508903,
+                    "num_rel": 19
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04046026848869262,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.3157894736842105,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 19
                 }
             }
@@ -14886,6 +17748,24 @@
                     "ndcg_cut_10": 0.19092086617893467,
                     "num_rel": 6
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.022194529006864982,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.5,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 6
+                }
             }
         ]
     },
@@ -14945,6 +17825,24 @@
                     "ndcg_cut_3": 0.46927872602275644,
                     "ndcg_cut_5": 0.3391602052736161,
                     "ndcg_cut_10": 0.3531437764338092,
+                    "num_rel": 25
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.0432172559572734,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.2,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.07336392209936005,
                     "num_rel": 25
                 }
             }
@@ -15009,6 +17907,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.0,
                     "ndcg_cut_10": 0.11284514134893527,
+                    "num_rel": 4
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04930106768342062,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.25,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.13012668333070054,
                     "num_rel": 4
                 }
             }
@@ -15120,6 +18036,24 @@
                     "ndcg_cut_10": 0.8732937564254352,
                     "num_rel": 62
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.20590670467989935,
+                    "P_5": 0.4,
+                    "P_10": 0.7,
+                    "recall_100": 0.3548387096774194,
+                    "ndcg_cut_3": 0.31939394323979897,
+                    "ndcg_cut_5": 0.35123899361230887,
+                    "ndcg_cut_10": 0.5980429102649563,
+                    "num_rel": 62
+                }
             }
         ]
     },
@@ -15188,6 +18122,24 @@
                     "ndcg_cut_3": 0.7039180890341347,
                     "ndcg_cut_5": 0.6548086577531307,
                     "ndcg_cut_10": 0.6339753813071974,
+                    "num_rel": 25
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.32743426396778424,
+                    "P_5": 0.8,
+                    "P_10": 0.5,
+                    "recall_100": 0.6,
+                    "ndcg_cut_3": 1.0,
+                    "ndcg_cut_5": 0.8687949224876582,
+                    "ndcg_cut_10": 0.6371523797895856,
                     "num_rel": 25
                 }
             }
@@ -15314,6 +18266,24 @@
                     "ndcg_cut_10": 0.12368419559979262,
                     "num_rel": 4
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.010968719497961925,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.0,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
+                    "num_rel": 4
+                }
             }
         ]
     },
@@ -15368,6 +18338,24 @@
                     "ndcg_cut_3": 0.41531064659152533,
                     "ndcg_cut_5": 0.43063359106138094,
                     "ndcg_cut_10": 0.4693025533091702,
+                    "num_rel": 49
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2949037041807982,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.42857142857142855,
+                    "ndcg_cut_3": 0.41531064659152533,
+                    "ndcg_cut_5": 0.42326634687880565,
+                    "ndcg_cut_10": 0.4669928080562846,
                     "num_rel": 49
                 }
             }
@@ -15431,6 +18419,24 @@
                     "ndcg_cut_10": 0.22466337602289155,
                     "num_rel": 18
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.10243112327676651,
+                    "P_5": 0.0,
+                    "P_10": 0.1,
+                    "recall_100": 0.5555555555555556,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.06625422345438903,
+                    "num_rel": 18
+                }
             }
         ]
     },
@@ -15487,6 +18493,24 @@
                     "ndcg_cut_3": 0.23463936301137822,
                     "ndcg_cut_5": 0.16958010263680806,
                     "ndcg_cut_10": 0.31328481690174087,
+                    "num_rel": 10
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2965345113478851,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.8,
+                    "ndcg_cut_3": 0.7039180890341347,
+                    "ndcg_cut_5": 0.5087403079104241,
+                    "ndcg_cut_10": 0.40350157154648025,
                     "num_rel": 10
                 }
             }
@@ -15548,6 +18572,24 @@
                     "ndcg_cut_3": 1.0,
                     "ndcg_cut_5": 0.8687949224876582,
                     "ndcg_cut_10": 0.7058075148678526,
+                    "num_rel": 29
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.11472139120056463,
+                    "P_5": 0.4,
+                    "P_10": 0.3,
+                    "recall_100": 0.27586206896551724,
+                    "ndcg_cut_3": 0.7039180890341347,
+                    "ndcg_cut_5": 0.5087403079104241,
+                    "ndcg_cut_10": 0.40853591842579556,
                     "num_rel": 29
                 }
             }
@@ -15612,6 +18654,24 @@
                     "ndcg_cut_3": 0.42424731131432475,
                     "ndcg_cut_5": 0.43674178849099116,
                     "ndcg_cut_10": 0.5905611636890883,
+                    "num_rel": 32
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.04846265338216841,
+                    "P_5": 0.0,
+                    "P_10": 0.0,
+                    "recall_100": 0.25,
+                    "ndcg_cut_3": 0.0,
+                    "ndcg_cut_5": 0.0,
+                    "ndcg_cut_10": 0.0,
                     "num_rel": 32
                 }
             }
@@ -15731,6 +18791,24 @@
                     "ndcg_cut_10": 0.5817373612405212,
                     "num_rel": 113
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.15540055541013092,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.23008849557522124,
+                    "ndcg_cut_3": 0.4692787260227565,
+                    "ndcg_cut_5": 0.6164336326286644,
+                    "ndcg_cut_10": 0.5933160168669981,
+                    "num_rel": 113
+                }
             }
         ]
     },
@@ -15842,6 +18920,24 @@
                     "ndcg_cut_3": 0.7232329748419101,
                     "ndcg_cut_5": 0.7833471457646615,
                     "ndcg_cut_10": 0.8145989959175644,
+                    "num_rel": 146
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.19095965701650466,
+                    "P_5": 0.8,
+                    "P_10": 0.7,
+                    "recall_100": 0.2191780821917808,
+                    "ndcg_cut_3": 0.3838351257904502,
+                    "ndcg_cut_5": 0.5176669670066176,
+                    "ndcg_cut_10": 0.5484262651449487,
                     "num_rel": 146
                 }
             }
@@ -16006,6 +19102,24 @@
                     "ndcg_cut_10": 0.866676125296409,
                     "num_rel": 123
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.2685096934484866,
+                    "P_5": 1.0,
+                    "P_10": 0.9,
+                    "recall_100": 0.3008130081300813,
+                    "ndcg_cut_3": 0.9049765583210164,
+                    "ndcg_cut_5": 0.9275038527696858,
+                    "ndcg_cut_10": 0.8544979285514911,
+                    "num_rel": 123
+                }
             }
         ]
     },
@@ -16146,6 +19260,24 @@
                     "ndcg_cut_10": 0.17803063097390456,
                     "num_rel": 86
                 }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.26779558757089555,
+                    "P_5": 1.0,
+                    "P_10": 0.7,
+                    "recall_100": 0.3953488372093023,
+                    "ndcg_cut_3": 0.7653606369886217,
+                    "ndcg_cut_5": 0.6917831836856677,
+                    "ndcg_cut_10": 0.5370120445389843,
+                    "num_rel": 86
+                }
             }
         ]
     },
@@ -16201,6 +19333,24 @@
                     "ndcg_cut_3": 0.46927872602275644,
                     "ndcg_cut_5": 0.6164336326286644,
                     "ndcg_cut_10": 0.5061364312957093,
+                    "num_rel": 93
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.09835241304864648,
+                    "P_5": 0.6,
+                    "P_10": 0.4,
+                    "recall_100": 0.1935483870967742,
+                    "ndcg_cut_3": 0.35195904451706733,
+                    "ndcg_cut_5": 0.319972692711383,
+                    "ndcg_cut_10": 0.27389460699875967,
                     "num_rel": 93
                 }
             }
@@ -16263,6 +19413,24 @@
                     "ndcg_cut_3": 0.0,
                     "ndcg_cut_5": 0.07303417492135322,
                     "ndcg_cut_10": 0.12327527772379307,
+                    "num_rel": 49
+                }
+            },
+            {
+                "collection": "ClueWeb_ikat",
+                "retrieval_model": "BM25",
+                "reranker": "rankllama",
+                "retrieval_query_type": "oracle_utterance",
+                "reranking_query_type": "oracle_utterance",
+                "generation_query_type": "oracle_utterance",
+                "metrics": {
+                    "map": 0.026719360317433872,
+                    "P_5": 0.2,
+                    "P_10": 0.1,
+                    "recall_100": 0.16326530612244897,
+                    "ndcg_cut_3": 0.11731968150568911,
+                    "ndcg_cut_5": 0.08479005131840403,
+                    "ndcg_cut_10": 0.05502294157452004,
                     "num_rel": 49
                 }
             }
