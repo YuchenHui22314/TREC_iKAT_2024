@@ -8,11 +8,11 @@ import json
 from typing import Mapping, Tuple, List, Optional, Union
 from tqdm import tqdm
 from dataclasses import asdict
-from rank_gpt import run_retriever, sliding_windows
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
 
+from rank_gpt import run_retriever, sliding_windows
 from topics import (
     Turn, 
     Result,
@@ -272,11 +272,58 @@ def get_eval_results(args):
     if not args.reranker == "none":
 
         print(f"{args.reranker} reranking")
+         
 
         # generate a qid-reranking_query dictionary
         reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(qid_list_string, reranking_query_list)}
 
-    if args.reranker == "rankllama":
+        # generate input format required by rankgpt
+        rank_gpt_list, _ = hits_2_rankgpt_list(searcher, reranking_query_dic, hits)
+
+    if args.reranker == "rankgpt":
+
+        # get hyperparameters
+        llm_name = args.rankgpt_llm
+        rank_end = args.top_k
+        step = args.step
+        window_size = args.window_size
+        if "gpt" in llm_name:
+            token = os.getenv('openai_key')
+        elif "claude" in llm_name:
+            token = os.getenv('claude_key')
+        else:
+            raise NotImplementedError(f"llm_name {llm_name} not implemented")
+        
+        print("reranking")
+        # for every query:
+        for item in tqdm(
+            rank_gpt_list, 
+            desc="Ranking with rankgpt", 
+            unit="query", 
+            total=len(rank_gpt_list)
+            ):
+
+            new_item = sliding_windows(
+                item, 
+                rank_start=0, 
+                rank_end=rank_end, 
+                window_size=window_size,
+                step=step,
+                model_name=llm_name, 
+                api_key=token)
+
+            qid = new_item["hits"][0]["qid"]
+            assert len(hits[qid]) == len(new_item["hits"]), f"retrieval length should be equal to reranking length. {len(hits[qid])} != {len(new_item['hits'])}"
+
+            # sort hits[qid] to ensure the descending order
+            hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
+
+            # update doc id in the ranking list
+            for i in range(len(hits[qid])):
+                hits[qid][i].docid = new_item["hits"][i]["docid"]
+
+
+    elif args.reranker == "rankllama":
 
         print("loading rankllama model")
         tokenizer, model = load_rankllama(args.cache_dir)
@@ -380,7 +427,7 @@ if __name__ == "__main__":
     #########################################################
     # first generate an identifiable name for current run
     #########################################################
-    file_name_stem = f"[{args.collection}]-[{args.topics}]-S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}]-[{args.reranker}]-[top{args.top_k}]"
+    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}]-[{args.reranker}_{args.window_size}_{args.step}]-[top{args.top_k}]"
 
     # folder path where the evaluation results will be saved
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)
@@ -410,10 +457,12 @@ if __name__ == "__main__":
         file_name_stem + "_dict.json")
 
     # save ikat format output
-    metrics_path = os.path.join(
+    ikat_output_path = os.path.join(
         base_folder,
         "ikat_format_output",
         file_name_stem + ".json")
+
+    ## TODO: use this path
 
     # read metrics 
     metrics_list = args.metrics.split(",")
