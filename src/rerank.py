@@ -7,7 +7,12 @@ import json
 
 cache_dir = "/data/rech/huiyuche/huggingface"
 
-def get_model(peft_model_name, cache_dir):
+def get_model(
+    peft_model_name, 
+    cache_dir,
+    quant_8bit = True,
+    quant_4bit = False,
+    ):
     config = PeftConfig.from_pretrained(peft_model_name)
     base_model = AutoModelForSequenceClassification.from_pretrained(
         config.base_model_name_or_path, 
@@ -15,7 +20,8 @@ def get_model(peft_model_name, cache_dir):
         torch_dtype=torch.bfloat16,
         device_map="auto",
         attn_implementation="flash_attention_2",
-        load_in_8bit = True,
+        load_in_8bit = quant_8bit,
+        load_in_4bit = quant_4bit,
         num_labels=1)
 
     model = PeftModel.from_pretrained(base_model, peft_model_name)
@@ -27,11 +33,18 @@ def get_model(peft_model_name, cache_dir):
 
 def load_rankllama(
     cache_dir: str,
-) -> Tuple[Any,Any]:
+    quant_8bit: bool = True,
+    quant_4bit: bool = False
+    ) -> Tuple[Any,Any]:
 
     tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
 
-    model = get_model('castorini/rankllama-v1-7b-lora-passage', cache_dir)
+    model = get_model(
+        'castorini/rankllama-v1-7b-lora-passage', 
+        cache_dir,
+        quant_8bit,
+        quant_4bit
+        )
 
     tokenizer.pad_token_id = 0
     tokenizer.padding_side = "right"
@@ -70,7 +83,7 @@ def rerank_rankllama(
 ) -> List[float]: 
 
     # Split passages into 5 parts
-    passages_parts = np.array_split(passages, 100)
+    passages_parts = np.array_split(passages, 5)
     scores = []
 
     for passages_part in passages_parts:

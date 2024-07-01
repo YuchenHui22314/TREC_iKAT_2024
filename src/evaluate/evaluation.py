@@ -73,6 +73,9 @@ def get_args():
 
     parser.add_argument("--reranker", type=str, default="none",
                         help="can be ['none', rankllama, rankgpt]")
+    # rankllama
+    parser.add_argument("--rerank_quant", type=str, default="none",
+                        help="can be ['none','8b','4b']")
     # rankGPT
     parser.add_argument("--rankgpt_llm", type=str, default="gpt-3.5-turbo",
                         help="can be ['gpt-3.5-turbo',]")
@@ -86,7 +89,7 @@ def get_args():
     # TODO: RM3 parameters
 
     parser.add_argument("--top_k", type=int, default="1000")
-    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.100,recall.1000, recip_rank",
+    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100,recall.1000")
 
     #parser.add_argument("--rel_threshold", type=int, default="1")
@@ -203,7 +206,6 @@ def get_eval_results(args):
 
     print("Checking args...")
     assert args.topics in ["ikat_23_test",], f"Invalid topics {args.topics}"
-    assert args.collection in ["ClueWeb_ikat",], f"Invalid collection {args.collection}"
     assert args.retrieval_model in ["BM25", "ance", "dpr", "splade"], f"Invalid retrieval model {args.retrieval_model}"
     assert args.reranker in ["rankllama","none", "rankgpt"], f"Invalid reranker {args.reranker}"
     assert args.retrieval_query_type in ["current_utterance", "oracle_utterance"], f"retrieve query type {args.retrieval_query_type} is not an invalid query_type"
@@ -325,8 +327,22 @@ def get_eval_results(args):
 
     elif args.reranker == "rankllama":
 
+        if args.rerank_quant == "none":
+            quant_4bit = False
+            quant_8bit = False
+        elif args.rerank_quant == "8b":
+            quant_4bit = False
+            quant_8bit = True
+        elif args.rerank_quant == "4b":
+            quant_4bit = True
+            quant_8bit = False
+
         print("loading rankllama model")
-        tokenizer, model = load_rankllama(args.cache_dir)
+        tokenizer, model = load_rankllama(
+            args.cache_dir,
+            quant_8bit = quant_8bit,
+            quant_4bit = quant_4bit
+            )
 
         print("reranking")
         for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
@@ -427,7 +443,7 @@ if __name__ == "__main__":
     #########################################################
     # first generate an identifiable name for current run
     #########################################################
-    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}]-[{args.reranker}_{args.window_size}_{args.step}]-[top{args.top_k}]"
+    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[top{args.top_k}]"
 
     # folder path where the evaluation results will be saved
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)
@@ -500,6 +516,11 @@ if __name__ == "__main__":
     # save metrics  
     with open(metrics_path, "w") as f:
         json.dump(averaged_metrics, f, indent=4)
+
+    # save also the args values in the same file
+    with open(metrics_path, "a") as f:
+        f.write("\n")
+        f.write(json.dumps(vars(args), indent=4))
     
     # save metrics dictionary
     with open(metrics_dict_path, "w") as f:

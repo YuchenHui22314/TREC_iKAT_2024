@@ -8,13 +8,16 @@ index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_ind
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 retrieval_model="BM25"
-reranker="none"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
+reranker="none"
+rankgpt_llm="gpt-3.5-turbo"
+window_size=4
+step=1
 bm25_k1=0.9
 bm25_b=0.4
-top_k=1000
-metrics="map,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100"
+top_k=50
+metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 save_metrics_to_object=false
 rewrite_model="no_rewrite"
 retrieval_query_type="oracle_utterance"
@@ -33,9 +36,12 @@ python3 evaluation.py \
   --output_dir_path $output_dir_path \
   --qrel_file_path $qrel_file_path \
   --retrieval_model $retrieval_model \
-  --reranker $reranker \
   --cache_dir $cache_dir \
   --dense_query_encoder_path $dense_query_encoder_path \
+  --reranker $reranker \
+  --rankgpt_llm $rankgpt_llm \
+  --window_size $window_size \
+  --step $step \
   --bm25_k1 $bm25_k1 \
   --bm25_b $bm25_b \
   --top_k $top_k \

@@ -10,14 +10,15 @@ qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
-reranker="rankgpt"
+reranker="rankllama"
+rerank_quant="8b"
 rankgpt_llm="gpt-3.5-turbo"
-window_size=3
+window_size=4
 step=1
 bm25_k1=0.9
 bm25_b=0.4
-top_k=3
-metrics="map,ndcg_cut.1,ndcg_cut.3,P.1,P.3,recall.3"
+top_k=50
+metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 save_metrics_to_object=false
 rewrite_model="no_rewrite"
 retrieval_query_type="oracle_utterance"
@@ -39,6 +40,7 @@ python3 evaluation.py \
   --cache_dir $cache_dir \
   --dense_query_encoder_path $dense_query_encoder_path \
   --reranker $reranker \
+  --rerank_quant $rerank_quant \
   --rankgpt_llm $rankgpt_llm \
   --window_size $window_size \
   --step $step \
