@@ -1,5 +1,13 @@
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+from transformers import (
+    AutoModelForSequenceClassification, 
+    AutoTokenizer,
+    T5ForConditionalGeneration
+    )
+
+from llm import monoT5
+
 from peft import PeftModel, PeftConfig
 from typing import List, Tuple, Any, Dict
 import numpy as np
@@ -52,28 +60,23 @@ def load_rankllama(
 
     return tokenizer, model
 
-# def rerank_rankllama(
-#     query: str,
-#     passages: List[str],
-#     tokenizer: Any,
-#     model: Any,
-# ) -> List[float]: 
 
-#     inputs = tokenizer(
-#         [f'query: {query}'] * len(passages), [f'document: {passage}' for passage in passages], 
-#         return_tensors='pt',
-#         padding = True,
-#         max_length = 2048,
-#         truncation = True
-#         )
+def load_t5(
+    cache_dir: str,
+    model_name: str = 't5-base'
+    ) -> T5ForConditionalGeneration:
+    
 
-#     # Run the model forward
-#     with torch.no_grad():
-#         outputs = model(**inputs)
-#         logits = outputs.logits
-#         scores = logits[:,0]
+    # load model
+    model = monoT5.from_pretrained(model_name, cache_dir=cache_dir)
+    model.set_tokenizer()
+    model.set_targets(['true', 'false'])
+    model.data_parallel(True)
+    model.eval()
 
-#     return list(scores)
+    return model
+
+
 
 def rerank_rankllama(
     query: str,
@@ -82,7 +85,8 @@ def rerank_rankllama(
     model: Any,
 ) -> List[float]: 
 
-    # Split passages into 5 parts
+    # Split passages into groups of 10 passages
+    # due to GPU resources limitation.
     passages_parts = np.array_split(passages, 5)
     scores = []
 
@@ -103,6 +107,34 @@ def rerank_rankllama(
             scores.extend(list(part_scores))
 
     return scores
+
+def rerank_t5(
+    query: str,
+    passages: List[str],
+    model: Any
+    ) -> T5ForConditionalGeneration:
+
+    # Split passages into 5 parts
+    passages_parts = np.array_split(passages, 30)
+    scores = []
+
+    for passages_part in passages_parts:
+        inputs = model.tokenizer(
+            [f"Query: {query} Document: {passage} Relevant:" for passage in passages_part],
+            max_length = 512,
+            padding=True,
+            truncation=True,
+            return_tensors="pt"
+        )
+
+
+        with torch.no_grad():
+            outputs = model.predict(inputs)
+            true_prob = outputs[:,0]
+            scores.extend(true_prob.tolist())
+
+    return scores
+
 
 def hits_2_rankgpt_list(
     searcher: Any,

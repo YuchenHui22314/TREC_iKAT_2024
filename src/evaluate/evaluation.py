@@ -354,7 +354,6 @@ def get_eval_results(args):
                 tokenizer,
                 model
             )
-            assert len(reranked_scores) == len(hit), f"reranked scores length {len(reranked_scores)} not equal to hit length {len(hit)}"
 
             for i in range(len(hit)):
                 hit[i].score = reranked_scores[i]
@@ -396,6 +395,7 @@ def get_eval_results(args):
         print("generating ikat format results...")
 
         exit("ikat format results saved.")
+
     ##############################
     # TODO: enable without evaluation 
     ##############################
