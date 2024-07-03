@@ -319,13 +319,6 @@ class monoT5(T5ForConditionalGeneration):
     targeted_tokens = ['true', 'false']
     # tokenizer_name = 'google/t5-base'
 
-    def data_parallel(self, parallel = True) -> None:
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        if parallel:
-            self.model = DataParallel(self).to(device)
-        else:
-            self.model = self.to(device)
 
     def set_tokenizer(self, tokenizer=None):
         if tokenizer is not None:
@@ -366,6 +359,6 @@ class monoT5(T5ForConditionalGeneration):
                 self.config.decoder_start_token_id
         ).to(self.device)
         
-        batch_logits = self.model(**batch, labels=dummy_labels).logits
+        batch_logits = self(**batch, labels=dummy_labels).logits
 
         return softmax(batch_logits[:, 0, self.targeted_ids]).detach().cpu().numpy() # B 2

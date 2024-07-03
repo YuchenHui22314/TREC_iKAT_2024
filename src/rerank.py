@@ -1,9 +1,12 @@
 import torch
+from torch.nn import DataParallel
+import torch.nn as nn
 
 from transformers import (
     AutoModelForSequenceClassification, 
     AutoTokenizer,
-    T5ForConditionalGeneration
+    T5ForConditionalGeneration,
+    PreTrainedTokenizer
     )
 
 from llm import monoT5
@@ -63,18 +66,30 @@ def load_rankllama(
 
 def load_t5(
     cache_dir: str,
-    model_name: str = 't5-base'
-    ) -> T5ForConditionalGeneration:
+    model_name: str = 'castorini/monot5-base-msmarco',
+    ) -> Tuple[PreTrainedTokenizer,T5ForConditionalGeneration,Any,Any]:
     
 
     # load model
     model = monoT5.from_pretrained(model_name, cache_dir=cache_dir)
     model.set_tokenizer()
     model.set_targets(['true', 'false'])
-    model.data_parallel(True)
+    tokenizer = model.tokenizer
+    decoder_stard_id = model.config.decoder_start_token_id
+    targeted_ids = model.targeted_ids
+
+
+    parallel = True
+    # data parallel
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if parallel:
+        model = DataParallel(model).to(device)
+    else:
+        model = model.to(device)
+
     model.eval()
 
-    return model
+    return tokenizer, model, decoder_stard_id, targeted_ids
 
 
 
@@ -82,7 +97,7 @@ def rerank_rankllama(
     query: str,
     passages: List[str],
     tokenizer: Any,
-    model: Any,
+    model: Any
 ) -> List[float]: 
 
     # Split passages into groups of 10 passages
@@ -111,15 +126,19 @@ def rerank_rankllama(
 def rerank_t5(
     query: str,
     passages: List[str],
-    model: Any
+    tokenizer: Any,
+    model: Any,
+    decoder_input_ids: Any,
+    targeted_ids: Any
     ) -> T5ForConditionalGeneration:
 
-    # Split passages into 5 parts
-    passages_parts = np.array_split(passages, 30)
+    # Split passages into groups of 100 passages
+    # due to GPU resources limitation.
+    passages_parts = np.array_split(passages, 10)
     scores = []
 
     for passages_part in passages_parts:
-        inputs = model.tokenizer(
+        inputs = tokenizer(
             [f"Query: {query} Document: {passage} Relevant:" for passage in passages_part],
             max_length = 512,
             padding=True,
@@ -127,10 +146,21 @@ def rerank_t5(
             return_tensors="pt"
         )
 
-
+        # predict
         with torch.no_grad():
-            outputs = model.predict(inputs)
-            true_prob = outputs[:,0]
+
+            softmax = nn.Softmax(dim=1)
+            for k in inputs:
+                inputs[k] = inputs[k].to("cuda")
+
+            dummy_labels = torch.full(
+                inputs.input_ids.size(), 
+                decoder_input_ids
+            ).to("cuda")
+            
+            batch_logits = model(**inputs, labels=dummy_labels).logits
+            true_false = softmax(batch_logits[:, 0, targeted_ids]).detach().cpu().numpy() # B 2
+            true_prob = true_false[:,0]
             scores.extend(true_prob.tolist())
 
     return scores
