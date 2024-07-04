@@ -25,6 +25,10 @@ from topics import (
 from rerank import (
     load_rankllama, 
     rerank_rankllama,
+    load_t5_DDP,
+    rerank_t5_DDP,
+    load_t5_DP,
+    rerank_t5_DP,
     hits_2_rankgpt_list
     )
     
@@ -72,7 +76,8 @@ def get_args():
 
 
     parser.add_argument("--reranker", type=str, default="none",
-                        help="can be ['none', rankllama, rankgpt]")
+                        help="can be ['none', rankllama, rankgpt, 'monot5_base','monot5_base_10k']")
+
     # rankllama
     parser.add_argument("--rerank_quant", type=str, default="none",
                         help="can be ['none','8b','4b']")
@@ -199,21 +204,6 @@ def get_query_list(args):
     return retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list
 
 def get_eval_results(args):
-
-    ###############
-    # check args
-    ###############
-
-    print("Checking args...")
-    assert args.topics in ["ikat_23_test",], f"Invalid topics {args.topics}"
-    assert args.retrieval_model in ["BM25", "ance", "dpr", "splade"], f"Invalid retrieval model {args.retrieval_model}"
-    assert args.reranker in ["rankllama","none", "rankgpt"], f"Invalid reranker {args.reranker}"
-    assert args.retrieval_query_type in ["current_utterance", "oracle_utterance"], f"retrieve query type {args.retrieval_query_type} is not an invalid query_type"
-    assert args.reranking_query_type in ["current_utterance", "oracle_utterance"], f"reranking query type {args.reranking_query_type} is not an invalid query_type"
-    assert args.generation_query_type in ["current_utterance", "oracle_utterance"], f"generation query type {args.generation_query_type} is not an invalid query_type"
-
-    #assert args.prompt_type in ['few_shot_narrative_prompt', 'complex_few_shot_narrative_prompt', 'real_narrative_prompt', 'complex_real_narrative_prompt', 'few_shot_pseudo_narrative_only_prompt','complex_few_shot_pseudo_narrative_only_prompt'],f"Prompt type {args.prompt_type} is not implemented."
-
 
 
     ###############
@@ -360,6 +350,38 @@ def get_eval_results(args):
                 # sort the hits by score
             hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
+    elif "monot5" in args.reranker:
+
+        # get reranker_name
+        if args.reranker == "monot5_base":
+            reranker_name = "castorini/monot5-base-msmarco"
+        elif args.reranker == "monot5_base_10k":
+            reranker_name = "castorini/monot5-base-msmarco-10k"
+
+        # load model
+        print("loading t5 model")
+        tokenizer, model, decoder_stard_id, targeted_ids =\
+             load_t5_DP(args.cache_dir, reranker_name)
+
+        print("reranking")
+        for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
+
+            reranking_query = reranking_query_dic[qid]
+
+            reranked_scores = rerank_t5_DP(
+                reranking_query,
+                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit],
+                tokenizer,
+                model,
+                decoder_stard_id,
+                targeted_ids,
+            )
+
+            for i in range(len(hit)):
+                hit[i].score = reranked_scores[i]
+
+                # sort the hits by score
+            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     ##############################
     # save ranking list 

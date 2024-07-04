@@ -11,13 +11,16 @@ retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 reranker="rankllama"
-rerank_quant="8b"
+#rankllama
+rerank_quant="none"
+#rankgpt
 rankgpt_llm="gpt-3.5-turbo"
 window_size=4
 step=1
+#BM25
 bm25_k1=0.9
 bm25_b=0.4
-top_k=50
+top_k=200
 metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 save_metrics_to_object=false
 rewrite_model="no_rewrite"
@@ -53,4 +56,5 @@ python3 evaluation.py \
   --retrieval_query_type $retrieval_query_type \
   --reranking_query_type $reranking_query_type \
   --generation_query_type $generation_query_type \
-  --prompt_type $prompt_type &>> $LOG_FILE
+  --prompt_type $prompt_type 
+  #&>> $LOG_FILE

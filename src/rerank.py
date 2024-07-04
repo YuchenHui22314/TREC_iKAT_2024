@@ -2,6 +2,10 @@ import torch
 from torch.nn import DataParallel
 import torch.nn as nn
 
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+from multiprocessing import Manager
+
 from transformers import (
     AutoModelForSequenceClassification, 
     AutoTokenizer,
@@ -64,7 +68,7 @@ def load_rankllama(
     return tokenizer, model
 
 
-def load_t5(
+def load_t5_DP(
     cache_dir: str,
     model_name: str = 'castorini/monot5-base-msmarco',
     ) -> Tuple[PreTrainedTokenizer,T5ForConditionalGeneration,Any,Any]:
@@ -92,6 +96,23 @@ def load_t5(
     return tokenizer, model, decoder_stard_id, targeted_ids
 
 
+def load_t5_DDP(
+    cache_dir: str,
+    model_name: str = 'castorini/monot5-base-msmarco',
+    ) -> Tuple[PreTrainedTokenizer,T5ForConditionalGeneration,Any,Any]:
+    
+
+    # load model
+    model = monoT5.from_pretrained(model_name, cache_dir=cache_dir)
+    model.set_tokenizer()
+    model.set_targets(['true', 'false'])
+    tokenizer = model.tokenizer
+    decoder_stard_id = model.config.decoder_start_token_id
+    targeted_ids = model.targeted_ids
+
+    model.eval()
+
+    return tokenizer, model, decoder_stard_id, targeted_ids
 
 def rerank_rankllama(
     query: str,
@@ -102,7 +123,7 @@ def rerank_rankllama(
 
     # Split passages into groups of 10 passages
     # due to GPU resources limitation.
-    passages_parts = np.array_split(passages, 5)
+    passages_parts = np.array_split(passages, 10)
     scores = []
 
     for passages_part in passages_parts:
@@ -123,18 +144,19 @@ def rerank_rankllama(
 
     return scores
 
-def rerank_t5(
+def rerank_t5_DP(
     query: str,
     passages: List[str],
     tokenizer: Any,
     model: Any,
     decoder_input_ids: Any,
     targeted_ids: Any
-    ) -> T5ForConditionalGeneration:
+    ) -> List:
 
-    # Split passages into groups of 100 passages
+    # Split passages into groups of 67 passages
     # due to GPU resources limitation.
-    passages_parts = np.array_split(passages, 10)
+    # 15 on octal31, 6 on octal40
+    passages_parts = np.array_split(passages, 1)
     scores = []
 
     for passages_part in passages_parts:
@@ -164,6 +186,66 @@ def rerank_t5(
             scores.extend(true_prob.tolist())
 
     return scores
+
+
+def rerank_t5_DDP(
+    rank: int,
+    world_size: int,
+    query: str,
+    passages: List[str],
+    tokenizer: Any,
+    decoder_input_ids: Any,
+    targeted_ids: Any,
+    outputs: Manager().list(),
+    ) -> None:
+
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+
+
+    # construct DDP model
+    tokenizer, model, decoder_stard_id, targeted_ids= load_t5_DDP(
+        cache_dir = cache_dir,
+        model_name = 'castorini/monot5-base-msmarco'
+        )
+    model = model.to(rank)
+    ddp_model = DDP(model, device_ids=[rank])
+
+    # Split passages into groups of 67 passages
+    # due to GPU resources limitation.
+    passages_parts = np.array_split(passages, 15)
+    scores = []
+
+    for passages_part in passages_parts:
+        inputs = tokenizer(
+            [f"Query: {query} Document: {passage} Relevant:" for passage in passages_part],
+            max_length = 512,
+            padding=True,
+            truncation=True,
+            return_tensors="pt"
+        )
+
+        # predict
+        with torch.no_grad():
+
+            softmax = nn.Softmax(dim=1)
+            for k in inputs:
+                inputs[k] = inputs[k].to(rank)
+
+            dummy_labels = torch.full(
+                inputs.input_ids.size(), 
+                decoder_input_ids
+            ).to(rank)
+            
+            batch_logits = ddp_model(**inputs, labels=dummy_labels).logits
+            true_false = softmax(batch_logits[:, 0, targeted_ids]).detach().cpu().numpy() # B 2
+            true_prob = true_false[:,0]
+            scores.extend(true_prob.tolist())
+
+    if rank == 0:
+        outputs.append(scores)
+
+    # Clean up
+    dist.destroy_process_group()
 
 
 def hits_2_rankgpt_list(
