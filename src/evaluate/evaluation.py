@@ -91,9 +91,16 @@ def get_args():
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
 
-    # TODO: RM3 parameters
+    #  RM3 pseudo relevance feedback parameters
+    parser.add_argument("--use_rm3",  action="store_true", help="if we will use rm3")
+    parser.add_argument("--fb_terms", type=int, default="10", help="RM3 parameter for number of expansion terms.")
+    parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
+    parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
 
-    parser.add_argument("--top_k", type=int, default="1000")
+    # distinguish retrieval topk and rerank topk
+    parser.add_argument("--retrieval_top_k", type=int, default="1000")
+    parser.add_argument("--rerank_top_k", type=int, default="50")
+
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100,recall.1000")
 
@@ -233,13 +240,19 @@ def get_eval_results(args):
 
     # sparse search
     if args.retrieval_model == "BM25":
-    ##############################
-    # TODO: RM3
-    ##############################
         print("BM 25 searching...")
         searcher = LuceneSearcher(args.index_dir_path)
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
+
+        # rm3 pseudo relevance feedback
+        if args.use_rm3:
+            searcher.set_rm3(
+                fb_terms = args.fb_terms,
+                fb_docs = args.fb_docs,
+                original_query_weight = args.original_query_weight
+            )
+                
+        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
 
     # dense search
     elif args.retrieval_model in ["ance", "dpr"]:
@@ -248,7 +261,7 @@ def get_eval_results(args):
             args.index_dir_path,
             args.dense_query_encoder_path 
         )
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.top_k, threads = 40)
+        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
 
 
     ##############################
@@ -263,7 +276,7 @@ def get_eval_results(args):
 
     if not args.reranker == "none":
 
-        print(f"{args.reranker} reranking")
+        print(f"{args.reranker} reranking top {args.rerank_top_k}...")
          
 
         # generate a qid-reranking_query dictionary
@@ -276,7 +289,7 @@ def get_eval_results(args):
 
         # get hyperparameters
         llm_name = args.rankgpt_llm
-        rank_end = args.top_k
+        rank_end = args.rerank_top_k
         step = args.step
         window_size = args.window_size
         if "gpt" in llm_name:
@@ -340,15 +353,26 @@ def get_eval_results(args):
             reranking_query = reranking_query_dic[qid]
             reranked_scores = rerank_rankllama(
                 reranking_query,
-                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit],
+                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
                 tokenizer,
                 model
             )
 
-            for i in range(len(hit)):
-                hit[i].score = reranked_scores[i]
-                # sort the hits by score
-            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+            np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
+
+            indexes = np.argsort(np_reranked_scores)[::-1]
+            for rank, index in enumerate(indexes):
+                hit[index].rank = rank 
+            
+            # change the score according to the rank
+            for rank, doc_object in enumerate(hit):
+                if rank < args.rerank_top_k:
+                    doc_object.score = 1/(doc_object.rank + 1)
+                else:
+                    doc_object.score = 1/(rank + 1)
+            
+            # sort the hits by score
+            # hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     elif "monot5" in args.reranker:
 
@@ -357,6 +381,8 @@ def get_eval_results(args):
             reranker_name = "castorini/monot5-base-msmarco"
         elif args.reranker == "monot5_base_10k":
             reranker_name = "castorini/monot5-base-msmarco-10k"
+        else:
+            raise NotImplementedError(f"reranker {args.reranker} not implemented")
 
         # load model
         print("loading t5 model")
@@ -370,18 +396,28 @@ def get_eval_results(args):
 
             reranked_scores = rerank_t5_DP(
                 reranking_query,
-                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit],
+                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
                 tokenizer,
                 model,
                 decoder_stard_id,
                 targeted_ids,
             )
 
-            for i in range(len(hit)):
-                hit[i].score = reranked_scores[i]
+            np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
 
-                # sort the hits by score
-            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+            indexes = np.argsort(np_reranked_scores)[::-1]
+            for rank, index in enumerate(indexes):
+                hit[index].rank = rank 
+            
+            # change the score according to the rank
+            for rank, doc_object in enumerate(hit):
+                if rank < args.rerank_top_k:
+                    doc_object.score = 1/(doc_object.rank + 1)
+                else:
+                    doc_object.score = 1/(rank + 1)
+            
+            # sort the hits by score
+            # hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     ##############################
     # save ranking list 
@@ -399,7 +435,7 @@ def get_eval_results(args):
                     item.docid,
                     i+1,
                     item.score,
-                    file_name_stem 
+                    file_name_stem
                     ))
                 f.write('\n')
 
@@ -465,7 +501,8 @@ if __name__ == "__main__":
     #########################################################
     # first generate an identifiable name for current run
     #########################################################
-    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[top{args.top_k}]"
+    rm3 = "_rm3" if args.use_rm3 else ""
+    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{rm3}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
 
     # folder path where the evaluation results will be saved
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)

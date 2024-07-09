@@ -10,7 +10,8 @@ qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
-reranker="rankllama"
+# rankllama, rankgpt, monot5_base, monot5_base_10k
+reranker="monot5_base_10k"
 #rankllama
 rerank_quant="none"
 #rankgpt
@@ -20,7 +21,12 @@ step=1
 #BM25
 bm25_k1=0.9
 bm25_b=0.4
-top_k=200
+#rm3
+fb_terms=10
+fb_docs=10
+original_query_weight=0.5
+retrieval_top_k=1000
+rerank_top_k=50
 metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 save_metrics_to_object=false
 rewrite_model="no_rewrite"
@@ -49,12 +55,16 @@ python3 evaluation.py \
   --step $step \
   --bm25_k1 $bm25_k1 \
   --bm25_b $bm25_b \
-  --top_k $top_k \
+  --fb_terms $fb_terms \
+  --fb_docs $fb_docs \
+  --original_query_weight $original_query_weight \
+  --retrieval_top_k $retrieval_top_k \
+  --rerank_top_k $rerank_top_k \
   --metrics $metrics \
   ${save_metrics_to_object:+--save_metrics_to_object} \
   --rewrite_model $rewrite_model \
   --retrieval_query_type $retrieval_query_type \
   --reranking_query_type $reranking_query_type \
   --generation_query_type $generation_query_type \
-  --prompt_type $prompt_type 
-  #&>> $LOG_FILE
+  --prompt_type $prompt_type &>> $LOG_FILE
+  #--use_rm3 \

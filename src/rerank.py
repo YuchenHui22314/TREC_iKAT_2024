@@ -123,7 +123,7 @@ def rerank_rankllama(
 
     # Split passages into groups of 10 passages
     # due to GPU resources limitation.
-    passages_parts = np.array_split(passages, 10)
+    passages_parts = np.array_split(passages, 20)
     scores = []
 
     for passages_part in passages_parts:
@@ -155,7 +155,7 @@ def rerank_t5_DP(
 
     # Split passages into groups of 67 passages
     # due to GPU resources limitation.
-    # 15 on octal31, 6 on octal40
+    # 15 on octal31, 6 on octal40 when reranking top 1000
     passages_parts = np.array_split(passages, 1)
     scores = []
 
