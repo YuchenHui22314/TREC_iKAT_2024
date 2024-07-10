@@ -104,9 +104,10 @@ def get_args():
     parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
     parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
 
-    # distinguish retrieval topk and rerank topk
+    # distinguish retrieval topk and rerank topk, as well as generation top k
     parser.add_argument("--retrieval_top_k", type=int, default="1000")
     parser.add_argument("--rerank_top_k", type=int, default="50")
+    parser.add_argument("--generation_top_k", type=int, default="3")
 
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100,recall.1000")

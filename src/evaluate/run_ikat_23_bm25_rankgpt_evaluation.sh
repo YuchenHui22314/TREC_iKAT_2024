@@ -12,9 +12,9 @@ retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 # rankllama, rankgpt, monot5_base, monot5_base_10k
-reranker="monot5_base_10k"
+reranker="none"
 #rankllama
-rerank_quant="none"
+rerank_quant="none" # can be "none" ,"8b", "4b"
 #rankgpt
 rankgpt_llm="gpt-3.5-turbo"
 window_size=4
@@ -30,6 +30,7 @@ fb_docs=10
 original_query_weight=0.9
 retrieval_top_k=1000
 rerank_top_k=50
+generation_top_k=3
 metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 save_metrics_to_object=false
 # project specific
@@ -66,6 +67,7 @@ python3 evaluation.py \
   --original_query_weight $original_query_weight \
   --retrieval_top_k $retrieval_top_k \
   --rerank_top_k $rerank_top_k \
+  --generation_top_k $generation_top_k \
   --metrics $metrics \
   ${save_metrics_to_object:+--save_metrics_to_object} \
   --run_name $run_name \

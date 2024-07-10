@@ -9,6 +9,7 @@ from peft import PeftModel, PeftConfig
 from typing import List, Tuple, Any, Dict
 import numpy as np
 import json
+from tqdm import tqdm
 
 def generate_responses(
     hits: Dict[str, List[Any]],
