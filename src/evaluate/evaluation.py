@@ -5,7 +5,7 @@ import argparse
 import os
 import numpy as np
 import json
-from typing import Mapping, Tuple, List, Optional, Union
+from typing import Mapping, Tuple, List, Optional, Union, Any, Dict
 from tqdm import tqdm
 from dataclasses import asdict
 
@@ -221,33 +221,16 @@ def get_query_list(args):
     
     return retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list
 
-def search(args):
+def search(
+    retrieval_query_list: List[str], 
+    reranking_query_list: List[str], 
+    qid_list_string: List[str], 
+    args: Any
+    ) -> Dict[str, List[Any]]:
 
-
-    ###############
-    # check paths
-    ###############
-
-    assert os.path.exists(args.input_query_path), "Input query file not found"
-    assert os.path.exists(args.index_dir_path), "Index dir not found"
-    assert os.path.exists(args.qrel_file_path), "Qrel file not found"
-    assert os.path.exists(args.output_dir_path), "Output dir not found"
-
-
-    ###################################################
-    # get query list and qid list as well as Turn list
-    ##################################################
-
-    print(f"loading quries")
-
-    # the reason to get turn list is to add per-query 
-    # search results. 
-    retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list = get_query_list(args)
-
-        
-    ##############################
-    # pyserini search
-    ##############################
+    #########################################
+    # pyserini search. Output pyserini hits.
+    #########################################
 
     # sparse search
     if args.retrieval_model == "BM25":
@@ -473,8 +456,7 @@ def search(args):
     # TODO: evaluate ptkb ranking list 
     ##############################
 
-
-    return turn_list, hits
+    return hits
 
 
 def evaluate(args):
@@ -519,6 +501,15 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     print(args)
 
+    ###############
+    # check paths
+    ###############
+
+    assert os.path.exists(args.input_query_path), "Input query file not found"
+    assert os.path.exists(args.index_dir_path), "Index dir not found"
+    assert os.path.exists(args.qrel_file_path), "Qrel file not found"
+    assert os.path.exists(args.output_dir_path), "Output dir not found"
+
     #########################################################
     # first generate an identifiable name for current run
     #########################################################
@@ -560,21 +551,26 @@ if __name__ == "__main__":
 
     ## TODO: use this path
 
-    # read metrics 
-    metrics_list = args.metrics.split(",")
-    metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
+    ###################################################
+    # get query list and qid list as well as Turn list
+    ###################################################
+
+    print(f"loading quries")
+
+    # the reason to get turn list is to add per-query 
+    # search results. 
+    retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list = get_query_list(args)
+
 
     ##########################
     # Search
     ##########################
-    turn_list, hits = search(args)
-    ##########################
-
-    ##########################
-    # evaluate
-    ##########################
-    query_metrics_dic, averaged_metrics = evaluate(args)
-    ##########################
+    hits = search(
+        retrieval_query_list,
+        reranking_query_list,
+        qid_list_string,
+        args
+        )
 
     ##########################
     # response generation TODO
@@ -582,6 +578,19 @@ if __name__ == "__main__":
     response_dict = generate_responses(hits, args) 
     ##########################
 
+
+    ##########################
+    # evaluate
+    ##########################
+    # read metrics 
+    metrics_list = args.metrics.split(",")
+    metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
+    # evaluate
+    query_metrics_dic, averaged_metrics = evaluate(args)
+
+    ##########################
+    # saving evaluation results
+    ##########################
     # write results to topic list and save.
     if args.save_metrics_to_object:
         for qid, result_dict in query_metrics_dic.items():
