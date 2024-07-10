@@ -228,7 +228,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1179076487064533,
+                    "map": 0.18733642853707397,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -403,7 +403,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.20612892676520306,
+                    "map": 0.24079939512505585,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -577,7 +577,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.029209505772005772,
+                    "map": 0.04583226667947559,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -750,7 +750,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.12467254108120981,
+                    "map": 0.13109972565819555,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -950,7 +950,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.13048435939030956,
+                    "map": 0.19225443524173383,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -1128,7 +1128,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.02720651744089244,
+                    "map": 0.039086203874479336,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -1302,7 +1302,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0991270147774213,
+                    "map": 0.12709253907092274,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -1478,7 +1478,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0014814814814814814,
+                    "map": 0.0017657970296007105,
                     "recip_rank": 0.1111111111111111,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -1687,7 +1687,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.008928571428571428,
+                    "map": 0.010935093257319619,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -1902,7 +1902,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.3845061395800816,
+                    "map": 0.5073362967968524,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -2120,7 +2120,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.18264946292051953,
+                    "map": 0.23814670704206675,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -2365,7 +2365,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.002777777777777778,
+                    "map": 0.02804729423915973,
                     "recip_rank": 0.05,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -2538,8 +2538,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0011806375442739079,
+                    "recip_rank": 0.008264462809917356,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -2787,7 +2787,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.20238095238095238,
+                    "map": 0.22806722689075629,
                     "recip_rank": 0.25,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -2967,8 +2967,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0029544381226527536,
+                    "recip_rank": 0.009433962264150943,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -3187,8 +3187,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0022562998335871882,
+                    "recip_rank": 0.005780346820809248,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -3408,7 +3408,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.21166532866059415,
+                    "map": 0.33327069404114756,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -3599,7 +3599,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0013346814964610718,
+                    "map": 0.01281455606852357,
                     "recip_rank": 0.023255813953488372,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -3829,7 +3829,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.02353801169590643,
+                    "map": 0.035865796419345404,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -4014,7 +4014,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.02170868347338935,
+                    "map": 0.027333561460411267,
                     "recip_rank": 0.14285714285714285,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -4246,7 +4246,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1104983660130719,
+                    "map": 0.13236295936819917,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -4539,7 +4539,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2812312418714331,
+                    "map": 0.399832277548464,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -4820,7 +4820,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.42361561144169835,
+                    "map": 0.46077741647052306,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -5023,7 +5023,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.11135589520460024,
+                    "map": 0.14004556869332208,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -5198,7 +5198,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07133838383838384,
+                    "map": 0.08796500639584377,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -5886,7 +5886,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.058823529411764705,
+                    "map": 0.06743938538543606,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -6299,8 +6299,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0006162273701799393,
+                    "recip_rank": 0.0045045045045045045,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -6488,7 +6488,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.050138304421153926,
+                    "map": 0.08123441380073287,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -6674,7 +6674,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0723402171809973,
+                    "map": 0.09594629310900388,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -6901,7 +6901,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.361725144488141,
+                    "map": 0.4179934218077193,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -7184,7 +7184,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2804839730976095,
+                    "map": 0.31184200191353617,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -7362,7 +7362,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2005110336817654,
+                    "map": 0.22134108171186803,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -7542,7 +7542,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.03361344537815126,
+                    "map": 0.042635206762902576,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -7718,7 +7718,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.26457142857142857,
+                    "map": 0.2926695787452991,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -7897,7 +7897,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.03117581343387795,
+                    "map": 0.032228001986066505,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -8079,7 +8079,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1596103896103896,
+                    "map": 0.16549274255156607,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -8260,7 +8260,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2961814592744384,
+                    "map": 0.3772655341247477,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -8472,7 +8472,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.4120642056356341,
+                    "map": 0.45092535605692086,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -8922,7 +8922,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.29245416621278686,
+                    "map": 0.32281525424977703,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -9100,7 +9100,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.5946375519904931,
+                    "map": 0.6256143049298099,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -9546,7 +9546,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.037028232345569796,
+                    "map": 0.045724956759633006,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -9748,7 +9748,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0325,
+                    "map": 0.03386609140063927,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -9920,7 +9920,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1052827742667315,
+                    "map": 0.1134195374307254,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -10093,7 +10093,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.004807692307692308,
+                    "map": 0.007034002384425185,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -10324,7 +10324,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.25056062722450256,
+                    "map": 0.3743862485692309,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -10500,7 +10500,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.14259404586860824,
+                    "map": 0.25426181541387155,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -10782,7 +10782,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.041666666666666664,
+                    "map": 0.0433959893500023,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -11169,7 +11169,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.062286797665479295,
+                    "map": 0.0834697083316389,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -11342,7 +11342,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.12931831235195393,
+                    "map": 0.1357484641209682,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -11549,7 +11549,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.10775532448192343,
+                    "map": 0.15127377655468097,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -11729,7 +11729,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.058167718393575804,
+                    "map": 0.07779663364198348,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -12087,7 +12087,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.04927165402964896,
+                    "map": 0.09467528885174825,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -12298,7 +12298,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.01641093474426808,
+                    "map": 0.026298597786726215,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -12499,7 +12499,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.00807920425086217,
+                    "map": 0.020787666734478544,
                     "recip_rank": 0.07142857142857142,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -12704,7 +12704,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0017301038062283738,
+                    "map": 0.002744302589189834,
                     "recip_rank": 0.058823529411764705,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -12886,7 +12886,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.15888888888888886,
+                    "map": 0.18431716996183997,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -13183,7 +13183,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0195326278659612,
+                    "map": 0.02095729111517369,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -13354,7 +13354,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.03888888888888888,
+                    "map": 0.04272645090134016,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -13526,7 +13526,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.17157738095238093,
+                    "map": 0.18851658649539668,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -13731,7 +13731,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.12868686868686868,
+                    "map": 0.16868083071942988,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -13911,7 +13911,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.05185185185185186,
+                    "map": 0.0563134596936043,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -14089,7 +14089,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.08737185238114921,
+                    "map": 0.12437718314403132,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -14305,7 +14305,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1601357797398666,
+                    "map": 0.2062092876072995,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -14484,7 +14484,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0762007475549142,
+                    "map": 0.11486229494096808,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -14665,7 +14665,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.02993049071480444,
+                    "map": 0.05308887459618064,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -14847,7 +14847,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.19308477803375762,
+                    "map": 0.21436819493694104,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -15029,7 +15029,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1873232754334966,
+                    "map": 0.2134577598087876,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -15259,7 +15259,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.21502376773142867,
+                    "map": 0.2614378329991293,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -15444,7 +15444,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.18170879554593658,
+                    "map": 0.2251463306969026,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -15631,7 +15631,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.28346490460219176,
+                    "map": 0.35844580124836434,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -16025,7 +16025,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07364885265700483,
+                    "map": 0.09516480863438792,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -16197,8 +16197,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0007575757575757576,
+                    "recip_rank": 0.00909090909090909,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -16374,7 +16374,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.37583829327464846,
+                    "map": 0.3891647277151278,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -16558,7 +16558,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0016835016835016834,
+                    "map": 0.0021426385062748698,
                     "recip_rank": 0.1111111111111111,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -16738,7 +16738,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.012720140320936737,
+                    "map": 0.02887695872925127,
                     "recip_rank": 0.047619047619047616,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -16914,7 +16914,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.14706357048748353,
+                    "map": 0.17404459779935208,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -17097,7 +17097,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.06109366823652538,
+                    "map": 0.06744287458573173,
                     "recip_rank": 0.16666666666666666,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -17275,7 +17275,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.01788617886178862,
+                    "map": 0.0333478632670431,
                     "recip_rank": 0.3333333333333333,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -17454,7 +17454,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2030299288226799,
+                    "map": 0.25276022395089204,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -17635,7 +17635,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.30440859011162424,
+                    "map": 0.39936095187327253,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -17825,7 +17825,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2438352826510721,
+                    "map": 0.2875126206174308,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -17992,7 +17992,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.43032449551383634,
+                    "map": 0.46173944350379503,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -18187,7 +18187,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.11877551020408161,
+                    "map": 0.1675917368685466,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -18357,7 +18357,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.40698273461431356,
+                    "map": 0.4367448990555261,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -18737,8 +18737,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.00283788823896189,
+                    "recip_rank": 0.014925373134328358,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -18914,7 +18914,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2301097294518347,
+                    "map": 0.2878414559387446,
                     "recip_rank": 0.3333333333333333,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -19092,7 +19092,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.10714285714285714,
+                    "map": 0.11566294501990519,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -19271,7 +19271,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.4230372310867666,
+                    "map": 0.4546089814085169,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -19442,7 +19442,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.08742138364779874,
+                    "map": 0.10603855234028044,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -19616,8 +19616,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0007372160677141002,
+                    "recip_rank": 0.0055248618784530384,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -19821,7 +19821,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0009746588693957114,
+                    "map": 0.0056726118097697115,
                     "recip_rank": 0.05555555555555555,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -20026,7 +20026,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.004421768707482994,
+                    "map": 0.009282312147483637,
                     "recip_rank": 0.08333333333333333,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -20265,7 +20265,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.060042279121226484,
+                    "map": 0.1151835880209025,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -20445,7 +20445,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.48677248677248675,
+                    "map": 0.4914810319852797,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -20621,7 +20621,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0952702268491742,
+                    "map": 0.11559341291416157,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -20848,7 +20848,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.48056267123506763,
+                    "map": 0.520817910308985,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -21020,7 +21020,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.00909090909090909,
+                    "map": 0.015290512241731755,
                     "recip_rank": 0.09090909090909091,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -21195,8 +21195,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.004280247167204556,
+                    "recip_rank": 0.01020408163265306,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -21369,7 +21369,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.3521038759231351,
+                    "map": 0.447579192475975,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -21545,8 +21545,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0007356233317924599,
+                    "recip_rank": 0.0030959752321981426,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -21723,7 +21723,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.3297441580490817,
+                    "map": 0.35633405159387666,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -21903,8 +21903,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0005208333333333333,
+                    "recip_rank": 0.003125,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -22085,7 +22085,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.06875,
+                    "map": 0.07912049501798732,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -22311,7 +22311,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.18675789326382414,
+                    "map": 0.23563918857866006,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -22495,7 +22495,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.19583333333333333,
+                    "map": 0.20454229207567232,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -22678,7 +22678,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.11956845238095237,
+                    "map": 0.1374853188601182,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -23433,7 +23433,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.011244742471218786,
+                    "map": 0.023379195436962392,
                     "recip_rank": 0.1111111111111111,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -23605,7 +23605,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.20787124046661556,
+                    "map": 0.24434084902293826,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -23814,7 +23814,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07556656306656308,
+                    "map": 0.07953958616594094,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -24037,7 +24037,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.028868101603101198,
+                    "map": 0.05293852584422721,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -24216,7 +24216,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.11443556443556442,
+                    "map": 0.1472245926756106,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -24397,7 +24397,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0660952380952381,
+                    "map": 0.07896590196616145,
                     "recip_rank": 0.2,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -24631,7 +24631,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0046565276828434725,
+                    "map": 0.005426948374117461,
                     "recip_rank": 0.25,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -24832,7 +24832,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2085784742648146,
+                    "map": 0.4045333441018109,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -25007,7 +25007,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0703877708641265,
+                    "map": 0.09740047200951923,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -25221,7 +25221,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.021739130434782608,
+                    "map": 0.02183163737280296,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -25433,7 +25433,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.13761045156393995,
+                    "map": 0.1392232581963706,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -25652,7 +25652,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.05689964157706093,
+                    "map": 0.07640760157277315,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -25835,7 +25835,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.029166666666666664,
+                    "map": 0.029341004184100416,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -26237,7 +26237,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07990009269749716,
+                    "map": 0.10195748759849725,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -26515,7 +26515,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.02702702702702703,
+                    "map": 0.027092309701005353,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -26688,7 +26688,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.12130647130647129,
+                    "map": 0.14720022044389747,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -26901,7 +26901,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.11975622161671923,
+                    "map": 0.19727372460961246,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -27646,7 +27646,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.08532107861818339,
+                    "map": 0.12090964227393763,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -27855,7 +27855,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.17205310055007256,
+                    "map": 0.24118286874042189,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -28029,7 +28029,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1958834550055435,
+                    "map": 0.2362238932680221,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -28241,7 +28241,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.08593434343434345,
+                    "map": 0.14147696130160198,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -28418,7 +28418,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.18933743549185017,
+                    "map": 0.22626736923032972,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -28599,7 +28599,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.051310273884531306,
+                    "map": 0.07148162621399468,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -28777,7 +28777,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07855733447838711,
+                    "map": 0.09983409569866333,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -28956,7 +28956,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0616620547327069,
+                    "map": 0.09421158605364977,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -29177,7 +29177,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.11873831948050988,
+                    "map": 0.19281662419253878,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -29361,7 +29361,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1482758620689655,
+                    "map": 0.16063980007392062,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -29638,7 +29638,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07293991372633583,
+                    "map": 0.10734768445221278,
                     "recip_rank": 0.3333333333333333,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -29877,7 +29877,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.07638888888888888,
+                    "map": 0.10008556361510235,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -30055,7 +30055,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.18152356770043018,
+                    "map": 0.23428713108427332,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -30233,7 +30233,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.040719871590699556,
+                    "map": 0.05582688007847416,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -30536,7 +30536,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.05333850931677018,
+                    "map": 0.07409643821239191,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -30772,7 +30772,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.06328834209268992,
+                    "map": 0.07264816290358075,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -30942,8 +30942,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.001177856301531213,
+                    "recip_rank": 0.0035335689045936395,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -31154,7 +31154,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.01818181818181818,
+                    "map": 0.029031051838297756,
                     "recip_rank": 0.09090909090909091,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -31333,7 +31333,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.024996353317155322,
+                    "map": 0.04043037796851148,
                     "recip_rank": 0.1111111111111111,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -31510,7 +31510,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.008928571428571428,
+                    "map": 0.019164718560041323,
                     "recip_rank": 0.125,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -31795,8 +31795,8 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.0,
-                    "recip_rank": 0.0,
+                    "map": 0.0012714673193422582,
+                    "recip_rank": 0.0013175230566534915,
                     "P_1": 0.0,
                     "P_3": 0.0,
                     "P_5": 0.0,
@@ -32192,7 +32192,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.24032986210432744,
+                    "map": 0.31487522658958855,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -32374,7 +32374,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.3888888888888889,
+                    "map": 0.390359477124183,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.3333333333333333,
@@ -32908,7 +32908,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.2683041585282582,
+                    "map": 0.38636312388022026,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -33082,7 +33082,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.20128876579769442,
+                    "map": 0.2759106307383815,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -33257,7 +33257,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.19527151211361735,
+                    "map": 0.22378824257013444,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -33433,7 +33433,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.09974747474747475,
+                    "map": 0.12071266462089247,
                     "recip_rank": 0.16666666666666666,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -33610,7 +33610,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.061331787967943564,
+                    "map": 0.0848399682590722,
                     "recip_rank": 0.14285714285714285,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -33790,7 +33790,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.03943452380952381,
+                    "map": 0.044387677374423264,
                     "recip_rank": 0.0625,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -34015,7 +34015,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1695626195633847,
+                    "map": 0.27238035823213147,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -34201,7 +34201,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.4594714825982561,
+                    "map": 0.5146749247331556,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -34441,7 +34441,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.06245024325519682,
+                    "map": 0.06418937368997943,
                     "recip_rank": 0.058823529411764705,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -34613,7 +34613,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.24754808079991145,
+                    "map": 0.35848130101157644,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -34790,7 +34790,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.10967926645676006,
+                    "map": 0.14180340924485144,
                     "recip_rank": 0.1,
                     "P_1": 0.0,
                     "P_3": 0.0,
@@ -34964,7 +34964,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.3934615384615384,
+                    "map": 0.4590171669749135,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -35141,7 +35141,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.16719873628679305,
+                    "map": 0.19919680398741949,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 0.6666666666666666,
@@ -35321,7 +35321,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.15661074782549203,
+                    "map": 0.2116522148043661,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.6666666666666666,
@@ -35554,7 +35554,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.16340675741159597,
+                    "map": 0.21338347229384919,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -35783,7 +35783,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.1726262986086643,
+                    "map": 0.27037035994439057,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -36061,7 +36061,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.17394291806638287,
+                    "map": 0.2656314977942627,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -36317,7 +36317,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.06306001738799276,
+                    "map": 0.13229940958909162,
                     "recip_rank": 0.3333333333333333,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,
@@ -36490,7 +36490,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.09353500939522444,
+                    "map": 0.13074283437758347,
                     "recip_rank": 1.0,
                     "P_1": 1.0,
                     "P_3": 1.0,
@@ -36668,7 +36668,7 @@
                 "reranking_query_type": "oracle_utterance",
                 "generation_query_type": "oracle_utterance",
                 "metrics": {
-                    "map": 0.038156925596659556,
+                    "map": 0.044854005870613466,
                     "recip_rank": 0.5,
                     "P_1": 0.0,
                     "P_3": 0.3333333333333333,

@@ -112,6 +112,9 @@ def get_args():
     # ikat 2024 project related config
     ########################
 
+    parser.add_argument("--run_name", type=str, default="none",
+                        help="run name for trec ikat submission. If none, will use file name stem as run name.")
+
     parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
                         help="can be [no_rewrite, gpt-4-turbo]")
 
@@ -425,7 +428,12 @@ def get_eval_results(args):
 
 
     # save ranking list
-    # format: query-id Q0 document-id rank score STANDARD
+    # format: query-id Q0 document-id rank score run_name
+    if args.run_name == "none":
+        run_name = file_name_stem
+    else:
+        run_name = args.run_name 
+
     with open(ranking_list_path, "w") as f:
         for qid in qid_list_string:
             for i, item in enumerate(hits[qid]):
@@ -435,7 +443,7 @@ def get_eval_results(args):
                     item.docid,
                     i+1,
                     item.score,
-                    file_name_stem
+                    run_name
                     ))
                 f.write('\n')
 

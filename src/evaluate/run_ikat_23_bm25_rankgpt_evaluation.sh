@@ -5,6 +5,7 @@ collection="ClueWeb_ikat"
 topics="ikat_23_test"
 input_query_path="../../data/topics/ikat_2023_test.json"
 index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2/" # Please use local disk index to achieve the fastest access
+index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 retrieval_model="BM25"
@@ -24,11 +25,13 @@ bm25_b=0.4
 #rm3
 fb_terms=10
 fb_docs=10
-original_query_weight=0.5
+original_query_weight=0.9
 retrieval_top_k=1000
 rerank_top_k=50
 metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 save_metrics_to_object=false
+# project specific
+run_name="none"
 rewrite_model="no_rewrite"
 retrieval_query_type="oracle_utterance"
 reranking_query_type="oracle_utterance"
@@ -62,6 +65,7 @@ python3 evaluation.py \
   --rerank_top_k $rerank_top_k \
   --metrics $metrics \
   ${save_metrics_to_object:+--save_metrics_to_object} \
+  --run_name $run_name \
   --rewrite_model $rewrite_model \
   --retrieval_query_type $retrieval_query_type \
   --reranking_query_type $reranking_query_type \
