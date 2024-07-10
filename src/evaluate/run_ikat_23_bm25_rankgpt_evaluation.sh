@@ -19,6 +19,8 @@ rerank_quant="none"
 rankgpt_llm="gpt-3.5-turbo"
 window_size=4
 step=1
+#response generation:
+generation_model="none"
 #BM25
 bm25_k1=0.9
 bm25_b=0.4
@@ -56,6 +58,7 @@ python3 evaluation.py \
   --rankgpt_llm $rankgpt_llm \
   --window_size $window_size \
   --step $step \
+  --generation_model $generation_model \
   --bm25_k1 $bm25_k1 \
   --bm25_b $bm25_b \
   --fb_terms $fb_terms \

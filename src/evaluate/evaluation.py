@@ -32,6 +32,9 @@ from rerank import (
     hits_2_rankgpt_list
     )
     
+from response_generation import (
+    generate_responses
+    ) 
 
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
@@ -86,6 +89,10 @@ def get_args():
                         help="can be ['gpt-3.5-turbo',]")
     parser.add_argument("--window_size", type=int, default="5") 
     parser.add_argument("--step", type=int, default="1") 
+
+    # response generation:
+    parser.add_argument("--generation_model", type=str, default="none",
+                        help="can be ['none',]")
 
     # BM25 parameters
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
@@ -494,7 +501,7 @@ def get_eval_results(args):
     for qid in query_metrics_dic.keys():
         query_metrics_dic[qid]["num_rel"] = sum([1 for doc in qrel[qid].values() if doc > 0])
 
-    return query_metrics_dic, averaged_metrics, turn_list
+    return query_metrics_dic, averaged_metrics, turn_list, hits
 
 if __name__ == "__main__":
 
@@ -553,7 +560,13 @@ if __name__ == "__main__":
 
     ##########################
     # evaluate
-    query_metrics_dic, averaged_metrics, turn_list = get_eval_results(args)
+    query_metrics_dic, averaged_metrics, turn_list, hits = get_eval_results(args)
+    ##########################
+
+    ##########################
+    # response generation TODO
+    # this will append the response to the 
+    response_dict = generate_responses(hits, args) 
     ##########################
 
     # write results to topic list and save.
@@ -565,10 +578,12 @@ if __name__ == "__main__":
                         args.collection, 
                         args.retrieval_model, 
                         args.reranker,
+                        args.generation_model,
                         args.retrieval_query_type,
                         args.reranking_query_type,
                         args.generation_query_type,
-                        result_dict
+                        result_dict,
+                        response_dict[qid][0]
                     )
 
         save_turns_to_json(

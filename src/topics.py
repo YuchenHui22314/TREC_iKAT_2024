@@ -10,10 +10,12 @@ class Result:
     collection: str = None  # e.g. "AP"
     retrieval_model: str = None  # e.g. "ANCE"
     reranker: str = None  # e.g. "rankllama"
+    generation_model: str = None  # e.g. "gpt-4o"
     retrieval_query_type: str = None # e.g. what is UdeM?
     reranking_query_type: str = None # e.g. what is UdeM? Specifically, what is the history of UdeM?
     generation_query_type: str = None # e.g. please provide me with information about UdeM
     metrics: Dict[str, float] = None  # e.g. {"ndcg": 0.5, "map": 0.6}
+    response: str = None  # e.g. "UdeM is a university in Montreal, Quebec, Canada."
 
     def __eq__(self, another_instance: any) -> bool:
         if isinstance(another_instance, Result):
@@ -29,6 +31,8 @@ class Result:
                 self.reranking_query_type == another_instance.reranking_query_type
                 and
                 self.generation_query_type == another_instance.generation_query_type
+                and 
+                self.generation_model == another_instance.generation_model
             )
 
 
@@ -43,6 +47,7 @@ class Reformulation:
     '''
     reformulation_name: str = None
     reformulated_query: str = None
+    ptkb_provenance: List[int] = field(default_factory=list)
 
     
     
@@ -111,17 +116,19 @@ class Turn:
         collection: str, 
         retrieval_model: str,
         reranker: str,
+        generation_model: str,
         retrieval_query_type: str,
         reranking_query_type: str,
         generation_query_type: str
         ) -> Result:
         '''
-        Finds a result by its collection and retrieval model, reranker, retrieval query type, reranking query type, and generation query type.
+        Finds a result by its collection and retrieval model, reranker, generation_model, retrieval query type, reranking query type, and generation query type.
 
         Args:
             collection (str): The collection of the result to find.
             retrieval_model (str): The retrieval model of the result to find.
             reranker: The reranker of the result to find.
+            generation_model: The generation model to generate the final response.
             retrieval_query_type: The retrieval query type of the result to find.
             reranking_query_type: The reranking query type of the result to find.
             generation_query_type: The generation query type of the result to find.
@@ -133,6 +140,7 @@ class Turn:
             collection, 
             retrieval_model, 
             reranker,
+            generation_model,
             retrieval_query_type,
             reranking_query_type,
             generation_query_type
@@ -143,7 +151,7 @@ class Turn:
         elif len(list_of_found_results) == 1:
             return list_of_found_results[0]
         else:
-            raise ValueError(f"Multiple results with the same collection [{collection}], retrieval model [{retrieval_model}] reranker [{reranker}], retrieval query type [{retrieval_query_type}], reranking query type [{reranking_query_type}], generation query type [{generation_query_type}] found in the Turn object with id [{self.turn_id}]")
+            raise ValueError(f"Multiple results with the same collection [{collection}], retrieval model [{retrieval_model}] reranker [{reranker}] generator [{generation_model}],retrieval query type [{retrieval_query_type}], reranking query type [{reranking_query_type}], generation query type [{generation_query_type}] found in the Turn object with id [{self.turn_id}]")
     
     def find_reformulation(self, reformulation_name: str) -> Reformulation:
         '''
@@ -171,10 +179,12 @@ class Turn:
             collection:str, 
             retrieval_model:str, 
             reranker:str,
+            generation_model:str,
             retrieval_query_type:str,
             reranking_query_type:str,
             generation_query_type:str,
-            metrics_dict: Dict
+            metrics_dict: Dict,
+            response: str = None
             ) -> None:
         '''
         Adds a result to the Turn.
@@ -186,6 +196,7 @@ class Turn:
             collection, 
             retrieval_model,
             reranker,
+            generation_model,
             retrieval_query_type,
             reranking_query_type,
             generation_query_type
@@ -195,20 +206,24 @@ class Turn:
             collection, 
             retrieval_model,
             reranker,
+            generation_model,
             retrieval_query_type,
             reranking_query_type,
             generation_query_type,
-            metrics_dict
+            metrics_dict,
+            response
             )
             self.results.append(result)
         else:
-            result_found.metrics = metrics_dict
+            result_found.metrics = metrics_dict,
+            result_found.response = response
         
 
     def add_reformulation(
             self,
             reformulation_name: str,
-            reformulated_query: str
+            reformulated_query: str,
+            ptkb_provenance: List[int]
     ) -> None:
         '''
         Adds a reformulation to the turn.
@@ -222,6 +237,7 @@ class Turn:
             Reformulation(
                 reformulated_query = reformulated_query,
                 reformulation_name = reformulation_name,
+                ptkb_provenance = ptkb_provenance
                 )
             )
 
@@ -246,12 +262,6 @@ class Turn:
         query_type = original_query_type
         final_query = ""
 
-        if query_type == "current_utterance":
-            final_query = self.context_utterances
-        elif query_type == "oracle_utterance":
-            final_query = self.oracle_utterance
-        else:
-            raise ValueError(f"query_type {query_type} not supported")
 
         # check if we have already added this version to the json file
         reformulation = self.find_reformulation(query_type)
@@ -259,6 +269,12 @@ class Turn:
         if reformulation is not None:
             final_query = reformulation.reformulated_query
         else:
+            if query_type == "current_utterance":
+                final_query = self.context_utterances
+            elif query_type == "oracle_utterance":
+                final_query = self.oracle_utterance
+            else:
+                raise ValueError(f"query_type {query_type} not supported")
             self.reformulations.append(
                 Reformulation(
                     reformulated_query = final_query,
@@ -292,6 +308,7 @@ class Turn:
             self.add_reformulation(
                 reformulation_name = reformulation["reformulation_name"],
                 reformulated_query = reformulation["reformulated_query"],
+                ptkb_provenance = reformulation["ptkb_provenance"]
             )
 
         for result_dict in turn_dict["results"]:
@@ -299,10 +316,12 @@ class Turn:
                 collection = result_dict["collection"],
                 retrieval_model = result_dict["retrieval_model"],
                 reranker = result_dict["reranker"],
+                generation_model= result_dict["generation_model"],
                 retrieval_query_type = result_dict["retrieval_query_type"],
                 reranking_query_type = result_dict["reranking_query_type"],
                 generation_query_type = result_dict["generation_query_type"],
-                metrics_dict = result_dict["metrics"]
+                metrics_dict = result_dict["metrics"],
+                response = result_dict["response"]
             )
         
 
