@@ -77,3 +77,4 @@ python3 evaluation.py \
   --generation_query_type $generation_query_type \
   --prompt_type $prompt_type &>> $LOG_FILE
   #--use_rm3 \
+  #--just_run_no_evaluate \

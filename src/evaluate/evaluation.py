@@ -153,7 +153,7 @@ def get_args():
         ] 
     """)
 
-    parser.add_argument("--just_rank_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list save metrics to turn object.")
+    parser.add_argument("--just_run_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list save metrics to turn object.")
 
 
     args = parser.parse_args()
@@ -221,7 +221,7 @@ def get_query_list(args):
     
     return retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list
 
-def get_eval_results(args):
+def search(args):
 
 
     ###############
@@ -455,17 +455,11 @@ def get_eval_results(args):
                     ))
                 f.write('\n')
 
-    # read qrels
-    with open(args.qrel_file_path, 'r') as f_qrel:
-        qrel = pytrec_eval.parse_qrel(f_qrel)
-    # read ranking list
-    with open(ranking_list_path, 'r') as f_run:
-        run = pytrec_eval.parse_run(f_run)
 
     ##############################
     #  Export to ikat format
     ##############################
-    if args.just_rank_no_evaluate:
+    if args.just_run_no_evaluate:
         print("generating ikat format results...")
 
         exit("ikat format results saved.")
@@ -474,20 +468,29 @@ def get_eval_results(args):
     # TODO: enable without evaluation 
     ##############################
 
-    ##############################
-    # TODO: add run_name 
-    ##############################
 
     ##############################
     # TODO: evaluate ptkb ranking list 
     ##############################
 
+
+    return turn_list, hits
+
+
+def evaluate(args):
+
     ##############################
     # use pytrec_eval to evaluate
     ##############################
 
+    # read qrels
+    with open(args.qrel_file_path, 'r') as f_qrel:
+        qrel = pytrec_eval.parse_qrel(f_qrel)
+    # read ranking list
+    with open(ranking_list_path, 'r') as f_run:
+        run = pytrec_eval.parse_run(f_run)
 
-    # then evaluate
+    #  evaluate
     print("trec_eval evaluating...")
     evaluator = pytrec_eval.RelevanceEvaluator(qrel, set(metrics_list))
     query_metrics_dic = evaluator.evaluate(run)
@@ -502,13 +505,15 @@ def get_eval_results(args):
     for qid in query_metrics_dic.keys():
         query_metrics_dic[qid]["num_rel"] = sum([1 for doc in qrel[qid].values() if doc > 0])
 
-    return query_metrics_dic, averaged_metrics, turn_list, hits
+    return query_metrics_dic, averaged_metrics
+    
 
 if __name__ == "__main__":
 
     ##########
     # get args
     ##########
+
     args = get_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
@@ -560,13 +565,20 @@ if __name__ == "__main__":
     metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
 
     ##########################
+    # Search
+    ##########################
+    turn_list, hits = search(args)
+    ##########################
+
+    ##########################
     # evaluate
-    query_metrics_dic, averaged_metrics, turn_list, hits = get_eval_results(args)
+    ##########################
+    query_metrics_dic, averaged_metrics = evaluate(args)
     ##########################
 
     ##########################
     # response generation TODO
-    # this will append the response to the 
+    ##########################
     response_dict = generate_responses(hits, args) 
     ##########################
 
