@@ -32,9 +32,9 @@ retrieval_top_k=1000
 rerank_top_k=50
 generation_top_k=3
 metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
-save_metrics_to_object=false
 # project specific
 run_name="none"
+# turn to true to yield trec submission format.
 rewrite_model="no_rewrite"
 retrieval_query_type="oracle_utterance"
 reranking_query_type="oracle_utterance"
@@ -69,12 +69,12 @@ python3 evaluation.py \
   --rerank_top_k $rerank_top_k \
   --generation_top_k $generation_top_k \
   --metrics $metrics \
-  ${save_metrics_to_object:+--save_metrics_to_object} \
   --run_name $run_name \
   --rewrite_model $rewrite_model \
   --retrieval_query_type $retrieval_query_type \
   --reranking_query_type $reranking_query_type \
   --generation_query_type $generation_query_type \
   --prompt_type $prompt_type &>> $LOG_FILE
-  #--use_rm3 \
-  #--just_run_no_evaluate \
+  # --use_rm3 \
+  # --save_results_to_object \
+  # --just_run_no_evaluate \

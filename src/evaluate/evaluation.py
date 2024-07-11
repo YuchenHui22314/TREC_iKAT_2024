@@ -12,7 +12,6 @@ from dataclasses import asdict
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
 
-from rank_gpt import run_retriever, sliding_windows
 from topics import (
     Turn, 
     Result,
@@ -22,22 +21,16 @@ from topics import (
     filter_ikat_23_evaluated_turns,
     )
 
-from rerank import (
-    load_rankllama, 
-    rerank_rankllama,
-    load_t5_DDP,
-    rerank_t5_DDP,
-    load_t5_DP,
-    rerank_t5_DP,
-    hits_2_rankgpt_list
-    )
     
 from response_generation import (
     generate_responses
     ) 
 
-from pyserini.search.lucene import LuceneSearcher
-from pyserini.search import FaissSearcher
+from evaluation_util import (
+    search,
+    evaluate
+)
+
 from pyserini.search import get_topics, get_qrels
 import pytrec_eval
 
@@ -114,7 +107,7 @@ def get_args():
 
     #parser.add_argument("--rel_threshold", type=int, default="1")
 
-    parser.add_argument("--save_metrics_to_object",  action="store_true", help="if we will save metrics to turn object.")
+    parser.add_argument("--save_results_to_object",  action="store_true", help="if we will save eval results (metrics + response) to turn/topic object.")
 
     #########################
     # ikat 2024 project related config
@@ -122,6 +115,8 @@ def get_args():
 
     parser.add_argument("--run_name", type=str, default="none",
                         help="run name for trec ikat submission. If none, will use file name stem as run name.")
+
+    parser.add_argument("--just_run_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list and save metrics to turn/topic object.")
 
     parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
                         help="can be [no_rewrite, gpt-4-turbo]")
@@ -153,7 +148,6 @@ def get_args():
         ] 
     """)
 
-    parser.add_argument("--just_run_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list save metrics to turn object.")
 
 
     args = parser.parse_args()
@@ -221,274 +215,6 @@ def get_query_list(args):
     
     return retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list
 
-def search(
-    retrieval_query_list: List[str], 
-    reranking_query_list: List[str], 
-    qid_list_string: List[str], 
-    args: Any
-    ) -> Dict[str, List[Any]]:
-
-    #########################################
-    # pyserini search. Output pyserini hits.
-    #########################################
-
-    # sparse search
-    if args.retrieval_model == "BM25":
-        print("BM 25 searching...")
-        searcher = LuceneSearcher(args.index_dir_path)
-        searcher.set_bm25(args.bm25_k1, args.bm25_b)
-
-        # rm3 pseudo relevance feedback
-        if args.use_rm3:
-            searcher.set_rm3(
-                fb_terms = args.fb_terms,
-                fb_docs = args.fb_docs,
-                original_query_weight = args.original_query_weight
-            )
-                
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
-
-    # dense search
-    elif args.retrieval_model in ["ance", "dpr"]:
-        print(f"{args.retrieval_model} searching...")
-        searcher = FaissSearcher(
-            args.index_dir_path,
-            args.dense_query_encoder_path 
-        )
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
-
-
-    ##############################
-    # TODO: add splade
-    ##############################
-
-
-    ##############################
-    # reranking
-    ##############################
-
-
-    if not args.reranker == "none":
-
-        print(f"{args.reranker} reranking top {args.rerank_top_k}...")
-         
-
-        # generate a qid-reranking_query dictionary
-        reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(qid_list_string, reranking_query_list)}
-
-        # generate input format required by rankgpt
-        rank_gpt_list, _ = hits_2_rankgpt_list(searcher, reranking_query_dic, hits)
-
-    if args.reranker == "rankgpt":
-
-        # get hyperparameters
-        llm_name = args.rankgpt_llm
-        rank_end = args.rerank_top_k
-        step = args.step
-        window_size = args.window_size
-        if "gpt" in llm_name:
-            token = os.getenv('openai_key')
-        elif "claude" in llm_name:
-            token = os.getenv('claude_key')
-        else:
-            raise NotImplementedError(f"llm_name {llm_name} not implemented")
-        
-        print("reranking")
-        # for every query:
-        for item in tqdm(
-            rank_gpt_list, 
-            desc="Ranking with rankgpt", 
-            unit="query", 
-            total=len(rank_gpt_list)
-            ):
-
-            new_item = sliding_windows(
-                item, 
-                rank_start=0, 
-                rank_end=rank_end, 
-                window_size=window_size,
-                step=step,
-                model_name=llm_name, 
-                api_key=token)
-
-            qid = new_item["hits"][0]["qid"]
-            assert len(hits[qid]) == len(new_item["hits"]), f"retrieval length should be equal to reranking length. {len(hits[qid])} != {len(new_item['hits'])}"
-
-            # sort hits[qid] to ensure the descending order
-            hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
-
-            # update doc id in the ranking list
-            for i in range(len(hits[qid])):
-                hits[qid][i].docid = new_item["hits"][i]["docid"]
-
-
-    elif args.reranker == "rankllama":
-
-        if args.rerank_quant == "none":
-            quant_4bit = False
-            quant_8bit = False
-        elif args.rerank_quant == "8b":
-            quant_4bit = False
-            quant_8bit = True
-        elif args.rerank_quant == "4b":
-            quant_4bit = True
-            quant_8bit = False
-
-        print("loading rankllama model")
-        tokenizer, model = load_rankllama(
-            args.cache_dir,
-            quant_8bit = quant_8bit,
-            quant_4bit = quant_4bit
-            )
-
-        print("reranking")
-        for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
-
-            reranking_query = reranking_query_dic[qid]
-            reranked_scores = rerank_rankllama(
-                reranking_query,
-                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
-                tokenizer,
-                model
-            )
-
-            np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
-
-            indexes = np.argsort(np_reranked_scores)[::-1]
-            for rank, index in enumerate(indexes):
-                hit[index].rank = rank 
-            
-            # change the score according to the rank
-            for rank, doc_object in enumerate(hit):
-                if rank < args.rerank_top_k:
-                    doc_object.score = 1/(doc_object.rank + 1)
-                else:
-                    doc_object.score = 1/(rank + 1)
-            
-            # sort the hits by score
-            # hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
-
-    elif "monot5" in args.reranker:
-
-        # get reranker_name
-        if args.reranker == "monot5_base":
-            reranker_name = "castorini/monot5-base-msmarco"
-        elif args.reranker == "monot5_base_10k":
-            reranker_name = "castorini/monot5-base-msmarco-10k"
-        else:
-            raise NotImplementedError(f"reranker {args.reranker} not implemented")
-
-        # load model
-        print("loading t5 model")
-        tokenizer, model, decoder_stard_id, targeted_ids =\
-             load_t5_DP(args.cache_dir, reranker_name)
-
-        print("reranking")
-        for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
-
-            reranking_query = reranking_query_dic[qid]
-
-            reranked_scores = rerank_t5_DP(
-                reranking_query,
-                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
-                tokenizer,
-                model,
-                decoder_stard_id,
-                targeted_ids,
-            )
-
-            np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
-
-            indexes = np.argsort(np_reranked_scores)[::-1]
-            for rank, index in enumerate(indexes):
-                hit[index].rank = rank 
-            
-            # change the score according to the rank
-            for rank, doc_object in enumerate(hit):
-                if rank < args.rerank_top_k:
-                    doc_object.score = 1/(doc_object.rank + 1)
-                else:
-                    doc_object.score = 1/(rank + 1)
-            
-            # sort the hits by score
-            # hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
-
-    ##############################
-    # save ranking list 
-    ##############################
-
-
-    # save ranking list
-    # format: query-id Q0 document-id rank score run_name
-    if args.run_name == "none":
-        run_name = file_name_stem
-    else:
-        run_name = args.run_name 
-
-    with open(ranking_list_path, "w") as f:
-        for qid in qid_list_string:
-            for i, item in enumerate(hits[qid]):
-                f.write("{} {} {} {} {} {}".format(
-                    qid,
-                    "Q0",
-                    item.docid,
-                    i+1,
-                    item.score,
-                    run_name
-                    ))
-                f.write('\n')
-
-
-    ##############################
-    #  Export to ikat format
-    ##############################
-    if args.just_run_no_evaluate:
-        print("generating ikat format results...")
-
-        exit("ikat format results saved.")
-
-    ##############################
-    # TODO: enable without evaluation 
-    ##############################
-
-
-    ##############################
-    # TODO: evaluate ptkb ranking list 
-    ##############################
-
-    return hits
-
-
-def evaluate(args):
-
-    ##############################
-    # use pytrec_eval to evaluate
-    ##############################
-
-    # read qrels
-    with open(args.qrel_file_path, 'r') as f_qrel:
-        qrel = pytrec_eval.parse_qrel(f_qrel)
-    # read ranking list
-    with open(ranking_list_path, 'r') as f_run:
-        run = pytrec_eval.parse_run(f_run)
-
-    #  evaluate
-    print("trec_eval evaluating...")
-    evaluator = pytrec_eval.RelevanceEvaluator(qrel, set(metrics_list))
-    query_metrics_dic = evaluator.evaluate(run)
-
-    # average metrics
-    metrics = {metric : [metrics[metric] for metrics in query_metrics_dic.values()] for metric in metrics_list_key_form}   
-
-    averaged_metrics = { metric : np.average(metric_list) for metric, metric_list in metrics.items() }
-
-    # for each query, add the number of relevant documents in query_metrics_dic
-    # why not use sum(list(qrel[qid].values()))? Because relevance judgement may be graded instead of binary.
-    for qid in query_metrics_dic.keys():
-        query_metrics_dic[qid]["num_rel"] = sum([1 for doc in qrel[qid].values() if doc > 0])
-
-    return query_metrics_dic, averaged_metrics
-    
 
 if __name__ == "__main__":
 
@@ -511,7 +237,7 @@ if __name__ == "__main__":
     assert os.path.exists(args.output_dir_path), "Output dir not found"
 
     #########################################################
-    # first generate an identifiable name for current run
+    #  generate an identifiable name for current run
     #########################################################
     rm3 = "_rm3" if args.use_rm3 else ""
     file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{rm3}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
@@ -526,30 +252,30 @@ if __name__ == "__main__":
         path = os.path.join(base_folder, subdir)
         os.makedirs(path, exist_ok=True)
 
-    # generate ranking list file name
+    # ranking list path
     ranking_list_path = os.path.join(
         base_folder,
         "ranking",
         file_name_stem + ".txt")
 
+    # run all metrics path
     metrics_path = os.path.join(
         base_folder,
         "metrics",
         file_name_stem + ".json")
 
-    # save metric dictionary
+    # per query metrics dictionary path
     metrics_dict_path = os.path.join(
         base_folder,
         "per_query_metrics",
         file_name_stem + "_dict.json")
 
-    # save ikat format output
+    # ikat format output path
     ikat_output_path = os.path.join(
         base_folder,
         "ikat_format_output",
-        file_name_stem + ".json")
+        args.run_name + ".json")
 
-    ## TODO: use this path
 
     ###################################################
     # get query list and qid list as well as Turn list
@@ -565,6 +291,9 @@ if __name__ == "__main__":
     ##########################
     # Search
     ##########################
+    args.ranking_list_path = ranking_list_path
+    args.file_name_stem = file_name_stem
+
     hits = search(
         retrieval_query_list,
         reranking_query_list,
@@ -576,71 +305,92 @@ if __name__ == "__main__":
     # response generation TODO
     ##########################
     response_dict = generate_responses(hits, args) 
-    ##########################
+
+    ##############################
+    #  Export to ikat format
+    ##############################
+    if args.just_run_no_evaluate:
+        print("generating ikat format results...")
 
 
-    ##########################
-    # evaluate
-    ##########################
-    # read metrics 
-    metrics_list = args.metrics.split(",")
-    metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
-    # evaluate
-    query_metrics_dic, averaged_metrics = evaluate(args)
+    else:
 
-    ##########################
-    # saving evaluation results
-    ##########################
-    # write results to topic list and save.
-    if args.save_metrics_to_object:
-        for qid, result_dict in query_metrics_dic.items():
-            for turn in turn_list:
-                if str(turn.turn_id) == qid:
-                    turn.add_result(
-                        args.collection, 
-                        args.retrieval_model, 
-                        args.reranker,
-                        args.generation_model,
-                        args.retrieval_query_type,
-                        args.reranking_query_type,
-                        args.generation_query_type,
-                        result_dict,
-                        response_dict[qid][0]
-                    )
-
-        save_turns_to_json(
-            turn_list,
-            args.input_query_path
-        )
-
-    # save metrics
-    print("saving results...")
+        ##########################
+        # evaluate ranking
+        ##########################
 
 
-    # save metrics  
-    with open(metrics_path, "w") as f:
-        json.dump(averaged_metrics, f, indent=4)
+        ##############################
+        # TODO: evaluate ptkb ranking list 
+        ##############################
+        ####################################
+        # TODO: evaluate generation quality 
+        ####################################
+        # process metrics 
+        metrics_list = args.metrics.split(",")
+        metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]
 
-    # save also the args values in the same file
-    with open(metrics_path, "a") as f:
-        f.write("\n")
-        f.write(json.dumps(vars(args), indent=4))
-    
-    # save metrics dictionary
-    with open(metrics_dict_path, "w") as f:
-        json.dump(query_metrics_dic, f, indent=4)
+        # evaluate
+        query_metrics_dic, averaged_metrics = evaluate(
+            args.qrel_file_path,
+            ranking_list_path,
+            metrics_list,
+            metrics_list_key_form
+            )
 
-    # for each metric, append a line in the corresponding file
-    # for pourpose of comparison. 
-    for metric_name in metrics_list_key_form:
-        metric_file_path = os.path.join(
-            base_folder,
-            "metrics",
-            f"{metric_name}.txt")
+        ##########################
+        # saving evaluation results
+        ##########################
+        # write results to topic list and save.
+        if args.save_results_to_object:
+            for qid, result_dict in query_metrics_dic.items():
+                for turn in turn_list:
+                    if str(turn.turn_id) == qid:
+                        turn.add_result(
+                            args.collection, 
+                            args.retrieval_model, 
+                            args.reranker,
+                            args.generation_model,
+                            args.retrieval_query_type,
+                            args.reranking_query_type,
+                            args.generation_query_type,
+                            result_dict,
+                            response_dict[qid][0]
+                        )
+
+            save_turns_to_json(
+                turn_list,
+                args.input_query_path
+            )
+
+        # save metrics
+        print("saving results...")
+
+
+        # save metrics  
+        with open(metrics_path, "w") as f:
+            json.dump(averaged_metrics, f, indent=4)
+
+        # save also the args values in the same file
+        with open(metrics_path, "a") as f:
+            f.write("\n")
+            f.write(json.dumps(vars(args), indent=4))
         
-        # append a line in this file in the following format:
-        with open(metric_file_path, "a") as f:
-            f.write(file_name_stem + f"-[{averaged_metrics[metric_name]}]\n")
+        # save metrics dictionary
+        with open(metrics_dict_path, "w") as f:
+            json.dump(query_metrics_dic, f, indent=4)
+
+        # for each metric, append a line in the corresponding file
+        # for pourpose of comparison. 
+        for metric_name in metrics_list_key_form:
+            metric_file_path = os.path.join(
+                base_folder,
+                "metrics",
+                f"{metric_name}.txt")
+            
+            # append a line in this file in the following format:
+            with open(metric_file_path, "a") as f:
+                f.write(file_name_stem + f"-[{averaged_metrics[metric_name]}]\n")
 
 
     print("done.")
