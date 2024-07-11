@@ -13,6 +13,16 @@ from dataclasses import asdict
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
 
+from topics import (
+    Turn, 
+    Result,
+    Reformulation,
+    save_turns_to_json, 
+    load_turns_from_json,
+    filter_ikat_23_evaluated_turns,
+    get_turn_by_qid
+    )
+
 from rank_gpt import run_retriever, sliding_windows
 
 from rerank import (
@@ -24,6 +34,8 @@ from rerank import (
     rerank_t5_DP,
     hits_2_rankgpt_list
     )
+
+from constants import IKAT_AUTOMATIC_RUN_TEMPLATE_DICT
     
 from response_generation import (
     generate_responses
@@ -329,3 +341,57 @@ def evaluate(
         query_metrics_dic[qid]["num_rel"] = sum([1 for doc in qrel[qid].values() if doc > 0])
 
     return query_metrics_dic, averaged_metrics
+
+
+def generate_and_save_ikat_submission(
+    ikat_output_path: str,
+    run_name: str,
+    reformulation_name: str,
+    hits: Dict[str, List[Any]],
+    turn_list : List[Turn],
+    response_dict: Dict[str, List[str]],
+    top_k: int
+    ) -> None:
+
+    # resulting dictionary
+    result_dict = IKAT_AUTOMATIC_RUN_TEMPLATE_DICT
+    result_dict["run_name"] = run_name
+
+    for qid, ordered_doc_object_list in hits.items():
+
+        three_chiffres = qid.split("-")
+        # adapt turn_id format
+        turn_id = f"{three_chiffres[0]}-{three_chiffres[1]}_{three_chiffres[2]}"
+        
+        # get ptkb_provenance, which should be from the reformulation.
+        turn_object = get_turn_by_qid(qid,turn_list)
+        ptkb_provenance = turn_object.get_ptkb_provenance(reformulation_name)
+
+        responses = []
+        for rank, response in enumerate(response_dict[qid]):
+            real_rank = rank + 1
+            responses.append(
+                {
+                    "rank": real_rank,
+                    "text": response,
+                    "ptkb_provenance": ptkb_provenance,
+                    "passage_provenance": [
+                        {
+                            "id": doc_object.docid,
+                            "score": doc_object.score,
+                            "used": False if i >= top_k else True
+                        } for i, doc_object in enumerate(ordered_doc_object_list)
+                    ]
+                }
+            )
+        
+
+        result_dict["turns"].append(
+            {
+                "turn_id": turn_id,
+                "responses": responses
+            }
+            )
+        
+    with open(ikat_output_path, "w") as f:
+        json.dump(result_dict, f, indent=4)

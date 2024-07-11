@@ -174,6 +174,20 @@ class Turn:
         else:
             raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the turn object with id {self.turn_id}")
     
+    def get_ptkb_provenance(
+        self, 
+        reformulation_name: str
+        ) -> List[int]:
+
+        reformulation_object = self.find_reformulation(reformulation_name)
+        if reformulation_object is None:
+            raise ValueError(f"Reformulation {reformulation_name} not found in turn {turn_id}")
+        else:
+            ptkb_provenance = reformulation_object.ptkb_provenance
+        
+        return ptkb_provenance
+
+    
     def add_result(
             self, 
             collection:str, 
@@ -421,6 +435,25 @@ def filter_ikat_23_evaluated_turns(
             if turn.turn_id in IKAT_23_EVALUATED_TURNS:
                 filtered_turns.append(turn)
         return filtered_turns
+
+def get_turn_by_qid(
+    qid: str,
+    turn_list: List[Turn]
+)-> Turn:
+    '''
+    Get a turn by its turn_id
+    '''
+    turn_found = None
+    for turn in turn_list:
+        if turn.turn_id == qid:
+            turn_found = turn
+            break
+    
+    if turn_found is None:
+        raise ValueError(f"Turn with id {qid} not found in the list of turns")
+    
+    return turn_found
+
 
     
 

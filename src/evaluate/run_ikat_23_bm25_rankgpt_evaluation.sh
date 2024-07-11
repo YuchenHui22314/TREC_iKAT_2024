@@ -28,8 +28,8 @@ bm25_b=0.4
 fb_terms=10
 fb_docs=10
 original_query_weight=0.9
-retrieval_top_k=1000
-rerank_top_k=50
+retrieval_top_k=5
+rerank_top_k=5
 generation_top_k=3
 metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recip_rank"
 # project specific
@@ -70,6 +70,7 @@ python3 evaluation.py \
   --generation_top_k $generation_top_k \
   --metrics $metrics \
   --run_name $run_name \
+  --just_run_no_evaluate \
   --rewrite_model $rewrite_model \
   --retrieval_query_type $retrieval_query_type \
   --reranking_query_type $reranking_query_type \
@@ -77,4 +78,3 @@ python3 evaluation.py \
   --prompt_type $prompt_type &>> $LOG_FILE
   # --use_rm3 \
   # --save_results_to_object \
-  # --just_run_no_evaluate \

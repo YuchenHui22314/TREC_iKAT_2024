@@ -28,7 +28,8 @@ from response_generation import (
 
 from evaluation_util import (
     search,
-    evaluate
+    evaluate,
+    generate_and_save_ikat_submission
 )
 
 from pyserini.search import get_topics, get_qrels
@@ -309,9 +310,20 @@ if __name__ == "__main__":
     ##############################
     #  Export to ikat format
     ##############################
-    if args.just_run_no_evaluate:
-        print("generating ikat format results...")
+    print("generating ikat format results...")
+    generate_and_save_ikat_submission(
+        ikat_output_path,
+        args.run_name,
+        # TODO: other mechanism for choosing the correct ptkb_provenance ...
+        args.reranking_query_type,
+        hits,
+        turn_list,
+        response_dict,
+        args.generation_top_k
+    )
 
+    if args.just_run_no_evaluate:
+        pass
 
     else:
 
