@@ -1,0 +1,15 @@
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_01.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_02.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_03.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_04.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_05.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_06.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_07.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_08.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_09.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_10.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_11.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_12.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_13.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_14.jsonl.bz2
+wget -c --user=RALI --password=rush0gieJa https://ikattrecweb.grill.science/RALI/ikat_2023_passages_15.jsonl.bz2

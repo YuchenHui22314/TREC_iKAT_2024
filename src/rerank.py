@@ -10,7 +10,8 @@ from transformers import (
     AutoModelForSequenceClassification, 
     AutoTokenizer,
     T5ForConditionalGeneration,
-    PreTrainedTokenizer
+    PreTrainedTokenizer,
+    AutoModel
     )
 
 from llm import monoT5
@@ -46,6 +47,8 @@ def get_model(
     return model
 
 
+
+
 def load_rankllama(
     cache_dir: str,
     quant_8bit: bool = True,
@@ -66,6 +69,7 @@ def load_rankllama(
     model.config.pad_token_id = 0
 
     return tokenizer, model
+
 
 
 def load_t5_DP(

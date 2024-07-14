@@ -10,9 +10,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import DataParallel
 from tqdm import tqdm
+from sklearn.preprocessing import normalize
+
+from pyserini.encode import DocumentEncoder, QueryEncoder
 
 from openai import OpenAI
 from transformers import (
+    AutoModel,
     AutoTokenizer,
     AutoConfig,
     AutoModelForCausalLM,
@@ -22,9 +26,13 @@ from transformers import (
     T5Tokenizer,
     T5ForConditionalGeneration
 )
+
+
 from torch.utils.data import DataLoader
 from accelerate import Accelerator
-from typing import Mapping, Tuple, List, Optional, Union
+from typing import Mapping, Tuple, List, Optional, Union, Any
+from peft import PeftModel, PeftConfig
+
 from collections import defaultdict
 from dataclasses import dataclass, asdict
 
@@ -362,3 +370,118 @@ class monoT5(T5ForConditionalGeneration):
         batch_logits = self(**batch, labels=dummy_labels).logits
 
         return softmax(batch_logits[:, 0, self.targeted_ids]).detach().cpu().numpy() # B 2
+
+
+def get_model_repllama(
+    peft_model_name, 
+    cache_dir,
+    quant_8bit = True,
+    quant_4bit = False,
+    ):
+    config = PeftConfig.from_pretrained(peft_model_name, cache_dir=cache_dir)
+    base_model = AutoModel.from_pretrained(
+        config.base_model_name_or_path, 
+        cache_dir=cache_dir, 
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+        attn_implementation="flash_attention_2",
+        load_in_8bit = quant_8bit,
+        load_in_4bit = quant_4bit,
+        )
+
+    model = PeftModel.from_pretrained(base_model, peft_model_name)
+    model = model.merge_and_unload()
+    model.eval()
+
+    return model
+
+def load_repllama(
+    cache_dir: str,
+    quant_8bit: bool = True,
+    quant_4bit: bool = False
+    ) -> Tuple[Any,Any]:
+
+    tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
+    model = get_model_repllama(
+        'castorini/repllama-v1-7b-lora-passage',
+        cache_dir,
+        quant_8bit,
+        quant_4bit
+        )
+    
+    tokenizer.pad_token_id = 0
+    tokenizer.padding_side = "right"
+    model.config.pad_token_id = 0
+    
+    return tokenizer, model
+
+class RepllamaDocumentEncoder(DocumentEncoder):
+
+    def __init__(
+        self, 
+        cache_dir: str, 
+        quant_4bit: bool = False, 
+        quant_8bit: bool = False
+        ):
+        self.tokenizer, self.model = load_repllama(
+            cache_dir=cache_dir,
+            quant_4bit=quant_4bit,
+            quant_8bit=quant_8bit
+        ) 
+
+    def encode(self, texts):
+
+        shared_tokenizer_kwargs = dict(
+            max_length=2048,
+            truncation=True,
+            padding=True,
+            return_tensors='pt'
+        )
+
+        input_kwargs = {}
+        input_kwargs["text"] = [f'passage: {text}</s>' for text in texts]  
+
+
+        inputs = self.tokenizer(**input_kwargs, **shared_tokenizer_kwargs)
+        outputs = self.model(**inputs)
+        # last place of the sequence
+        passage_embeddings = outputs.last_hidden_state[:,-1,:].detach().cpu()
+        passage_embeddings = torch.nn.functional.normalize(passage_embeddings, p=2, dim=1)
+        passage_embeddings = torch.tensor(passage_embeddings, dtype=torch.float32).numpy()
+
+        return passage_embeddings
+
+
+
+
+class AutoQueryEncoder(QueryEncoder):
+    def __init__(self, encoder_dir: str, tokenizer_name: str = None, device: str = 'cpu',
+                 pooling: str = 'cls', l2_norm: bool = False, prefix=None):
+        self.device = device
+        self.model = AutoModel.from_pretrained(encoder_dir)
+        self.model.to(self.device)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name or encoder_dir)
+        self.pooling = pooling
+        self.l2_norm = l2_norm
+        self.prefix = prefix
+
+    def encode(self, query: str, **kwargs):
+        if self.prefix:
+            query = f'{self.prefix} {query}'
+        inputs = self.tokenizer(
+            query,
+            add_special_tokens=True,
+            return_tensors='pt',
+            truncation='only_first',
+            padding='longest',
+            return_token_type_ids=False,
+        )
+        inputs.to(self.device)
+        outputs = self.model(**inputs)[0].detach().cpu().numpy()
+        if self.pooling == "mean":
+            embeddings = np.average(outputs, axis=-2)
+        else:
+            embeddings = outputs[:, 0, :]
+        if self.l2_norm:
+            embeddings = normalize(embeddings, norm='l2')
+        return embeddings.flatten()
