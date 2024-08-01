@@ -61,7 +61,7 @@ def get_args():
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
     
     parser.add_argument("--retrieval_model", type=str, default="BM25",
-                        help="can be [BM25, ance, dpr, splade]")
+                        choices= ["BM25", "ance", "dpr", "splade", "repllama"])
 
     # hugging_face cache_dir
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
@@ -73,20 +73,20 @@ def get_args():
 
 
     parser.add_argument("--reranker", type=str, default="none",
-                        help="can be ['none', rankllama, rankgpt, 'monot5_base','monot5_base_10k']")
+                        choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k'])
 
     # rankllama
     parser.add_argument("--rerank_quant", type=str, default="none",
-                        help="can be ['none','8b','4b']")
+                        choices=['none','8b','4b'])
     # rankGPT
     parser.add_argument("--rankgpt_llm", type=str, default="gpt-3.5-turbo",
-                        help="can be ['gpt-3.5-turbo',]")
+                        choices=['gpt-3.5-turbo'])
     parser.add_argument("--window_size", type=int, default="5") 
     parser.add_argument("--step", type=int, default="1") 
 
     # response generation:
     parser.add_argument("--generation_model", type=str, default="none",
-                        help="can be ['none',]")
+                        choices=['none',])
 
     # BM25 parameters
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82

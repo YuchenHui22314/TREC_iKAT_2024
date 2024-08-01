@@ -375,6 +375,7 @@ class monoT5(T5ForConditionalGeneration):
 def get_model_repllama(
     peft_model_name, 
     cache_dir,
+    device_map,
     quant_8bit = True,
     quant_4bit = False,
     ):
@@ -383,7 +384,7 @@ def get_model_repllama(
         config.base_model_name_or_path, 
         cache_dir=cache_dir, 
         torch_dtype=torch.bfloat16,
-        device_map="auto",
+        device_map=device_map,
         attn_implementation="flash_attention_2",
         load_in_8bit = quant_8bit,
         load_in_4bit = quant_4bit,
@@ -397,6 +398,7 @@ def get_model_repllama(
 
 def load_repllama(
     cache_dir: str,
+    device_map,
     quant_8bit: bool = True,
     quant_4bit: bool = False
     ) -> Tuple[Any,Any]:
@@ -405,6 +407,7 @@ def load_repllama(
     model = get_model_repllama(
         'castorini/repllama-v1-7b-lora-passage',
         cache_dir,
+        device_map,
         quant_8bit,
         quant_4bit
         )
@@ -419,15 +422,18 @@ class RepllamaDocumentEncoder(DocumentEncoder):
 
     def __init__(
         self, 
-        cache_dir: str, 
+        cache_dir: str,
+        device_map, 
         quant_4bit: bool = False, 
         quant_8bit: bool = False
         ):
         self.tokenizer, self.model = load_repllama(
             cache_dir=cache_dir,
+            device_map = device_map,
             quant_4bit=quant_4bit,
             quant_8bit=quant_8bit
         ) 
+        self.device = device_map
 
     def encode(self, texts):
 
@@ -443,6 +449,10 @@ class RepllamaDocumentEncoder(DocumentEncoder):
 
 
         inputs = self.tokenizer(**input_kwargs, **shared_tokenizer_kwargs)
+
+        if "cuda" in self.device:
+            inputs.to(self.device)
+
         outputs = self.model(**inputs)
         # last place of the sequence
         passage_embeddings = outputs.last_hidden_state[:,-1,:].detach().cpu()

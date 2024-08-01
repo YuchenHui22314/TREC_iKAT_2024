@@ -17,6 +17,9 @@
 import argparse
 import sys
 
+sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
+from llm import RepllamaDocumentEncoder
+
 from pyserini.encode import JsonlRepresentationWriter, FaissRepresentationWriter, JsonlCollectionIterator
 from pyserini.encode import DprDocumentEncoder, TctColBertDocumentEncoder, AnceDocumentEncoder, AggretrieverDocumentEncoder, AutoDocumentEncoder, CosDprDocumentEncoder, ClipDocumentEncoder
 from pyserini.encode import UniCoilDocumentEncoder
@@ -37,9 +40,10 @@ encoder_class_map = {
     "auto": AutoDocumentEncoder,
     "clip": ClipDocumentEncoder,
     "contriever": AutoDocumentEncoder,
+    "repllama": RepllamaDocumentEncoder
 }
 
-def init_encoder(encoder, encoder_class, device, pooling, l2_norm, prefix, multimodal):
+def init_encoder(encoder, encoder_class, device, pooling, l2_norm, prefix, multimodal, cache_dir):
     _encoder_class = encoder_class
 
     # determine encoder_class
@@ -69,6 +73,9 @@ def init_encoder(encoder, encoder_class, device, pooling, l2_norm, prefix, multi
         kwargs.update(dict(pooling=pooling, l2_norm=l2_norm, prefix=prefix))
     if (_encoder_class == "clip") or ("clip" in encoder):
         kwargs.update(dict(l2_norm=True, prefix=prefix, multimodal=multimodal))
+    if (_encoder_class == "repllama"):
+        kwargs = dict(cache_dir = cache_dir, device_map = device, quant_4bit = True, quant_8bit = False)
+
     return encoder_class(**kwargs)
 
 
@@ -114,9 +121,14 @@ if __name__ == '__main__':
     output_parser.add_argument('--to-faiss', action='store_true', default=False)
 
     encoder_parser = commands.add_parser('encoder')
+    # repllama
+    encoder_parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
+    #parser.add_argument("--rerank_quant", type=str, default="none",
+                        #help="can be ['none','8b','4b']")
+
     encoder_parser.add_argument('--encoder', type=str, help='encoder name or path', required=True)
     encoder_parser.add_argument('--encoder-class', type=str, required=False, default=None,
-                                choices=["dpr", "bpr", "tct_colbert", "ance", "sentence-transformers", "openai-api", "auto", "contriever"],
+                                choices=["dpr", "bpr", "tct_colbert", "ance", "sentence-transformers", "openai-api", "auto", "contriever", "repllama"],
                                 help='which query encoder class to use. `default` would infer from the args.encoder')
     encoder_parser.add_argument('--fields', help='fields to encode', nargs='+', default=['text'], required=False)
     encoder_parser.add_argument('--multimodal', action='store_true', default=False)
@@ -135,7 +147,7 @@ if __name__ == '__main__':
 
     args = parse_args(parser, commands)
     delimiter = args.input.delimiter.replace("\\n", "\n")  # argparse would add \ prior to the passed '\n\n'
-    encoder = init_encoder(args.encoder.encoder, args.encoder.encoder_class, device=args.encoder.device, pooling=args.encoder.pooling, l2_norm=args.encoder.l2_norm, prefix=args.encoder.prefix, multimodal=args.encoder.multimodal)
+    encoder = init_encoder(args.encoder.encoder, args.encoder.encoder_class, device=args.encoder.device, pooling=args.encoder.pooling, l2_norm=args.encoder.l2_norm, prefix=args.encoder.prefix, multimodal=args.encoder.multimodal, cache_dir=args.encoder.cache_dir)
     if args.output.to_faiss:
         embedding_writer = FaissRepresentationWriter(args.output.embeddings, dimension=args.encoder.dimension)
     else:
@@ -160,6 +172,8 @@ if __name__ == '__main__':
             for field_name in args.encoder.fields:
                 kwargs[f'{field_name}s'] = batch_info[field_name] 
             
+            if "llama" in args.encoder.encoder_class:
+                kwargs = dict(texts = batch_info['text'])
             embeddings = encoder.encode(**kwargs)
             batch_info['vector'] = embeddings
             embedding_writer.write(batch_info, args.input.fields)
