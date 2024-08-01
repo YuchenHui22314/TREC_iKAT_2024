@@ -111,6 +111,12 @@ class Turn:
     def __repr__(self) -> str:
         return self.__str__()
     
+    def get_turn_order(self) -> int:
+        '''
+        Get the turn order in the conversation
+        '''
+        return int(self.turn_id.split("-")[-1])
+
     def find_result(
         self, 
         collection: str, 
@@ -454,6 +460,24 @@ def get_turn_by_qid(
     
     return turn_found
 
+def get_context_by_qid(
+    qid: str,
+    turn_list: List[Turn]
+) -> List[Turn]:
+    '''
+    Get the context of a turn (sorted list of turns) by its turn_id
+    '''
+    three_numbers = qid.split("-")
+    conversation_id = "-".join(three_numbers[:2])
+    turn_order = int(three_numbers[2])
+    context = [
+        turn for turn in turn_list 
+        if turn.conversation_id == conversation_id 
+        and turn.get_turn_order() < turn_order]
+
+    sorted_context = sorted(context, key=lambda x: x.get_turn_order())
+
+    return sorted_context
 
     
 
