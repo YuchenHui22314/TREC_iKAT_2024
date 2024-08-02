@@ -92,7 +92,7 @@ class RewriteAndResponsePromptor:
                     return None            
                 
                 response = "\n".join(splits[1:])[10:]
-                return [cot, rewrite, response]
+                return [rewrite, response, cot]
             else:
                 rewrite = splits[0][9:]
                 response = "\n".join(splits[1:])[10:]

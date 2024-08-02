@@ -55,7 +55,6 @@ class OpenAILM():
                  wait_till_success=False,
                  logprobs = False
                  ):
-        super().__init__(model_name, api_key)
         self.api_key = api_key
         self.model_name = model_name
         self.n = n
@@ -69,21 +68,29 @@ class OpenAILM():
         self.logprobs = logprobs
         self.client = OpenAI(
             # This is the default and can be omitted
-            api_key=os.environ.get("OPENAI"),
+            api_key=self.api_key,
             )
     
     @staticmethod
     def parse_response(response):
-        reformulated_query = response.choices[0].message.content
-        return reformulated_query
+        responses = []
+        for choice in response.choices:
+            responses.append(choice.message.content)
+
+        return responses
 
     def generate(self, prompt):
+        message = [
+                ## TODO: add system prompt. For example,
+                # {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
+                {"role": "user", "content": prompt}
+            ]
         get_results = False
         while not get_results:
             try:
                 result = self.client.chat.completions.create(
                             model=self.model_name,
-                            messages=prompt,
+                            messages=message,
                             temperature=self.temperature,
                             logprobs=self.logprobs,
                             top_p=self.top_p,
