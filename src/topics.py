@@ -89,7 +89,7 @@ class Turn:
     response_provenance: List[str] = field(default_factory=list)
     context_utterances: List[str] = field(default_factory=list) 
     ptkb: dict[int, str] = field(default_factory=dict)
-    ptkb_provenance: List[str] = field(default_factory=list)
+    ptkb_provenance: List[int] = field(default_factory=list)
 
     # reformulations
     reformulations: List[Reformulation] = field(default_factory=list)

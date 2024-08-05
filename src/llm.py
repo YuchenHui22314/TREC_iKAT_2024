@@ -53,7 +53,8 @@ class OpenAILM():
                  presence_penalty=0.0, 
                  stop=['\n\n\n'], 
                  wait_till_success=False,
-                 logprobs = False
+                 logprobs = False,
+                 top_logprobs = 1,
                  ):
         self.api_key = api_key
         self.model_name = model_name
@@ -72,12 +73,16 @@ class OpenAILM():
             )
     
     @staticmethod
-    def parse_response(response):
+    def get_text(response):
         responses = []
         for choice in response.choices:
             responses.append(choice.message.content)
 
         return responses
+    
+    def get_probabilities(self, response):
+        pass
+
 
     def generate(self, prompt):
         message = [
@@ -104,8 +109,15 @@ class OpenAILM():
                     time.sleep(1)
                 else:
                     raise e
-        return self.parse_response(result)
+        return result
 
+    def generate_text(self,prompt):
+        result = self.generate(prompt)
+        return self.get_text(result)
+
+    def generate_probabilities(self,prompt):
+        result = self.generate(prompt)
+        return self.get_probabilities(result) 
 
 class LM(nn.Module):
     def __init__(
@@ -121,7 +133,7 @@ class LM(nn.Module):
         cache_dir=cache_dir,
         accelerator: Accelerator = None,
         load_in_8bit = False,
-        load_in_4bit = False
+        load_in_4bit = False,
     ) -> None:
         super().__init__()
 
@@ -170,9 +182,11 @@ class LM(nn.Module):
                 torch_dtype=dtype,
                 trust_remote_code=True,
                 device_map=device_map,
-                attn_implementation="flash_attention_2",
+                attn_implementation=attn_implementation,
                 #use_flash_attention_2=False, (deprecated)
                 token=access_token,
+                load_in_8bit = load_in_8bit,
+                load_in_4bit = load_in_4bit
             )
 
         self.config = model.config
@@ -268,9 +282,63 @@ class LM(nn.Module):
             num_return_sequences=num_return_sequences
         )
 
+        responses = outputs.sequences[...,input_ids.shape[-1]:] 
+        return tokenizer.batch_decode(responses, skip_special_tokens=True),outputs.logits
+
+    def hf_llm_generate_top_tokens(
+        self,
+        context : List[dict] = None,
+        temperature: float = 0.6,
+        top_p: float = 0.9,
+        max_new_tokens: int = 256,
+        do_sample: bool = True,
+        num_beams: int = 1,
+        num_return_sequences: int = 1,
+        ) -> List[str]:
+
+        '''
+        hf llm inference for single prompt. Yield single response in form of a list of responses (len(list)>1 while num_return_sequences > 1). 
+
+        example context with num_return_sequences = 2:
+        [
+            {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
+            {"role": "user", "content": "Who are you?"},
+                ]
+
+        response:[
+            " I am a large language model trained by Mistral AI....",
+            " I am a large language model trained by Mistral AI...."
+        ]
+        '''
+
+        tokenizer = self.tokenizer
+        model = self.model
+
+        terminators = [
+            tokenizer.eos_token_id,
+            tokenizer.convert_tokens_to_ids("<|eot_id|>")
+        ]
+
+        input_ids = tokenizer.apply_chat_template(
+            context,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            padding = True,
+            ).to(model.device)
+
+        outputs = model.generate(
+            input_ids,
+            max_new_tokens=max_new_tokens,
+            eos_token_id=terminators,
+            do_sample=do_sample,
+            temperature=temperature,
+            top_p=top_p,
+            num_beams=num_beams,
+            num_return_sequences=num_return_sequences
+        )
+
         responses = outputs[...,input_ids.shape[-1]:] 
         return tokenizer.batch_decode(responses, skip_special_tokens=True)
-
     @torch.no_grad()
     def hf_llm_generate_via_pipline(
         self,

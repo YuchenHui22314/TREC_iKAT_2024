@@ -99,7 +99,7 @@ if __name__ == '__main__':
         prompt = prompter.build_turn_prompt(context,turn)
 
         # rewrite the prompt
-        #responses = rewriter.generate(prompt)
+        #responses = rewriter.generate_text(prompt)
 
         # we generated just 1 response
         if reformulation_name == "RAR":
