@@ -285,60 +285,6 @@ class LM(nn.Module):
         responses = outputs.sequences[...,input_ids.shape[-1]:] 
         return tokenizer.batch_decode(responses, skip_special_tokens=True),outputs.logits
 
-    def hf_llm_generate_top_tokens(
-        self,
-        context : List[dict] = None,
-        temperature: float = 0.6,
-        top_p: float = 0.9,
-        max_new_tokens: int = 256,
-        do_sample: bool = True,
-        num_beams: int = 1,
-        num_return_sequences: int = 1,
-        ) -> List[str]:
-
-        '''
-        hf llm inference for single prompt. Yield single response in form of a list of responses (len(list)>1 while num_return_sequences > 1). 
-
-        example context with num_return_sequences = 2:
-        [
-            {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
-            {"role": "user", "content": "Who are you?"},
-                ]
-
-        response:[
-            " I am a large language model trained by Mistral AI....",
-            " I am a large language model trained by Mistral AI...."
-        ]
-        '''
-
-        tokenizer = self.tokenizer
-        model = self.model
-
-        terminators = [
-            tokenizer.eos_token_id,
-            tokenizer.convert_tokens_to_ids("<|eot_id|>")
-        ]
-
-        input_ids = tokenizer.apply_chat_template(
-            context,
-            add_generation_prompt=True,
-            return_tensors="pt",
-            padding = True,
-            ).to(model.device)
-
-        outputs = model.generate(
-            input_ids,
-            max_new_tokens=max_new_tokens,
-            eos_token_id=terminators,
-            do_sample=do_sample,
-            temperature=temperature,
-            top_p=top_p,
-            num_beams=num_beams,
-            num_return_sequences=num_return_sequences
-        )
-
-        responses = outputs[...,input_ids.shape[-1]:] 
-        return tokenizer.batch_decode(responses, skip_special_tokens=True)
     @torch.no_grad()
     def hf_llm_generate_via_pipline(
         self,
