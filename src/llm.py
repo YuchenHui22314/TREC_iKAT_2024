@@ -239,7 +239,7 @@ class LM(nn.Module):
         do_sample: bool = True,
         num_beams: int = 1,
         num_return_sequences: int = 1
-        ) -> List[str]:
+        ) -> Tuple[List[str], Tuple[torch.Tensor]]:
 
         '''
         hf llm inference for single prompt. Yield single response in form of a list of responses (len(list)>1 while num_return_sequences > 1). 
@@ -279,11 +279,36 @@ class LM(nn.Module):
             temperature=temperature,
             top_p=top_p,
             num_beams=num_beams,
-            num_return_sequences=num_return_sequences
+            num_return_sequences=num_return_sequences,
+            output_scores = True,
+            output_logits = True,
+            return_dict_in_generate = True
         )
 
         responses = outputs.sequences[...,input_ids.shape[-1]:] 
         return tokenizer.batch_decode(responses, skip_special_tokens=True),outputs.logits
+
+    def yield_expansion_terms(self, logits, num_expansion_terms, indicator_token):
+        '''
+        logits: tuple(tensor(1,vocab_size), tensor(1,vocab_size), ...)
+        '''
+        found_indicator = False
+        for i in range(len(logits)):
+            if found_indicator:
+                # This is position for the expansion term
+                top_n_index = torch.tensor(list(logits[i].flatten().cpu().numpy().argsort())[-num_expansion_terms:][::-1], dtype=torch.long)
+                top_tokens = self.tokenizer.batch_decode(top_n_index, skip_special_tokens=True)
+                top_tokens = [token.strip() for token in top_tokens]
+                return top_tokens
+
+            token = self.tokenizer.decode(np.argmax(logits[i].cpu().numpy())).strip()
+
+            if token == indicator_token:
+                found_indicator = True
+        
+        if not found_indicator:
+            return None
+
 
     @torch.no_grad()
     def hf_llm_generate_via_pipline(

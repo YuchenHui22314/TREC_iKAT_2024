@@ -221,7 +221,8 @@ class PersonalizedCIRQueryExpansionPromptor:
         
         return this_prompt
     
-    def parse_returned_text(self, text):
+
+
         text = text.strip()
         try:
             splits = text.split('\n')
