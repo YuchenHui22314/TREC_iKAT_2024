@@ -101,6 +101,53 @@ class RewriteAndResponsePromptor:
             return None
 
 
+class SummerizePTKBPromptor:
+    def __init__(
+        self, 
+        demo_file, 
+        enable_cot=False) -> None:    
+        
+        self.instruction = f"You will be given a persona of a search engine user, in form of several sentences describing his/her background information. Please provide a summary of the persona. The summary should cover all the key points and main ideas presented in the original persona, while also condensing the information into a concise and easy-to-understand format. The length of the summary should be appropriate to capture the main points and key details of the text, without including unnecessary information or becoming overly long."
+        self.tail_instuction = "Now, please provide a summary of the **User Persona**. The summary should be concise and easy to understand, while also covering all the key points and main ideas presented in the original persona. The output format should always be:\n\nSummary: $Summary\n\nGo ahead!"
+    
+    def build_turn_prompt(self, ptkb_dict):
+
+        ptkb_instruction = []
+        ptkb_instruction.append("Here is the **User Persona**:\n")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = "\n".join(ptkb_instruction)
+
+        this_prompt = [self.instruction, ptkb_instruction,  self.tail_instruction]
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+    def parse_returned_text(self, text):
+        text = text.strip()
+        try:
+            splits = text.split('\n')
+            if splits[0][:9] != "Rewrite: " or splits[1][:10] != "Response: ":
+                return None
+            if self.enable_cot:
+                rewrite_text = splits[0][9:]
+                fixed_sentence = "So the question should be rewritten as: "
+                index = rewrite_text.find(fixed_sentence)
+                if index != -1:
+                    cot = rewrite_text[:index]
+                    rewrite = rewrite_text[index + len(fixed_sentence):]
+                else:
+                    return None            
+                
+                response = "\n".join(splits[1:])[10:]
+                return [rewrite, response, cot]
+            else:
+                rewrite = splits[0][9:]
+                response = "\n".join(splits[1:])[10:]
+                return [rewrite, response]
+        except:
+            return None
 class PersonalizedCIRQueryExpansionPromptor:
     def __init__(
         self, 
@@ -123,20 +170,23 @@ class PersonalizedCIRQueryExpansionPromptor:
         ######################
         # 1. instruction
         ######################
+        if enable_personalization:
+            personalization_1 = ", as well as the persona of the user, in form of several sentences describing the user's background information"
+            personalization_2 =" and user persona" 
+        else:
+            personalization_1= ""
+            personalization_2= ""
 
         # head_instruction
         self.instruction = \
-        '''You will be given an information-seeking dialog between an user and a system, as well as the persona of the user, in form of several sentences describing the user's background information. Your task is to
-        
-        1. Infer the user's underlying information need expressed by the last question, with the aid of the provided dialog and user persona.
-        2. Suppose that R represents the set of all possible documents relevant to user's query, please propose the keyword that has the highest probability to appear in the relevant documents set as an expansion term to add in the last question, based on your understanding of the user's information need and what should a relevant document contain.'''
+        f"You will be given an information-seeking dialog between an user and a system{personalization_1}. Your tasks are as follows:\n\n\t1. Infer the user's underlying information need expressed by the last question, with the aid of the provided dialog{personalization_2}.\n\t2. Suggest an expansion term to add in the last question, which corresponds to the keyword that has the highest probability to appear in the set of all possible relevant documents. Please suggest based on your understanding of the user's information need and what should a relevant document contain."
 
 
         # tail_instruction
         if enable_cot:
-            self.tail_instruction = "Now, you should give me the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**. The output format should always be:\n\nReason: $Reason\nKeyword: $Keyword\n\nNote that you should never ask for clarification or say you don't understand it in the generated rewrite and response. Go ahead!"
+            self.tail_instruction = "Now, please suggest the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**. The output format should always be:\n\nReason: $Reason\nKeyword: $Keyword\n\nNote that you should never ask for clarification or say you don't understand it in the generated rewrite and response. Go ahead!"
         else:
-            self.tail_instruction = "Now, you should give me the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**. Please do not provide your reasoning, just yield solely the expansion term in the following format: \n\nKeyword: $Keyword\n\nGo ahead!"
+            self.tail_instruction = "Now, please suggest the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**. Please do not provide any reasoning, simply yield solely the expansion term in the following format: \n\nKeyword: $Keyword\n\nGo ahead!"
 
         ######################
         # 2. demonstration
@@ -151,6 +201,13 @@ class PersonalizedCIRQueryExpansionPromptor:
             self.stop_tokens = None
         else:
             self.demo = ""
+
+        ############################
+        # 3. relevance explanation
+        ############################
+
+        self.relevance_explanation = "Please note that in this context, 'relevance' refers to documents that contain information related to the user's information need. This is distinct from authenticity, as a relevant document does not necessarily have to be accurate or correct. The key criterion is that the document's topic should align with the user's search intent. For example, both 'The capital of France is Beijing' and 'The capital of France is Paris' would be considered equally relevant, even though only the latter is factually correct."
+        
         
 
                             
@@ -210,6 +267,8 @@ class PersonalizedCIRQueryExpansionPromptor:
         # combine to form the prompt
         this_prompt = []
         this_prompt.append(self.instruction)
+        if self.enable_relevance_explanation:
+            this_prompt.append(self.relevance_explanation)
         if self.enable_demo:
             this_prompt.append(self.demo)
         if self.enable_personalization:

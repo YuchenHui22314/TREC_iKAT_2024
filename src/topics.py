@@ -207,7 +207,7 @@ class Turn:
             response: str = None
             ) -> None:
         '''
-        Adds a result to the Turn.
+        Adds a result to the Turn. If already exists, updates the metrics and response.
 
         Args:
             result (Result): The result to add.
@@ -246,7 +246,8 @@ class Turn:
             ptkb_provenance: List[int]
     ) -> None:
         '''
-        Adds a reformulation to the turn.
+        Adds a reformulation to the turn. If already exists, updates the
+         reformulated query and ptkb provenance.
 
         Args:
             reformulation (Reformulation): The reformulation to add.
@@ -260,11 +261,16 @@ class Turn:
                 ptkb_provenance = ptkb_provenance
                 )
             )
+        else:
+            reformulation_found.reformulated_query = reformulated_query
+            reformulation_found.ptkb_provenance = ptkb_provenance
 
 
     def query_type_2_query(
         self, 
-        original_query_type: str, 
+        original_query_type: str,
+        nb_expansion_terms: int,
+        initial_query_weight: int 
         ) -> str:
         '''
         Generates a query based on the specified query type.
@@ -282,25 +288,40 @@ class Turn:
         query_type = original_query_type
         final_query = ""
 
+        e = ValueError(f"query_type {query_type} not supported for turn {self.turn_id}")
 
-        # check if we have already added this version to the json file
-        reformulation = self.find_reformulation(query_type)
+        if query_type == "raw":
+            final_query = self.context_utterances
+        elif query_type == "oracle":
+            final_query = self.oracle_utterance
+        elif "llm_rm" in query_type:
+            initial_query = self.query_type_2_query(query_type.split("_")[0])
 
-        if reformulation is not None:
-            final_query = reformulation.reformulated_query
-        else:
-            if query_type == "current_utterance":
-                final_query = self.context_utterances
-            elif query_type == "oracle_utterance":
-                final_query = self.oracle_utterance
+            # check if we have already added this version to the json file
+            reformulation = self.find_reformulation(query_type)
+            if reformulation is not None:
+                expansion_string = reformulation.reformulated_query
+                expansion_list = expansion_string.split(" ")
+                # lower case, deduplicate
+                expansion_list = list(set([term.lower() for term in expansion_list]))
+                final_query = initial_query*initial_query_weight + " ".join(expansion_list)[:nb_expansion_terms]
             else:
-                raise ValueError(f"query_type {query_type} not supported")
-            self.reformulations.append(
-                Reformulation(
-                    reformulated_query = final_query,
-                    reformulation_name = query_type,
-                    )
-                )
+                raise e
+        elif query_type =="rar_rwrs":
+            rewrite = self.find_reformulation("rar_rw")
+            response = self.find_reformulation("rar_rs")
+            if rewrite is None or response is None:
+                raise e
+            else:
+                rewrite = rewrite.reformulated_query
+                response = response.reformulated_query
+                final_query = rewrite*initial_query_weight + " " + response
+        else:
+            reformulation = self.find_reformulation(query_type)
+            if reformulation is not None:
+                final_query = reformulation.reformulated_query
+            else:
+                raise e
 
         return final_query
         

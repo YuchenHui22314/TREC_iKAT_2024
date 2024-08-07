@@ -2,8 +2,8 @@
 
 # Default argument values
 collection="ClueWeb_ikat"
-topics="ikat_23_test"
-input_query_path="../../data/topics/ikat_2023_test.json"
+topics="ikat_24_test"
+input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
 index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2/" # Please use local disk index to achieve the fastest access
 index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
@@ -24,11 +24,11 @@ generation_model="none"
 #BM25
 bm25_k1=0.9
 bm25_b=0.4
-#qe
+#qe 
 qe_type="rm3"
 fb_terms=10
 fb_docs=10
-original_query_weight=0.9
+original_query_weight=0.83
 retrieval_top_k=5
 rerank_top_k=5
 generation_top_k=3
@@ -37,9 +37,9 @@ metrics="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recal
 run_name="none"
 # turn to true to yield trec submission format.
 rewrite_model="no_rewrite"
-retrieval_query_type="oracle_utterance"
-reranking_query_type="oracle_utterance"
-generation_query_type="oracle_utterance"
+retrieval_query_type="oracle"
+reranking_query_type="oracle"
+generation_query_type="oracle"
 prompt_type="no_prompt"
 
 LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log.txt
@@ -63,6 +63,7 @@ python3 evaluation.py \
   --generation_model $generation_model \
   --bm25_k1 $bm25_k1 \
   --bm25_b $bm25_b \
+  --qe_type $qe_type \
   --fb_terms $fb_terms \
   --fb_docs $fb_docs \
   --original_query_weight $original_query_weight \

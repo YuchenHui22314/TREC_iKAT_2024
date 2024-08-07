@@ -360,8 +360,9 @@ def generate_and_save_ikat_submission(
     for qid, ordered_doc_object_list in hits.items():
 
         three_chiffres = qid.split("-")
-        # adapt turn_id format
-        turn_id = f"{three_chiffres[0]}-{three_chiffres[1]}_{three_chiffres[2]}"
+        # adapt turn_id format. work for both ikat23 and ikat24
+        conversation_id = "-".join(three_chiffres[:-1])
+        turn_id = f"{conversation_id}_{three_chiffres[-1]}"
         
         # get ptkb_provenance, which should be from the reformulation.
         turn_object = get_turn_by_qid(qid,turn_list)

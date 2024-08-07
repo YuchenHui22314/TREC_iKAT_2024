@@ -47,10 +47,10 @@ def get_args():
     ########################
 
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
-                        help="can be [ClueWeb22B_ikat]")
+                        choices=["ClueWeb_ikat"])
 
-    parser.add_argument("--topics", type=str, default="ikat_23_test", 
-                        help="can be [ikat_23_test,ikat_24_test]")
+    parser.add_argument("--topics", type=str, default="ikat_23_test",
+                        choices = ["ikat_23_test", "ikat_24_test"])
 
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
 
@@ -92,8 +92,9 @@ def get_args():
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
 
-    #  RM3 pseudo relevance feedback parameters
-    parser.add_argument("--use_rm3",  action="store_true", help="if we will use rm3")
+    # Query expansion 
+    parser.add_argument("--qe_type", type = str, defaut="rm3", choices=["rm3", "none", "llm_rm"])
+    # pseudo relevance feedback parameters
     parser.add_argument("--fb_terms", type=int, default="10", help="RM3 parameter for number of expansion terms.")
     parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
     parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
@@ -120,28 +121,37 @@ def get_args():
     parser.add_argument("--just_run_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list and save metrics to turn/topic object.")
 
     parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
-                        help="can be [no_rewrite, gpt-4-turbo]")
+                        choises = ["no_rewrite", "gpt-4-turbo", "gpt-3.5-turbo"],
+                        )
 
     parser.add_argument("--retrieval_query_type", type=str, default="oracle_utterance", 
-                        help="""can be [
-                            "current_utterance",
+                        choices=[
+                            "raw", 
                             "oracle_utterance",
-                            "reformulation"
-                            ]""")
+                            "rar_rwrs",
+                            "rar_rw",
+                            # P -> personalize, D -> demo, C -> cot, Re -> rel explain
+                            # O -> oracle, Rf -> rel feedback
+                            "raw_llm_rm_PDCReORf",
+                            "raw_llm_rm_P__Re___",
+                            "raw_llm_rm____Re___",
+                            ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
-                        help="""can be [
-                            "current_utterance",
+                        choices=[
+                            "raw", 
                             "oracle_utterance",
-                            "reformulation"
-                            ]""")
+                            "rar_rwrs",
+                            "rar_rw"
+                            ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
-                        help="""can be [
-                            "current_utterance",
+                        choices=[
+                            "raw", 
                             "oracle_utterance",
-                            "reformulation"
-                            ]""")
+                            "rar_rwrs",
+                            "rar_rw",
+                            ],)
 
     parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
     [no_prompt,
@@ -184,20 +194,21 @@ def get_query_list(args):
     '''
 
     # apply topic specific processing
-    if args.topics == "ikat_23_test":
+    if "ikat" in args.topics:
         turn_list = load_turns_from_json(
             input_topic_path=args.input_query_path,
             range_start=0,
             range_end=-1
             )
         
-        # filter out the non-evaluated turns
-        evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
+        # filter out the non-evaluated turns for ikat 23
+        if args.topics == "ikat_23_test":
+            evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
+        elif args.topics == "ikat_24_test":
+            evaluated_turn_list = turn_list
 
         qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
 
-        # ikat 23 specific check
-        assert turn_list[0].current_utterance =="Can you help me find a diet for myself?", f"The first turn first utterance is {turn_list[0].current_utterance} instead of 'Can you help me find a diet for myself?'"
 
         # load query/reformulated query according to query type.
         # possible to call a llm to rewrite the query at this step.
@@ -240,8 +251,9 @@ if __name__ == "__main__":
     #########################################################
     #  generate an identifiable name for current run
     #########################################################
-    rm3 = "_rm3" if args.use_rm3 else ""
-    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{rm3}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
+    if args.qe_type == "rm3":
+        qe = f"_rm3"
+    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
 
     # folder path where the evaluation results will be saved
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)

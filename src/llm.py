@@ -296,10 +296,16 @@ class LM(nn.Module):
         for i in range(len(logits)):
             if found_indicator:
                 # This is position for the expansion term
-                top_n_index = torch.tensor(list(logits[i].flatten().cpu().numpy().argsort())[-num_expansion_terms:][::-1], dtype=torch.long)
-                top_tokens = self.tokenizer.batch_decode(top_n_index, skip_special_tokens=True)
+                top_n_id = torch.tensor(list(logits[i].flatten().cpu().numpy().argsort())[-num_expansion_terms:][::-1], dtype=torch.long)
+                top_tokens = self.tokenizer.batch_decode(top_n_id, skip_special_tokens=True)
                 top_tokens = [token.strip() for token in top_tokens]
-                return top_tokens
+
+                '''
+                should be like:
+                {token: logit, token: logit, ...}
+                '''
+                token_logits_dict = dict(zip(top_tokens, sorted(list(logits[i].flatten().cpu().numpy()),reverse=True)[:num_expansion_terms]))
+                return token_logits_dict
 
             token = self.tokenizer.decode(np.argmax(logits[i].cpu().numpy())).strip()
 
