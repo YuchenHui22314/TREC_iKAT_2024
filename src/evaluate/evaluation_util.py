@@ -78,7 +78,7 @@ def search(
         - args.index_dir_path: str
         - args.bm25_k1: float
         - args.bm25_b: float
-        - args.use_rm3: bool
+        - args.qe_type: str
         - args.fb_terms: int
         - args.fb_docs: int
         - args.original_query_weight: float
@@ -106,7 +106,7 @@ def search(
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
 
         # rm3 pseudo relevance feedback
-        if args.use_rm3:
+        if args.qe_type == "rm3":
             searcher.set_rm3(
                 fb_terms = args.fb_terms,
                 fb_docs = args.fb_docs,
@@ -366,7 +366,10 @@ def generate_and_save_ikat_submission(
         
         # get ptkb_provenance, which should be from the reformulation.
         turn_object = get_turn_by_qid(qid,turn_list)
-        ptkb_provenance = turn_object.get_ptkb_provenance(reformulation_name)
+
+        #ptkb_provenance = turn_object.get_ptkb_provenance(reformulation_name)
+        # TODO: add ptkb_provenance
+        ptkb_provenance = []
 
         responses = []
         for rank, response in enumerate(response_dict[qid]):

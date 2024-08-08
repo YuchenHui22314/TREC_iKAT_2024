@@ -93,7 +93,7 @@ def get_args():
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
 
     # Query expansion 
-    parser.add_argument("--qe_type", type = str, defaut="rm3", choices=["rm3", "none", "llm_rm"])
+    parser.add_argument("--qe_type", type = str, default="rm3", choices=["rm3", "none", "llm_rm"])
     # pseudo relevance feedback parameters
     parser.add_argument("--fb_terms", type=int, default="10", help="RM3 parameter for number of expansion terms.")
     parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
@@ -104,13 +104,16 @@ def get_args():
     parser.add_argument("--rerank_top_k", type=int, default="50")
     parser.add_argument("--generation_top_k", type=int, default="3")
 
-    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.100,recall.1000,recip_rank",
-                        help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.100,recall.1000")
+    parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.50,recall.100,recall.1000,recip_rank",
+                        help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.50,recall.100,recall.1000")
 
     #parser.add_argument("--rel_threshold", type=int, default="1")
 
     parser.add_argument("--save_results_to_object",  action="store_true", help="if we will save eval results (metrics + response) to turn/topic object.")
 
+    parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
+
+    parser.add_argument("--run_eval",  action="store_true", help="if we will run the evaluation component (+ saving)")
     #########################
     # ikat 2024 project related config
     ########################
@@ -118,14 +121,14 @@ def get_args():
     parser.add_argument("--run_name", type=str, default="none",
                         help="run name for trec ikat submission. If none, will use file name stem as run name.")
 
-    parser.add_argument("--just_run_no_evaluate",  action="store_true", help="if we will use qrel to run evaluation or just yield the ranking list and save metrics to turn/topic object.")
 
     parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
-                        choises = ["no_rewrite", "gpt-4-turbo", "gpt-3.5-turbo"],
+                        choices = ["no_rewrite", "gpt-4-turbo", "gpt-3.5-turbo"],
                         )
 
     parser.add_argument("--retrieval_query_type", type=str, default="oracle_utterance", 
                         choices=[
+                            "none",
                             "raw", 
                             "oracle_utterance",
                             "rar_rwrs",
@@ -143,15 +146,21 @@ def get_args():
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
                         choices=[
+                            "none",
                             "raw", 
                             "oracle_utterance",
                             "rar_rw",
+                            "raw_llm_rm_P__Re___",
+                            "raw_llm_rm____Re___",
                             "rar_ptkb_sum_cot0_rw",
-                            "rar_ptkb_sum_rw"
+                            "rar_ptkb_sum_cot0_rwrs",
+                            "rar_ptkb_sum_rw",
+                            "rar_ptkb_sum_rwrs",
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
                         choices=[
+                            "none",
                             "raw", 
                             "oracle_utterance",
                             "rar_rw",
@@ -219,11 +228,11 @@ def get_query_list(args):
         # load query/reformulated query according to query type.
         # possible to call a llm to rewrite the query at this step.
         args.retrieval_query_type = query_type_rewrite(args.retrieval_query_type) 
-        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type) for turn in evaluated_turn_list]
+        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
         args.reranking_query_type = query_type_rewrite(args.reranking_query_type)
-        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type) for turn in evaluated_turn_list]
+        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
         args.generation_query_type = query_type_rewrite(args.generation_query_type)
-        generation_query_list = [turn.query_type_2_query(args.generation_query_type) for turn in evaluated_turn_list]
+        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
     
 
 
@@ -246,7 +255,7 @@ if __name__ == "__main__":
     print(args)
 
     ###############
-    # check paths
+    # check args
     ###############
 
     assert os.path.exists(args.input_query_path), "Input query file not found"
@@ -257,6 +266,7 @@ if __name__ == "__main__":
     #########################################################
     #  generate an identifiable name for current run
     #########################################################
+    qe = ""
     if args.qe_type == "rm3":
         qe = f"_rm3"
     file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
@@ -295,11 +305,9 @@ if __name__ == "__main__":
         "ikat_format_output",
         args.run_name + ".json")
 
-
     ###################################################
     # get query list and qid list as well as Turn list
     ###################################################
-
     print(f"loading quries")
 
     # the reason to get turn list is to add per-query 
@@ -307,43 +315,42 @@ if __name__ == "__main__":
     retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list = get_query_list(args)
 
 
-    ##########################
-    # Search
-    ##########################
-    args.ranking_list_path = ranking_list_path
-    args.file_name_stem = file_name_stem
+    if args.run_rag:
 
-    hits = search(
-        retrieval_query_list,
-        reranking_query_list,
-        qid_list_string,
-        args
+        ##########################
+        # Search
+        ##########################
+        args.ranking_list_path = ranking_list_path
+        args.file_name_stem = file_name_stem
+
+        hits = search(
+            retrieval_query_list,
+            reranking_query_list,
+            qid_list_string,
+            args
+            )
+
+        ##########################
+        # response generation TODO
+        ##########################
+        response_dict = generate_responses(hits, args) 
+
+        ##############################
+        #  Export to ikat format
+        ##############################
+        print("generating ikat format results...")
+        generate_and_save_ikat_submission(
+            ikat_output_path,
+            args.run_name,
+            # TODO: other mechanism for choosing the correct ptkb_provenance ...
+            args.reranking_query_type,
+            hits,
+            turn_list,
+            response_dict,
+            args.generation_top_k
         )
 
-    ##########################
-    # response generation TODO
-    ##########################
-    response_dict = generate_responses(hits, args) 
-
-    ##############################
-    #  Export to ikat format
-    ##############################
-    print("generating ikat format results...")
-    generate_and_save_ikat_submission(
-        ikat_output_path,
-        args.run_name,
-        # TODO: other mechanism for choosing the correct ptkb_provenance ...
-        args.reranking_query_type,
-        hits,
-        turn_list,
-        response_dict,
-        args.generation_top_k
-    )
-
-    if args.just_run_no_evaluate:
-        pass
-
-    else:
+    if args.run_eval:
 
         ##########################
         # evaluate ranking
@@ -372,8 +379,17 @@ if __name__ == "__main__":
         # saving evaluation results
         ##########################
         # write results to topic list and save.
+
         if args.save_results_to_object:
+
+
             for qid, result_dict in query_metrics_dic.items():
+
+                if args.run_rag:
+                    response = response_dict[qid][0]
+                else:
+                    response = "rag_not_run, no response."
+
                 for turn in turn_list:
                     if str(turn.turn_id) == qid:
                         turn.add_result(
@@ -385,7 +401,7 @@ if __name__ == "__main__":
                             args.reranking_query_type,
                             args.generation_query_type,
                             result_dict,
-                            response_dict[qid][0]
+                            response
                         )
 
             save_turns_to_json(

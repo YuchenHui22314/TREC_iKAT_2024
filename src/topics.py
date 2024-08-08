@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple
 from dataclasses import dataclass, field, asdict 
 from constants import IKAT_23_EVALUATED_TURNS
 from tqdm import tqdm
+import math
 
 
 @dataclass
@@ -268,9 +269,9 @@ class Turn:
 
     def query_type_2_query(
         self, 
-        original_query_type: str,
+        query_type: str,
         nb_expansion_terms: int,
-        initial_query_weight: int 
+        initial_query_weight: float 
         ) -> str:
         '''
         Generates a query based on the specified query type.
@@ -285,17 +286,22 @@ class Turn:
         Raises:
             ValueError: If the specified query type is not supported.
         '''
-        query_type = original_query_type
         final_query = ""
+
+        # calculate the real coefficient for the initial query
+        initial_query_weight = math.floor(1/(1-initial_query_weight)) -1
+
 
         e = ValueError(f"query_type {query_type} not supported for turn {self.turn_id}")
 
-        if query_type == "raw":
-            final_query = self.context_utterances
+        if query_type == "none":
+            final_query = ""
+        elif query_type == "raw":
+            final_query = self.current_utterance
         elif query_type == "oracle":
             final_query = self.oracle_utterance
         elif "llm_rm" in query_type:
-            initial_query = self.query_type_2_query(query_type.split("_")[0])
+            initial_query = self.query_type_2_query(query_type.split("_")[0],0,0.0)
 
             # check if we have already added this version to the json file
             reformulation = self.find_reformulation(query_type)
@@ -303,19 +309,20 @@ class Turn:
                 expansion_string = reformulation.reformulated_query
                 expansion_list = expansion_string.split(" ")
                 # lower case
-                lower_case_expansion_list = term.lower() for term in expansion_list]
-                Deduplicated_expansion_list = [] 
+                lower_case_expansion_list = [term.lower() for term in expansion_list]
+                deduplicated_expansion_list = [] 
                 # deduplicate
                 for terms in lower_case_expansion_list:
-                    if terms not in Deduplicated_expansion_list:
-                        Deduplicated_expansion_list.append(terms)
+                    if terms not in deduplicated_expansion_list:
+                        deduplicated_expansion_list.append(terms)
 
-                final_query = initial_query*initial_query_weight + " ".join(deduplicated_expansion_list)[:nb_expansion_terms]
+                final_query = initial_query*initial_query_weight + " ".join(deduplicated_expansion_list[:nb_expansion_terms])
             else:
                 raise e
-        elif query_type =="rar_rwrs":
-            rewrite = self.find_reformulation("rar_rw")
-            response = self.find_reformulation("rar_rs")
+        elif "rwrs" in query_type:
+            stem_query_type = query_type[:-5]
+            rewrite = self.find_reformulation(f"{stem_query_type}_rw")
+            response = self.find_reformulation(f"{stem_query_type}_rs")
             if rewrite is None or response is None:
                 raise e
             else:
@@ -328,6 +335,7 @@ class Turn:
                 final_query = reformulation.reformulated_query
             else:
                 raise e
+
 
         return final_query
         
