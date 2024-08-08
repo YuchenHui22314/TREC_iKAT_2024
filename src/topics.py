@@ -302,9 +302,15 @@ class Turn:
             if reformulation is not None:
                 expansion_string = reformulation.reformulated_query
                 expansion_list = expansion_string.split(" ")
-                # lower case, deduplicate
-                expansion_list = list(set([term.lower() for term in expansion_list]))
-                final_query = initial_query*initial_query_weight + " ".join(expansion_list)[:nb_expansion_terms]
+                # lower case
+                lower_case_expansion_list = term.lower() for term in expansion_list]
+                Deduplicated_expansion_list = [] 
+                # deduplicate
+                for terms in lower_case_expansion_list:
+                    if terms not in Deduplicated_expansion_list:
+                        Deduplicated_expansion_list.append(terms)
+
+                final_query = initial_query*initial_query_weight + " ".join(deduplicated_expansion_list)[:nb_expansion_terms]
             else:
                 raise e
         elif query_type =="rar_rwrs":

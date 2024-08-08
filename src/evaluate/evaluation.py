@@ -135,22 +135,28 @@ def get_args():
                             "raw_llm_rm_PDCReORf",
                             "raw_llm_rm_P__Re___",
                             "raw_llm_rm____Re___",
+                            "rar_ptkb_sum_cot0_rw",
+                            "rar_ptkb_sum_cot0_rwrs",
+                            "rar_ptkb_sum_rw",
+                            "rar_ptkb_sum_rwrs",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
                         choices=[
                             "raw", 
                             "oracle_utterance",
-                            "rar_rwrs",
-                            "rar_rw"
+                            "rar_rw",
+                            "rar_ptkb_sum_cot0_rw",
+                            "rar_ptkb_sum_rw"
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
                         choices=[
                             "raw", 
                             "oracle_utterance",
-                            "rar_rwrs",
                             "rar_rw",
+                            "rar_ptkb_sum_cot0_rw",
+                            "rar_ptkb_sum_rw"
                             ],)
 
     parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 

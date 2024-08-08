@@ -6,9 +6,13 @@ demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demons
 rewrite_model="gpt-3.5-turbo"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
 # O -> oracle, Rf -> rel feedback
-# "raw_llm_rm_PDCReORf"
+#reformulaton_name="raw_llm_rm_PDCReORf"
 #reformulation_name="raw_llm_rm____Re___"
-reformulation_name="rar"
+reformulation_name="raw_llm_rm_P__Re___"
+#reformulation_name="ptkb_summarize"
+#reformulation_name="rar_ptkb_sum"
+#reformulation_name="rar_ptkb_sum_cot0"
+
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log.txt"
 

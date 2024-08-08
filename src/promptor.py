@@ -100,15 +100,69 @@ class RewriteAndResponsePromptor:
         except:
             return None
 
+class PersonalizeViaPTKBSummaryPrompter:
+    def __init__(
+        self,
+        enable_cot = False 
+        ) -> None:    
 
-class SummerizePTKBPromptor:
+        self.enable_cot = enable_cot
+        
+        self.instruction = f"You will receive a **Profile Summary** of a search engine user, as well as the **User's Question** presented to the search engine. Your task is to:\n\t1. Reformulate the query by incorporating relevant information from the user's profile to create a personalized query.\n\t2. Provide a personalized response to the reformulated query, ensuring it is tailored to the user's specific needs and context."
+
+        if self.enable_cot:
+            cot_instruction1 = "Please also provide your reasoning which explains how you incorporated the user's profile information to get the rewrite and response. "
+            cot_instruction2 = "Reason: $Reason\n"
+        else:
+            cot_instruction1 = ""
+            cot_instruction2 = ""
+
+        self.tail_instruction = f"Now, please provide the personalized reformulated user question and the personalized response. {cot_instruction1}The output format should always be:\n\n{cot_instruction2}Rewrite: $Rewrite\nResponse: $Response\n\nGo ahead!"
+        
+
+    def build_turn_prompt(self, summary, user_query):
+
+        summary_instruction = f"Here is the user's **Profile Summary**:\n{summary}"
+        user_query_instruction = f"Here is the **User's Question**:\n{user_query}"
+        
+        this_prompt = [self.instruction, summary_instruction, user_query_instruction, self.tail_instruction]
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+
+    def parse_returned_text(self, text):
+        text = text.strip()
+        try:
+            splits = text.split('\n')
+            rewrite = None
+            response = None
+            cot = None
+
+            for line in splits:
+                if line[:8] == "Rewrite:":
+                    rewrite = line[8:].strip()
+                elif line[:9] == "Response:":
+                    response = line[9:].strip()
+                elif line[:7] == "Reason:":
+                    cot = line[7:].strip()
+                
+            if rewrite == None or response == None:
+                return None 
+            if self.enable_cot and cot == None:
+                return None
+
+            return [rewrite, response, cot]
+        except Exception as e:
+            print(e)
+            return None
+
+class SummarizePTKBPromptor:
     def __init__(
         self, 
-        demo_file, 
-        enable_cot=False) -> None:    
+        ) -> None:    
         
         self.instruction = f"You will be given a persona of a search engine user, in form of several sentences describing his/her background information. Please provide a summary of the persona. The summary should cover all the key points and main ideas presented in the original persona, while also condensing the information into a concise and easy-to-understand format. The length of the summary should be appropriate to capture the main points and key details of the text, without including unnecessary information or becoming overly long."
-        self.tail_instuction = "Now, please provide a summary of the **User Persona**. The summary should be concise and easy to understand, while also covering all the key points and main ideas presented in the original persona. The output format should always be:\n\nSummary: $Summary\n\nGo ahead!"
+        self.tail_instruction = "Now, please provide a summary of the **User Persona**. The summary should be concise and easy to understand, while also covering all the key points and main ideas presented in the original persona. The output format should always be:\n\nSummary: $Summary\n\nGo ahead!"
     
     def build_turn_prompt(self, ptkb_dict):
 
@@ -125,29 +179,11 @@ class SummerizePTKBPromptor:
         return this_prompt
     
     def parse_returned_text(self, text):
-        text = text.strip()
-        try:
-            splits = text.split('\n')
-            if splits[0][:9] != "Rewrite: " or splits[1][:10] != "Response: ":
-                return None
-            if self.enable_cot:
-                rewrite_text = splits[0][9:]
-                fixed_sentence = "So the question should be rewritten as: "
-                index = rewrite_text.find(fixed_sentence)
-                if index != -1:
-                    cot = rewrite_text[:index]
-                    rewrite = rewrite_text[index + len(fixed_sentence):]
-                else:
-                    return None            
-                
-                response = "\n".join(splits[1:])[10:]
-                return [rewrite, response, cot]
-            else:
-                rewrite = splits[0][9:]
-                response = "\n".join(splits[1:])[10:]
-                return [rewrite, response]
-        except:
+        if text[:9] != "Summary: ":
             return None
+        else:
+            return text[9:]
+        
 class PersonalizedCIRQueryExpansionPromptor:
     def __init__(
         self, 
@@ -171,22 +207,30 @@ class PersonalizedCIRQueryExpansionPromptor:
         # 1. instruction
         ######################
         if enable_personalization:
-            personalization_1 = ", as well as the persona of the user, in form of several sentences describing the user's background information"
+            personalization_1 = ", as well as the persona of the user"
             personalization_2 =" and user persona" 
+            personalization_3 =" personalized" 
+            personalization_4 = " and the **User Persona**"
         else:
             personalization_1= ""
             personalization_2= ""
+            personalization_3= ""
+            personalization_4= ""
+
+        if enable_cot:
+            cot_1 = f"Please also provide your reasoning which explains why you suggest this expansion term based on the provided dialog {personalization_2}. The output format should always be:" 
+            cot_2 = "Reason: $Reason\n"
+        else:
+            cot_1 = "Please do not provide any reasoning, simply yield solely the expansion term in the following format:"
+            cot_2 = ""
 
         # head_instruction
         self.instruction = \
-        f"You will be given an information-seeking dialog between an user and a system{personalization_1}. Your tasks are as follows:\n\n\t1. Infer the user's underlying information need expressed by the last question, with the aid of the provided dialog{personalization_2}.\n\t2. Suggest an expansion term to add in the last question, which corresponds to the keyword that has the highest probability to appear in the set of all possible relevant documents. Please suggest based on your understanding of the user's information need and what should a relevant document contain."
+        f"You will be given an information-seeking dialog between an user and a system{personalization_1}. Your tasks are as follows:\n\n\t1. Infer the user's underlying information need expressed by the last question, with the aid of the provided dialog{personalization_2}.\n\t2. Suggest an expansion term to add in the last question, which corresponds to the keyword that has the highest probability to appear in the set of all possible relevant documents. Please suggest based on your understanding of the user's{personalization_3} information need and what should a relevant document contain."
 
 
         # tail_instruction
-        if enable_cot:
-            self.tail_instruction = "Now, please suggest the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**. The output format should always be:\n\nReason: $Reason\nKeyword: $Keyword\n\nNote that you should never ask for clarification or say you don't understand it in the generated rewrite and response. Go ahead!"
-        else:
-            self.tail_instruction = "Now, please suggest the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**. Please do not provide any reasoning, simply yield solely the expansion term in the following format: \n\nKeyword: $Keyword\n\nGo ahead!"
+        self.tail_instruction = f"Now, please suggest the expansion term that has the highest probability to appear in the documents set relevant to **Last Question** under the **Dialog Context**{personalization_4}. {cot_1} \n\n{cot_2}Keyword: $Keyword\n\nGo ahead!"
 
         ######################
         # 2. demonstration

@@ -1,5 +1,16 @@
 #!/bin/bash
-
+# rewrites choices
+"rar_rwrs",
+"rar_rw",
+# P -> personalize, D -> demo, C -> cot, Re -> rel explain
+# O -> oracle, Rf -> rel feedback
+"raw_llm_rm_PDCReORf",
+"raw_llm_rm_P__Re___",
+"raw_llm_rm____Re___",
+"rar_ptkb_sum_cot0_rw",
+"rar_ptkb_sum_cot0_rwrs",
+"rar_ptkb_sum_rw",
+"rar_ptkb_sum_rwrs",
 # Default argument values
 collection="ClueWeb_ikat"
 topics="ikat_23_test"

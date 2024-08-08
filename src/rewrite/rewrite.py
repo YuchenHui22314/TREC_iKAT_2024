@@ -29,7 +29,9 @@ sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 from llm import OpenAILM
 from promptor import (
     RewriteAndResponsePromptor,
-    PersonalizedCIRQueryExpansionPromptor
+    PersonalizedCIRQueryExpansionPromptor,
+    SummarizePTKBPromptor,
+    PersonalizeViaPTKBSummaryPrompter
 )
 
 from topics import (
@@ -64,7 +66,9 @@ def get_args():
     parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
         "rar",
         "rar_cot",
-        "rar_personalized_cot",
+        "rar_ptkb_sum_cot0",
+        "rar_ptkb_sum",
+        "ptkb_summarize",
         "raw_llm_rm_PDCReORf",
         # P -> personalize, D -> demo, C -> cot, Re -> rel explain
         # O -> oracle, Rf -> rel feedback
@@ -180,6 +184,19 @@ if __name__ == '__main__':
             demo_file = demo_file, 
             enable_cot = False
         )
+
+    if "summarize" in reformulation_name:
+        prompter= SummarizePTKBPromptor()
+    
+    if reformulation_name == "rar_ptkb_sum_cot0":
+        prompter = PersonalizeViaPTKBSummaryPrompter(
+            enable_cot = True
+        )
+    
+    if reformulation_name == "rar_ptkb_sum":
+        prompter = PersonalizeViaPTKBSummaryPrompter(
+            enable_cot = False
+        )
         
 
 
@@ -217,6 +234,51 @@ if __name__ == '__main__':
     for turn in tqdm(turn_list, total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
 
+        if "_ptkb_sum" in reformulation_name:
+
+            ptkb_summary =\
+                 turn.find_reformulation("ptkb_summarize").reformulated_query
+            decontextualized_query =\
+                 turn.find_reformulation("rar_rw").reformulated_query
+
+            prompt = prompter.build_turn_prompt(
+                summary = ptkb_summary,
+                user_query = decontextualized_query,
+            )
+
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+        
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(turn)
+                continue
+
+            rewrite = liste[0]
+            response = liste[1]
+            cot = liste[2]
+
+            if "cot" in reformulation_name:
+                turn.add_reformulation(
+                    reformulation_name = reformulation_name + "_cot",
+                    reformulated_query = cot,
+                    ptkb_provenance = []
+                )
+            
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rw",
+                reformulated_query = rewrite,
+                ptkb_provenance = []
+            )
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rs",
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+
+
+
         if "llm_rm" in reformulation_name:
             pattern = reformulation_name[-8:]
             expansion_terms_weights_dict, prompt = get_llm_rm_expansion_terms(
@@ -243,6 +305,21 @@ if __name__ == '__main__':
                 ptkb_provenance = []
             )
 
+
+        elif "summarize" in reformulation_name:
+            prompt = prompter.build_turn_prompt(turn.ptkb)
+            response = rewriter.generate_text(prompt)[0]
+            summary = prompter.parse_returned_text(response)
+            if summary == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(turn)
+                continue
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name,
+                reformulated_query = summary,
+                ptkb_provenance = []
+            )
 
 
         # we generated just 1 response
