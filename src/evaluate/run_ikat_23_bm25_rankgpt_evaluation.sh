@@ -42,7 +42,7 @@ rewrite_model="no_rewrite"
 # raw_llm_rm_PDCReORf
 retrieval_query_type="none"
 reranking_query_type="none"
-generation_query_type="raw"
+generation_query_type="none"
 prompt_type="no_prompt"
 
 LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log.txt

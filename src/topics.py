@@ -194,6 +194,33 @@ class Turn:
         
         return ptkb_provenance
 
+    def rewrite_a_is_better_than_b_on_at_stage(self, a_name, b_name, metric_name, stage):
+        '''
+        Check if the result of a is better than b on a specific metric at a specific stage
+        '''
+
+        result_keys = {
+            "collection": "ClueWeb_ikat", 
+            "retrieval_model": "BM25",
+            "reranker": "none",
+            "generation_model": "none",
+            "retrieval_query_type": "To be specified",
+            "reranking_query_type": "none",
+            "generation_query_type": "raw"
+        }
+
+        result_keys[f"{stage}_query_type"] = a_name
+        a = self.find_result(**result_keys)
+        result_keys[f"{stage}_query_type"] = b_name
+        b = self.find_result(**result_keys)
+
+        if a is None or b is None:
+            raise ValueError(f"Result {a_name} or {b_name} at {stage} not found in turn {self.turn_id}")
+        else:
+            a_metric = a["metrics"][metric_name]
+            b_metric = b["metrics"][metric_name]
+            return a_metric > b_metric, a_metric, b_metric
+
     
     def add_result(
             self, 
