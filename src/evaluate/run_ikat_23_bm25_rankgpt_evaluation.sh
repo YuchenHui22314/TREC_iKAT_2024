@@ -13,8 +13,8 @@ qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
-# rankllama, rankgpt, monot5_base, monot5_base_10k
-reranker="monot5_base_10k"
+# none, rankllama, rankgpt, monot5_base, monot5_base_10k
+reranker="none"
 #rankllama
 rerank_quant="none" # can be "none" ,"8b", "4b"
 #rankgpt
@@ -40,12 +40,19 @@ run_name="none"
 # turn to true to yield trec submission format.
 rewrite_model="no_rewrite"
 # raw_llm_rm_PDCReORf
-retrieval_query_type="oracle_utterance"
-reranking_query_type="rar_ptkb_sum_cot0_rw"
+retrieval_query_type="none"
+reranking_query_type="none"
 generation_query_type="raw"
 prompt_type="no_prompt"
 
 LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log.txt
+
+retrieval_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs")
+#reranking_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
+#reranking_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
+#reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
+# reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs")
+reranking_query_types=("none")
 
 function run_evaluation() {
     local retrieval_query_type="$1"
@@ -94,17 +101,12 @@ function run_evaluation() {
     # --run_eval \
     # --save_results_to_object \
 
-#retrieval_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs")
-#reranking_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
-reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
-# reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs")
 
-# Loop through each query_type and run the Python program
-# for query_type in "${retrieval_query_types[@]}"
-# do
-#     run_evaluation $query_type $reranking_query_type $generation_query_type
-# done
-for query_type in "${reranking_query_types[@]}"
+
+for retrieval_query_type in "${retrieval_query_types[@]}"
 do
-    run_evaluation $retrieval_query_type $query_type $generation_query_type
+    for reranking_query_type in "${reranking_query_types[@]}"
+    do
+        run_evaluation $retrieval_query_type $reranking_query_type $generation_query_type
+    done
 done
