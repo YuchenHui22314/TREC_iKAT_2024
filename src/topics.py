@@ -263,7 +263,7 @@ class Turn:
             )
             self.results.append(result)
         else:
-            result_found.metrics = metrics_dict,
+            result_found.metrics = metrics_dict
             result_found.response = response
         
 
