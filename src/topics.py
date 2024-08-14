@@ -217,9 +217,9 @@ class Turn:
         if a is None or b is None:
             raise ValueError(f"Result {a_name} or {b_name} at {stage} not found in turn {self.turn_id}")
         else:
-            a_metric = a["metrics"][metric_name]
-            b_metric = b["metrics"][metric_name]
-            return a_metric > b_metric, a_metric, b_metric
+            a_metric = a.metrics[metric_name]
+            b_metric = b.metrics[metric_name]
+            return a_metric >= b_metric, a_metric, b_metric
 
     
     def add_result(

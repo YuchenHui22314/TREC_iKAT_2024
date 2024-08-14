@@ -111,6 +111,8 @@ def get_args():
 
     parser.add_argument("--save_results_to_object",  action="store_true", help="if we will save eval results (metrics + response) to turn/topic object.")
 
+    parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
+
     parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
 
     parser.add_argument("--run_eval",  action="store_true", help="if we will run the evaluation component (+ saving)")
@@ -323,7 +325,7 @@ if __name__ == "__main__":
         args.ranking_list_path = ranking_list_path
         args.file_name_stem = file_name_stem
 
-        hits = search(
+        hits, run = search(
             retrieval_query_list,
             reranking_query_list,
             qid_list_string,
@@ -369,6 +371,7 @@ if __name__ == "__main__":
 
         # evaluate
         query_metrics_dic, averaged_metrics = evaluate(
+            None,
             args.qrel_file_path,
             ranking_list_path,
             metrics_list,

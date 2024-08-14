@@ -90,6 +90,7 @@ function run_evaluation() {
     --run_name $run_name \
     --run_rag \
     --run_eval \
+    --save_ranking_list \
     --save_results_to_object \
     --rewrite_model $rewrite_model \
     --retrieval_query_type $retrieval_query_type \

@@ -72,6 +72,7 @@ def search(
         - args.run_name: str
         - args.file_name_stem: str
         - args.ranking_list_path: str
+        - args.save_ranking_list: bool
     # Sparse
         - args.retrieval_model: str
         - args.retrieval_top_k: int
@@ -285,45 +286,60 @@ def search(
     ##############################
 
 
+    # generate run dictionary required by pytrec_eval
+    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+
     # save ranking list
     # format: query-id Q0 document-id rank score run_name
-    if args.run_name == "none":
-        run_name = args.file_name_stem
-    else:
-        run_name = args.run_name 
+    if args.save_ranking_list:
+        if args.run_name == "none":
+            run_name = args.file_name_stem
+        else:
+            run_name = args.run_name 
 
-    with open(args.ranking_list_path, "w") as f:
-        for qid in qid_list_string:
-            for i, item in enumerate(hits[qid]):
-                f.write("{} {} {} {} {} {}".format(
-                    qid,
-                    "Q0",
-                    item.docid,
-                    i+1,
-                    item.score,
-                    run_name
-                    ))
-                f.write('\n')
+        with open(args.ranking_list_path, "w") as f:
+            for qid in qid_list_string:
+                for i, item in enumerate(hits[qid]):
+                    f.write("{} {} {} {} {} {}".format(
+                        qid,
+                        "Q0",
+                        item.docid,
+                        i+1,
+                        item.score,
+                        run_name
+                        ))
+                    f.write('\n')
 
 
 
-    return hits
+    return hits, run
 
 
 def evaluate(
+    run: dict,
     qrel_file_path: str,
     ranking_list_path: str,
     metrics_list: List[str],
     metrics_list_key_form: List[str]
 ):
 
+    '''
+    Evaluate the ranking list using pytrec_eval.
+    Args:
+        run (dict): ranking list in dictionary format required by pytrec_eval. If None, the ranking list will be read from ranking_list_path.
+        qrel_file_path (str): path to the trec format qrel file
+        ranking_list_path (str): path to the trec format ranking list file
+        metrics_list (List[str]): list of metrics to evaluate
+        metrics_list_key_form (List[str]): list of metrics in key form (change . to _)
+    '''
 
     # read qrels
     with open(qrel_file_path, 'r') as f_qrel:
         qrel = pytrec_eval.parse_qrel(f_qrel)
     # read ranking list
-    with open(ranking_list_path, 'r') as f_run:
-        run = pytrec_eval.parse_run(f_run)
+    if run is None:
+        with open(ranking_list_path, 'r') as f_run:
+            run = pytrec_eval.parse_run(f_run)
 
     #  evaluate
     print("trec_eval evaluating...")
