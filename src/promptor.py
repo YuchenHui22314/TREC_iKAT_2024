@@ -26,6 +26,7 @@ class RewriteAndResponsePromptor:
             self.tail_instruction = "Now, you should give me the rewrite and response of the **Current Question** under the **Context**. The output format should always be:\nRewrite: $Rewrite\nResponse: $Response.\nNote that you should always try to rewrite it and generate an informative response. Never ask for clarification or say you don't understand it in the generated rewrite and response. Go ahead!"
         self.stop_tokens = None
                             
+    
     def get_demo(self, demo_file):
         try:
             with open(demo_file, "r") as f:
@@ -54,7 +55,6 @@ class RewriteAndResponsePromptor:
             examples[i] = "Example #{}:\n".format(i+1) + examples[i]
         
         return "\n\n".join(examples)
-    
     def build_turn_prompt(self, context, current_turn):
         # context
         this_dialog = []
@@ -75,6 +75,7 @@ class RewriteAndResponsePromptor:
         
         return this_prompt
     
+
     def parse_returned_text(self, text):
         text = text.strip()
         try:
@@ -100,6 +101,148 @@ class RewriteAndResponsePromptor:
         except:
             return None
 
+class RARPersonalizedCoTPromptor:
+    def __init__(
+        self, 
+        demo_file, 
+        enable_cot=False,
+        zero_shot_cot=False,
+        one_shot_cot=False
+        ) -> None:    
+        
+        self.enable_cot = enable_cot
+        self.zero_shot_cot = zero_shot_cot
+        self.one_shot_cot = one_shot_cot
+        self.demo = self.get_demo(demo_file)
+
+        if self.enable_cot:
+            cot_1 = "\n\t(2) Provide your reasoning process in terms of how to adopt de-contextualizaiton as well as personalization for search query before rewriting the query. \n\t(3) "
+            cot_2 = "please also provide your reasoning that justifies the way you rewrite the query. The style of the reasoning should be similar to those given in the examples. "
+            cot_3 = "Reason: $Reason\n"
+        else:
+            cot_1 = "\n\t(2) "
+            cot_2 = ""
+            cot_3 = ""
+
+        # head_instruction
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) Help the assistant rewrite the user's question such that:\n\t\ta. The rewritten question can fully express the user's information needs without the need of dialog context.\n\t\tb. The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.\n\t\tc. Please analyze the quesiton's nature, and judge if it is necessary to personalize. If so, please add personalized elements to the question based on the user's profile.{cot_1}Provide an informative response to the question."
+
+        if self.demo != "":
+            self.instruction += "\n\nNow, I will give you several example multi-turn dialogs with their user profiles, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant."
+            if one_shot_cot:
+                self.instruction += " The rewrite part begins with the reasoning explaining the de-contextualizaiton and personalization consideration while rewriting the query."
+
+        self.tail_instruction = f"Now, please provide the rewrite and the response for the **Last Question** under the **Dialog Context**, considering the **User Profile**. {cot_2}The output format should always be:\n\n{cot_3}Rewrite: $Rewrite\nResponse: $Response \n\nGo ahead!"
+
+        self.stop_tokens = None
+                            
+    def get_demo(self, demo_file):
+        try:
+            with open(demo_file, "r") as f:
+                demos = json.load(f)
+        except:
+            print("warning: No demonstration file.")
+            return ""
+        
+        examples = []
+        for demo in demos:
+            turns = demo['turns']
+            ptkb_dict = demo['ptkb']
+
+            # ptkb
+            ptkb_instruction = []
+            ptkb_instruction.append("Example user profile:")
+            for num, ptkb_sentence in ptkb_dict.items():
+                ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+            
+            ptkb_instruction = "\n".join(ptkb_instruction)
+
+            # conversation turns
+            dialog = []
+            for i, turn in enumerate(turns):
+                if self.one_shot_cot:
+                    rewrite = turn['cot'] + " So the question should be rewritten as: {}".format(turn['manual_rewrite'])
+                else:
+                    rewrite = turn['manual_rewrite']
+                turn_text = f"Question {i+1}: {turn["question"]}\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {turn["response"]}"
+                dialog.append(turn_text)
+            dialog = "\n\n".join(dialog)
+
+            # add ptkb before dialog
+            dialog = ptkb_instruction + "\n\nExample dialog:\n" + dialog
+            
+            examples.append(dialog)
+        
+        for i in range(len(examples)):
+            examples[i] = "Example ########### {} ##########\n".format(i+1) + examples[i] + "\n######################"
+        
+        return "\n\n".join(examples)
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn):
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("Here is the **User Profile**:\n")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = "\n".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = []
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"Question {i+1}: {turn.current_utterance}\nResponse {i+1}: {turn.current_response}")
+        
+        this_dialog[0] = "Here is the **Dialog Context**:\n\n" + this_dialog[0]
+            
+        # current turn
+        this_dialog.append("**Last Question**: " + current_turn.current_utterance)
+        this_dialog = "\n\n".join(this_dialog)  
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        this_prompt.append(self.demo)
+        this_prompt.append("# Now, the exmamples are over. Let's move to the dialog and the user profile you have to consider.")
+        this_prompt.append(ptkb_instruction)
+        this_prompt.append(this_dialog)
+        this_prompt.append(self.tail_instruction)
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        text = text.strip()
+        try:
+            splits = text.split('\n')
+            rewrite = None
+            response = None
+            cot = None
+
+            for line in splits:
+                if line[:8] == "Rewrite:":
+                    rewrite = line[8:].strip()
+                elif line[:9] == "Response:":
+                    response = line[9:].strip()
+                elif line[:7] == "Reason:":
+                    cot = line[7:].strip()
+                
+            if rewrite == None or response == None:
+                return None 
+            if self.enable_cot and cot == None:
+                return None
+
+            return [rewrite, response, cot]
+        except Exception as e:
+            print(e)
+            return None
+    
 class PersonalizeViaPTKBSummaryPrompter:
     def __init__(
         self,
@@ -326,6 +469,7 @@ class PersonalizedCIRQueryExpansionPromptor:
     
 
 
+    def parse_returned_text(self, text):
         text = text.strip()
         try:
             splits = text.split('\n')
