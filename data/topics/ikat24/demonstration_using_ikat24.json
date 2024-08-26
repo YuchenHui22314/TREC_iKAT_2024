@@ -38,7 +38,7 @@
                 "question": "Oh, do I need a visa?",
                 "response": "American citizens need to apply for a visa before entering Egypt.",
                 "manual_rewrite": "Oh, do I need a visa to visit Egypt as an American citizen?",
-                "cot": "Based on Question 1, the user is considering traveling to Egypt, so 'Egypt' or 'Egyptian' should be mentioned in the question.Additionally, including the user's nationality in the query can help find relevant visa application documents, hence a personalization is necessary: from the 12th sentence in the user profile, we can infer that the user is an American citizen, as they are from San Francisco."
+                "cot": "Based on Question 1, the user is considering traveling to Egypt, so 'Egypt' or 'Egyptian' should be mentioned in the question. Additionally, including the user's nationality in the query can help find relevant visa application documents, hence a personalization is necessary: from the 12th sentence in the user profile, we can infer that the user is an American citizen, as they are from San Francisco."
                 
             },
             {
@@ -60,7 +60,7 @@
                 "question": "Which one is cheaper?",
                 "response": "A government single-entry E-Visa costs $25, and a government multiple-entry visa price is $60. The Visa On Arrival also costs $25 and they only accept USD. So, for a single-entry visa, the prices are the same.",
                 "manual_rewrite": "Which of the Egyptian E-Visa and Visa On Arrival is cheaper?",
-                "cot": "Coreference resolution is required to clarify 'which one' in the query, making it more suitable for search. In the previous conversation, the user compared the Egyptian E-Visa and Visa on Arrival. Including both names in the question will improve search results. Since this is a factual question, personalization is unnecessary."
+                "cot": "Coreference resolution is required to clarify 'which one' in the query, making it more suitable for search. In the previous conversation turn, the user compared the Egyptian E-Visa and Visa on Arrival. Including both names in the question will improve search results. Since this is a factual question, personalization is unnecessary."
             },
             {
                 "turn_id": 6,

@@ -117,7 +117,7 @@ class RARPersonalizedCoTPromptor:
 
         if self.enable_cot:
             cot_1 = "\n\t(2) Provide your reasoning process in terms of how to adopt de-contextualizaiton as well as personalization for search query before rewriting the query. \n\t(3) "
-            cot_2 = "please also provide your reasoning that justifies the way you rewrite the query. The style of the reasoning should be similar to those given in the examples. "
+            cot_2 = "Please also provide your reasoning that justifies the way you rewrite the query. The style of the reasoning should be similar to those given in the examples. "
             cot_3 = "Reason: $Reason\n"
         else:
             cot_1 = "\n\t(2) "
