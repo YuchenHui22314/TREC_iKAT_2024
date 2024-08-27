@@ -14,7 +14,7 @@ retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k
-reranker="none"
+reranker="monot5_base_10k"
 #rankllama
 rerank_quant="none" # can be "none" ,"8b", "4b"
 #rankgpt
@@ -47,12 +47,14 @@ prompt_type="no_prompt"
 
 LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log.txt
 
-retrieval_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs")
+#retrieval_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs")
 #reranking_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
 #reranking_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
 #reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
 # reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs")
-reranking_query_types=("none")
+#retrieval_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs")
+retrieval_query_types=("rar_personalized_cotN_rwrs")
+reranking_query_types=("rar_personalized_cotN_rw")
 
 function run_evaluation() {
     local retrieval_query_type="$1"

@@ -144,6 +144,7 @@ def get_args():
                             "rar_ptkb_sum_cot0_rwrs",
                             "rar_ptkb_sum_rw",
                             "rar_ptkb_sum_rwrs",
+                            'rar_personalized_cotN_rwrs'
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -158,6 +159,7 @@ def get_args():
                             "rar_ptkb_sum_cot0_rwrs",
                             "rar_ptkb_sum_rw",
                             "rar_ptkb_sum_rwrs",
+                            "rar_personalized_cotN_rw"
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 

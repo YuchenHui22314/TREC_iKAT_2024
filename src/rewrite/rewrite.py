@@ -31,7 +31,8 @@ from promptor import (
     RewriteAndResponsePromptor,
     PersonalizedCIRQueryExpansionPromptor,
     SummarizePTKBPromptor,
-    PersonalizeViaPTKBSummaryPrompter
+    PersonalizeViaPTKBSummaryPrompter,
+    RARPersonalizedCoTPromptor
 )
 
 from topics import (
@@ -74,6 +75,9 @@ def get_args():
         # O -> oracle, Rf -> rel feedback
         "raw_llm_rm_P__Re___",
         "raw_llm_rm____Re___",
+        "rar_personalized_cot1",
+        "rar_personalized_cot0",
+        "rar_personalized_cotN",
         ]
     ) 
     args = parser.parse_args()
@@ -166,6 +170,9 @@ def get_llm_rm_expansion_terms(
 if __name__ == '__main__':
     args = get_args()
 
+    # print the arguments
+    print(args)
+
     input_query_path = args.input_query_path
     rewrite_model = args.rewrite_model
     demo_file = args.demo_file
@@ -197,7 +204,27 @@ if __name__ == '__main__':
         prompter = PersonalizeViaPTKBSummaryPrompter(
             enable_cot = False
         )
-        
+
+    if "rar_personalized_cot" in reformulation_name:
+        enable_cot = True
+        zero_shot_cot = False
+        one_shot_cot = False
+        if reformulation_name[-1] == "0":
+            zero_shot_cot = True
+        if reformulation_name[-1] == "1":
+            one_shot_cot = True
+        if reformulation_name[-1] == "N":
+            enable_cot = False
+
+        prompter = RARPersonalizedCoTPromptor(
+            demo_file = demo_file,
+            enable_cot = enable_cot,
+            zero_shot_cot = zero_shot_cot,
+            one_shot_cot = one_shot_cot,
+            cot_format="cot_seperate"
+        )
+
+
 
 
     ###########################
@@ -208,6 +235,7 @@ if __name__ == '__main__':
         api_key = os.environ['openai_key'],
         model_name = rewrite_model,
         n = 1,
+        max_tokens=2048,
         wait_till_success=True 
         )
 
@@ -234,7 +262,46 @@ if __name__ == '__main__':
     for turn in tqdm(turn_list, total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
 
-        if "_ptkb_sum" in reformulation_name:
+        if "rar_personalized_cot" in reformulation_name:
+
+            prompt = prompter.build_turn_prompt(
+                context,
+                turn.ptkb,
+                turn)
+
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+        
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
+            rewrite = liste[0]
+            response = liste[1]
+            cot = liste[2]
+
+            if "N" not in reformulation_name:
+                turn.add_reformulation(
+                    reformulation_name = reformulation_name + "_cot",
+                    reformulated_query = cot,
+                    ptkb_provenance = []
+                )
+            
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rw",
+                reformulated_query = rewrite,
+                ptkb_provenance = []
+            )
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rs",
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+
+
+        elif "_ptkb_sum" in reformulation_name:
 
             ptkb_summary =\
                  turn.find_reformulation("ptkb_summarize").reformulated_query

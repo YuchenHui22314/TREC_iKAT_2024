@@ -2,16 +2,20 @@
 
 # Default argument values
 input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/ikat_2023_test.json"
-demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
+#demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
+demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
 rewrite_model="gpt-3.5-turbo"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
 # O -> oracle, Rf -> rel feedback
 #reformulaton_name="raw_llm_rm_PDCReORf"
 #reformulation_name="raw_llm_rm____Re___"
-reformulation_name="raw_llm_rm_P__Re___"
+#reformulation_name="raw_llm_rm_P__Re___"
 #reformulation_name="ptkb_summarize"
 #reformulation_name="rar_ptkb_sum"
 #reformulation_name="rar_ptkb_sum_cot0"
+#reformulation_name="rar_ptkb_sum_cot1"
+#reformulation_name="rar_personalized_cotN"
+reformulation_name="rar_personalized_cot1"
 
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log.txt"

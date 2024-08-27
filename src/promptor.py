@@ -107,36 +107,45 @@ class RARPersonalizedCoTPromptor:
         demo_file, 
         enable_cot=False,
         zero_shot_cot=False,
-        one_shot_cot=False
-        ) -> None:    
+        one_shot_cot=False,
+        cot_format = "cot_seperate") -> None:
         
         self.enable_cot = enable_cot
         self.zero_shot_cot = zero_shot_cot
         self.one_shot_cot = one_shot_cot
-        self.demo = self.get_demo(demo_file)
+        self.demo = self.get_demo(demo_file, cot_format)
 
         if self.enable_cot:
-            cot_1 = "\n\t(2) Provide your reasoning process in terms of how to adopt de-contextualizaiton as well as personalization for search query before rewriting the query. \n\t(3) "
+            cot_1 = "\n\t(2) Provide your reasoning process in terms of how to adopt de-contextualizaiton (a. & b.) as well as personalization (c.) before rewriting the question. \n\t(3) "
             cot_2 = "Please also provide your reasoning that justifies the way you rewrite the query. The style of the reasoning should be similar to those given in the examples. "
             cot_3 = "Reason: $Reason\n"
+            if cot_format == "cot_seperate":
+                cot_4 = "So the question should be rewritten as:\n" 
+            elif cot_format == "cot_rewrite_together":
+                cot_4 = ""
         else:
             cot_1 = "\n\t(2) "
             cot_2 = ""
             cot_3 = ""
+            cot_4 = ""
+
+
+        
+
 
         # head_instruction
-        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) Help the assistant rewrite the user's question such that:\n\t\ta. The rewritten question can fully express the user's information needs without the need of dialog context.\n\t\tb. The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.\n\t\tc. Please analyze the quesiton's nature, and judge if it is necessary to personalize. If so, please add personalized elements to the question based on the user's profile.{cot_1}Provide an informative response to the question."
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) Help the assistant rewrite the user's question such that:\n\t\ta. The rewritten question can fully express the user's information needs without the need of dialog context. \n\t\tb. The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.\n\t\tc. Please analyze the quesiton's nature, and judge if it is necessary to personalize. If so, please add personalized elements to the question based on the user's profile.{cot_1}Provide an informative response to the question."
 
-        if self.demo != "":
+        if self.enable_cot:
             self.instruction += "\n\nNow, I will give you several example multi-turn dialogs with their user profiles, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant."
             if one_shot_cot:
-                self.instruction += " The rewrite part begins with the reasoning explaining the de-contextualizaiton and personalization consideration while rewriting the query."
+                self.instruction += " The reasoning explaining the de-contextualizaiton and personalization consideration while rewriting the question is also provided before the rewrite part."
 
-        self.tail_instruction = f"Now, please provide the rewrite and the response for the **Last Question** under the **Dialog Context**, considering the **User Profile**. {cot_2}The output format should always be:\n\n{cot_3}Rewrite: $Rewrite\nResponse: $Response \n\nGo ahead!"
+        self.tail_instruction = f"Now, please provide the rewrite and the response for the **Last Question** under the **Dialog Context**, considering the **User Profile**. {cot_2}The output format should always be:\n\n{cot_3}{cot_4}Rewrite: $Rewrite\nResponse: $Response \n\nGo ahead!"
 
         self.stop_tokens = None
                             
-    def get_demo(self, demo_file):
+    def get_demo(self, demo_file, cot_format):
         try:
             with open(demo_file, "r") as f:
                 demos = json.load(f)
@@ -160,12 +169,28 @@ class RARPersonalizedCoTPromptor:
             # conversation turns
             dialog = []
             for i, turn in enumerate(turns):
+                question = turn['question']
+                rewrite = turn['manual_rewrite']
+                response = turn['response']
+
+                turn_text = ""
                 if self.one_shot_cot:
-                    rewrite = turn['cot'] + " So the question should be rewritten as: {}".format(turn['manual_rewrite'])
+                    cot = turn['cot']
+
+                    if cot_format == "cot_seperate":
+                        turn_text = f"Question {i+1}: {question}\nReason {i+1}: {cot}\nSo the question should be rewritten as:\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {response}"
+
+
+                    elif cot_format == "cot_rewrite_together":
+                        rewrite = cot + " So the question should be rewritten as: " + rewrite 
+                        turn_text = f"Question {i+1}: {question}\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {response}"
+
                 else:
                     rewrite = turn['manual_rewrite']
-                turn_text = f"Question {i+1}: {turn["question"]}\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {turn["response"]}"
+                    turn_text = f"Question {i+1}: {question}\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {response}"
+
                 dialog.append(turn_text)
+
             dialog = "\n\n".join(dialog)
 
             # add ptkb before dialog
@@ -398,13 +423,14 @@ class PersonalizedCIRQueryExpansionPromptor:
         
 
                             
-    def get_demo(self, demo_file):
+    def get_demo(self, demo_file, format):
         try:
             with open(demo_file, "r") as f:
                 demos = json.load(f)
         except:
             print("warning: No demonstration file.")
             return ""
+
         
         examples = []
         for demo in demos:
@@ -412,11 +438,13 @@ class PersonalizedCIRQueryExpansionPromptor:
             
             dialog = []
             for turn in turns:
+                
                 if self.enable_cot:
                     rewrite = turn['cot'] + " So the question should be rewritten as: {}".format(turn['manual_rewrite'])
                 else:
                     rewrite = turn['manual_rewrite']
                 turn_text = "Question: {}\nRewrite: {}\nResponse: {}".format(turn['question'], rewrite, turn['response'])         
+
                 dialog.append(turn_text)
             dialog = "\n\n".join(dialog)
             
