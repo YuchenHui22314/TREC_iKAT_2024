@@ -144,7 +144,8 @@ def get_args():
                             "rar_ptkb_sum_cot0_rwrs",
                             "rar_ptkb_sum_rw",
                             "rar_ptkb_sum_rwrs",
-                            'rar_personalized_cotN_rwrs'
+                            'rar_personalized_cotN_rwrs',
+                            'rar_personalized_cot1_rwrs'
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -159,7 +160,8 @@ def get_args():
                             "rar_ptkb_sum_cot0_rwrs",
                             "rar_ptkb_sum_rw",
                             "rar_ptkb_sum_rwrs",
-                            "rar_personalized_cotN_rw"
+                            "rar_personalized_cotN_rw",
+                            "rar_personalized_cot1_rw",
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
@@ -169,7 +171,10 @@ def get_args():
                             "oracle_utterance",
                             "rar_rw",
                             "rar_ptkb_sum_cot0_rw",
-                            "rar_ptkb_sum_rw"
+                            "rar_ptkb_sum_rw",
+                            "rar_personalized_cot1_rw",
+                            "rar_personalized_cotN_rw",
+
                             ],)
 
     parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
