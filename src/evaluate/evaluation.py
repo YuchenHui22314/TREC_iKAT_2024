@@ -29,7 +29,8 @@ from response_generation import (
 from evaluation_util import (
     search,
     evaluate,
-    generate_and_save_ikat_submission
+    generate_and_save_ikat_submission,
+    extract_filename
 )
 
 from pyserini.search import get_topics, get_qrels
@@ -114,6 +115,7 @@ def get_args():
     parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
 
     parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
+    parser.add_argument("--ranking_list_path", type=str, default="none", help="path of loading a ranking list while not runing the running component.")
 
     parser.add_argument("--run_eval",  action="store_true", help="if we will run the evaluation component (+ saving)")
     #########################
@@ -145,7 +147,9 @@ def get_args():
                             "rar_ptkb_sum_rw",
                             "rar_ptkb_sum_rwrs",
                             'rar_personalized_cotN_rwrs',
-                            'rar_personalized_cot1_rwrs'
+                            'rar_personalized_cot1_rwrs',
+                            'rar_personalized_cotN_rw',
+                            'rar_personalized_cot1_rw'
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -272,6 +276,9 @@ if __name__ == "__main__":
     assert os.path.exists(args.qrel_file_path), "Qrel file not found"
     assert os.path.exists(args.output_dir_path), "Output dir not found"
 
+    if args.run_rag:
+        assert args.ranking_list_path == "none", "while running rag, ranking list path should be defined by program arguments. So please set ranking_list_path to none."
+
     #########################################################
     #  generate an identifiable name for current run
     #########################################################
@@ -392,6 +399,9 @@ if __name__ == "__main__":
 
         if args.save_results_to_object:
 
+            # adopt for the case where we just load an customized name ranking list file
+            if args.ranking_list_path != "none":
+                args.
 
             for qid, result_dict in query_metrics_dic.items():
 
