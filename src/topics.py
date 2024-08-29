@@ -327,6 +327,8 @@ class Turn:
             final_query = self.current_utterance
         elif query_type == "oracle":
             final_query = self.oracle_utterance
+        elif "fuse" in query_type:
+            final_query = "ranking list fusion, no query needed"
         elif "llm_rm" in query_type:
             initial_query = self.query_type_2_query(query_type.split("_")[0],0,0.0)
 

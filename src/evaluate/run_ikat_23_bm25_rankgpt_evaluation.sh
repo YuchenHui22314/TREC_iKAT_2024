@@ -14,7 +14,7 @@ retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k
-reranker="none"
+reranker="monot5_base_10k"
 #rankllama
 rerank_quant="none" # can be "none" ,"8b", "4b"
 #rankgpt
@@ -35,6 +35,9 @@ retrieval_top_k=1000
 rerank_top_k=50
 generation_top_k=3
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.20,recall.50,recall.100,recall.1000,recip_rank"
+#given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
+#given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_personcot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
+given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_rwrs]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
 # project specific
 run_name="none"
 # turn to true to yield trec submission format.
@@ -53,8 +56,10 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log.txt
 #reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___")
 # reranking_query_types=("rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rwrs")
 #retrieval_query_types=("raw" "rar_rw" "rar_rwrs" "oracle_utterance" "raw_llm_rm_P__Re___" "raw_llm_rm____Re___" "rar_ptkb_sum_cot0_rw" "rar_ptkb_sum_cot0_rwrs" "rar_ptkb_sum_rw" "rar_ptkb_sum_rwrs")
-retrieval_query_types=("rar_personalized_cot1_rw" "rar_personalized_cotN_rw")
-reranking_query_types=("none")
+#retrieval_query_types=("rar_personalized_cot1_rw" "rar_personalized_cotN_rw")
+#retrieval_query_types=("rar_rw_fuse_rar_personcot1_rw")
+retrieval_query_types=("rar_rw_fuse_rar_rwrs")
+reranking_query_types=("rar_personalized_cot1_rw")
 
 function run_evaluation() {
     local retrieval_query_type="$1"
@@ -89,10 +94,12 @@ function run_evaluation() {
     --rerank_top_k $rerank_top_k \
     --generation_top_k $generation_top_k \
     --metrics $metrics \
-    --run_name $run_name \
-    --run_rag \
-    --run_eval \
     --save_ranking_list \
+    --run_rag \
+    --run_from_rerank \
+    --given_ranking_list_path $given_ranking_list_path \
+    --run_name $run_name \
+    --run_eval \
     --save_results_to_object \
     --rewrite_model $rewrite_model \
     --retrieval_query_type $retrieval_query_type \

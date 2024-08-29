@@ -115,7 +115,11 @@ def get_args():
     parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
 
     parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
-    parser.add_argument("--ranking_list_path", type=str, default="none", help="path of loading a ranking list while not runing the running component.")
+
+    parser.add_argument("--run_from_rerank", action="store_true", help="if we will run from a given ranking list then rerank + generation ")
+
+    parser.add_argument("--given_ranking_list_path", type=str, default="none", help="when run_from_rerank == true, we have to provide the path of a given ranking list then rerank.")
+
 
     parser.add_argument("--run_eval",  action="store_true", help="if we will run the evaluation component (+ saving)")
     #########################
@@ -149,7 +153,12 @@ def get_args():
                             'rar_personalized_cotN_rwrs',
                             'rar_personalized_cot1_rwrs',
                             'rar_personalized_cotN_rw',
-                            'rar_personalized_cot1_rw'
+                            'rar_personalized_cot1_rw',
+                            'rar_rw_fuse_rar_personcot1_rw',
+                            "rar_rwrs_fuse_rar_personcot1_rwrs",
+                            "rar_rw_fuse_rar_rwrs",
+                            "rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw",
+                            "rar_rw_fuse_rar_personalized_cot1_rwrs"
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -276,8 +285,7 @@ if __name__ == "__main__":
     assert os.path.exists(args.qrel_file_path), "Qrel file not found"
     assert os.path.exists(args.output_dir_path), "Output dir not found"
 
-    if args.run_rag:
-        assert args.ranking_list_path == "none", "while running rag, ranking list path should be defined by program arguments. So please set ranking_list_path to none."
+    
 
     #########################################################
     #  generate an identifiable name for current run
@@ -302,6 +310,7 @@ if __name__ == "__main__":
         base_folder,
         "ranking",
         file_name_stem + ".txt")
+    
 
     # run all metrics path
     metrics_path = os.path.join(
@@ -398,10 +407,6 @@ if __name__ == "__main__":
         # write results to topic list and save.
 
         if args.save_results_to_object:
-
-            # adopt for the case where we just load an customized name ranking list file
-            if args.ranking_list_path != "none":
-                args.
 
             for qid, result_dict in query_metrics_dic.items():
 

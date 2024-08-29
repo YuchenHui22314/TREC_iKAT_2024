@@ -1,4 +1,3 @@
-
 import pickle
 import sys
 import logging
@@ -46,6 +45,10 @@ from pyserini.search import FaissSearcher
 from pyserini.search import get_topics, get_qrels
 import pytrec_eval
 
+class PyScoredDoc:
+    def __init__(self, docid: str, score: float):
+        self.docid = docid
+        self.score = score
 
 def search(
     retrieval_query_list: List[str], 
@@ -73,6 +76,8 @@ def search(
         - args.file_name_stem: str
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
+        - args.run_from_rerank: bool
+        - args.given_ranking_list_path: str
     # Sparse
         - args.retrieval_model: str
         - args.retrieval_top_k: int
@@ -100,30 +105,44 @@ def search(
     
     '''
 
-    # sparse search
-    if args.retrieval_model == "BM25":
-        print("BM 25 searching...")
-        searcher = LuceneSearcher(args.index_dir_path)
-        searcher.set_bm25(args.bm25_k1, args.bm25_b)
+    # check args
+    # we have the possibility to load a custom ranking list before reranking
+    if args.run_from_rerank:
+        assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank is true, because we do not do retrieval in this case."
 
-        # rm3 pseudo relevance feedback
-        if args.qe_type == "rm3":
-            searcher.set_rm3(
-                fb_terms = args.fb_terms,
-                fb_docs = args.fb_docs,
-                original_query_weight = args.original_query_weight
+    ## If we do have to search
+    if not args.run_from_rerank:
+        # sparse search
+        if args.retrieval_model == "BM25":
+            print("BM 25 searching...")
+            searcher = LuceneSearcher(args.index_dir_path)
+            searcher.set_bm25(args.bm25_k1, args.bm25_b)
+
+            # rm3 pseudo relevance feedback
+            if args.qe_type == "rm3":
+                searcher.set_rm3(
+                    fb_terms = args.fb_terms,
+                    fb_docs = args.fb_docs,
+                    original_query_weight = args.original_query_weight
+                )
+                    
+            hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+
+        # dense search
+        elif args.retrieval_model in ["ance", "dpr"]:
+            print(f"{args.retrieval_model} searching...")
+            searcher = FaissSearcher(
+                args.index_dir_path,
+                args.dense_query_encoder_path 
             )
-                
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
-
-    # dense search
-    elif args.retrieval_model in ["ance", "dpr"]:
-        print(f"{args.retrieval_model} searching...")
-        searcher = FaissSearcher(
-            args.index_dir_path,
-            args.dense_query_encoder_path 
-        )
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+            hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+    else:
+        # even we do not search, we have to get access to the index (raw documents via a searcher)
+        searcher = LuceneSearcher(args.index_dir_path)
+        # load the ranking list
+        with open(args.given_ranking_list_path, "r") as f:
+            run = pytrec_eval.parse_run(f)
+            hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
 
 
     ##############################
@@ -415,3 +434,11 @@ def generate_and_save_ikat_submission(
         
     with open(ikat_output_path, "w") as f:
         json.dump(result_dict, f, indent=4)
+
+
+def extract_filename(path):
+    # Extract the filename with extension
+    filename_with_ext = os.path.basename(path)
+    # Remove the extension
+    filename, ext = os.path.splitext(filename_with_ext)
+    return filename
