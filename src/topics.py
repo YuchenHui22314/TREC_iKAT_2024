@@ -478,7 +478,7 @@ def load_turns_from_ikat_topic_files(
             queries.append(turn["utterance"])
             turn_object = Turn(
                 turn_id = turn_id,
-                conversation_id = number,
+                conversation_id = str(number),
                 title = title,
                 current_utterance = turn["utterance"],
                 current_response = turn["response"],
@@ -532,11 +532,11 @@ def get_context_by_qid(
     Get the context of a turn (sorted list of turns) by its turn_id
     '''
     three_numbers = qid.split("-")
-    conversation_id = "-".join(three_numbers[:2])
-    turn_order = int(three_numbers[2])
+    conversation_id = "-".join(three_numbers[:-1])
+    turn_order = int(three_numbers[-1])
     context = [
         turn for turn in turn_list 
-        if turn.conversation_id == conversation_id 
+        if str(turn.conversation_id) == conversation_id 
         and turn.get_turn_order() < turn_order]
 
     sorted_context = sorted(context, key=lambda x: x.get_turn_order())

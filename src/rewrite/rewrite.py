@@ -60,7 +60,7 @@ def get_args():
     parser.add_argument("--rewrite_model", type=str, default="gpt-3.5-turbo", choices=[
         "gpt-3.5-turbo", 
         "gpt-3.5-turbo-16k", 
-        "gpt-4o",
+        "gpt-4o-2024-08-06",
         "mistral-7b",
         "llama3-8b"])
 
@@ -78,6 +78,7 @@ def get_args():
         "rar_personalized_cot1",
         "rar_personalized_cot0",
         "rar_personalized_cotN",
+        "gpt-4o_rar_personalized_cot1",
         ]
     ) 
     args = parser.parse_args()
@@ -302,6 +303,8 @@ if __name__ == '__main__':
 
 
 
+
+
         elif "_ptkb_sum" in reformulation_name:
 
             ptkb_summary =\
@@ -422,7 +425,7 @@ if __name__ == '__main__':
     ## save turn list
     #################################
 
-    save_turns_to_json(turn_list, "/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2023_test.json")
+    save_turns_to_json(turn_list, "/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json")
     
 
 
