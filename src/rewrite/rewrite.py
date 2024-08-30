@@ -69,6 +69,7 @@ def get_args():
     parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
         "rar",
         "rar_cot",
+        "gpt-4o_rar",
         "gpt-4o_rar_cot",
         "rar_ptkb_sum_cot0",
         "rar_ptkb_sum",
@@ -190,13 +191,13 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
-    if reformulation_name == "rar":
+    if reformulation_name == "rar" or reformulation_name == "gpt-4o_rar":
         prompter = RewriteAndResponsePromptor(
             demo_file = demo_file, 
             enable_cot = False
         )
 
-    if reformulation_name == "rar_cot":
+    if reformulation_name == "rar_cot" or reformulation_name == "gpt-4o_rar_cot":
         prompter = RewriteAndResponsePromptor(
             demo_file = demo_file, 
             enable_cot = True
@@ -403,7 +404,7 @@ if __name__ == '__main__':
 
 
         # we generated just 1 response
-        elif reformulation_name == "rar":
+        elif reformulation_name == "rar" or reformulation_name == "gpt-4o_rar":
             # generate prompt for the current turn
             prompt = prompter.build_turn_prompt(context,turn)
 
@@ -419,17 +420,18 @@ if __name__ == '__main__':
             response = rewrite_resposne_cot[1]
 
             turn.add_reformulation(
-                reformulation_name = "rar_rw",
+                reformulation_name = reformulation_name + "_rw",
                 reformulated_query = rewrite,
                 ptkb_provenance = []
             )
             turn.add_reformulation(
-                reformulation_name = "rar_rs",
+                reformulation_name = reformulation_name + "_rs",
                 reformulated_query = response,
                 ptkb_provenance = []
             )
+        
 
-        elif reformulation_name == "rar_cot":
+        elif reformulation_name == "rar_cot" or reformulation_name == "gpt-4o_rar_cot":
             # generate prompt for the current turn
             prompt = prompter.build_turn_prompt(context,turn)
 

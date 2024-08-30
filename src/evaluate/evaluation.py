@@ -141,6 +141,10 @@ def get_args():
                             "oracle_utterance",
                             "rar_rwrs",
                             "rar_rw",
+                            "rar_cot_rw",
+                            "rar_cot_rwrs",
+                            "gpt-4o_rar_cot_rw",
+                            "gpt-4o_rar_cot_rwrs",
                             # P -> personalize, D -> demo, C -> cot, Re -> rel explain
                             # O -> oracle, Rf -> rel feedback
                             "raw_llm_rm_PDCReORf",
@@ -158,7 +162,8 @@ def get_args():
                             "rar_rwrs_fuse_rar_personcot1_rwrs",
                             "rar_rw_fuse_rar_rwrs",
                             "rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw",
-                            "rar_rw_fuse_rar_personalized_cot1_rwrs"
+                            "rar_rw_fuse_rar_personalized_cot1_rwrs",
+                            "gpt-4o_rar_personalized_cot1_rw"
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -175,6 +180,7 @@ def get_args():
                             "rar_ptkb_sum_rwrs",
                             "rar_personalized_cotN_rw",
                             "rar_personalized_cot1_rw",
+                            "gpt-4o_rar_personalized_cot1_rw"
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
