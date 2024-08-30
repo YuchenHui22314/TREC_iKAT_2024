@@ -143,6 +143,8 @@ def get_args():
                             "rar_rw",
                             "rar_cot_rw",
                             "rar_cot_rwrs",
+                            "gpt-4o_rar_rw", 
+                            "gpt-4o_rar-rwrs",
                             "gpt-4o_rar_cot_rw",
                             "gpt-4o_rar_cot_rwrs",
                             # P -> personalize, D -> demo, C -> cot, Re -> rel explain
@@ -163,7 +165,8 @@ def get_args():
                             "rar_rw_fuse_rar_rwrs",
                             "rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw",
                             "rar_rw_fuse_rar_personalized_cot1_rwrs",
-                            "gpt-4o_rar_personalized_cot1_rw"
+                            "gpt-4o_rar_personalized_cot1_rw",
+                            "gpt-4o_rar_personalized_cot1_rwrs"
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
