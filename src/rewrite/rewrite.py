@@ -55,6 +55,8 @@ def get_args():
 
     parser.add_argument("--input_query_path", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/ikat_2023_test.json")
 
+    parser.add_argument("--output_query_path", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json")
+
     parser.add_argument("--demo_file", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json")
 
     parser.add_argument("--rewrite_model", type=str, default="gpt-3.5-turbo", choices=[
@@ -67,6 +69,7 @@ def get_args():
     parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
         "rar",
         "rar_cot",
+        "gpt-4o_rar_cot",
         "rar_ptkb_sum_cot0",
         "rar_ptkb_sum",
         "ptkb_summarize",
@@ -191,6 +194,12 @@ if __name__ == '__main__':
         prompter = RewriteAndResponsePromptor(
             demo_file = demo_file, 
             enable_cot = False
+        )
+
+    if reformulation_name == "rar_cot":
+        prompter = RewriteAndResponsePromptor(
+            demo_file = demo_file, 
+            enable_cot = True
         )
 
     if "summarize" in reformulation_name:
@@ -420,12 +429,47 @@ if __name__ == '__main__':
                 ptkb_provenance = []
             )
 
+        elif reformulation_name == "rar_cot":
+            # generate prompt for the current turn
+            prompt = prompter.build_turn_prompt(context,turn)
+
+            # rewrite the prompt
+            responses = rewriter.generate_text(prompt)
+
+            rewrite_resposne_cot = prompter.parse_returned_text(responses[0]) 
+
+            if rewrite_resposne_cot == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(turn)
+                continue
+
+            rewrite = rewrite_resposne_cot[0]
+            response = rewrite_resposne_cot[1]
+            cot = rewrite_resposne_cot[2]
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rw",
+                reformulated_query = rewrite,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rs",
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+        
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_cot",
+                reformulated_query = cot,
+                ptkb_provenance = []
+            )
+
     
     #################################
     ## save turn list
     #################################
 
-    save_turns_to_json(turn_list, "/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json")
+    save_turns_to_json(turn_list, args.output_query_path)
     
 
 
