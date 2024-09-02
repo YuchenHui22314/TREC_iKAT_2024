@@ -105,13 +105,19 @@ def search(
     
     '''
 
-    # check args
     # we have the possibility to load a custom ranking list before reranking
     if args.run_from_rerank:
         assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank is true, because we do not do retrieval in this case."
 
+        # even we do not search, we have to get access to the index (raw documents via a searcher)
+        searcher = LuceneSearcher(args.index_dir_path)
+        # load the ranking list
+        with open(args.given_ranking_list_path, "r") as f:
+            run = pytrec_eval.parse_run(f)
+            hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
+
     ## If we do have to search
-    if not args.run_from_rerank:
+    else:
         # sparse search
         if args.retrieval_model == "BM25":
             print("BM 25 searching...")
@@ -136,13 +142,6 @@ def search(
                 args.dense_query_encoder_path 
             )
             hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
-    else:
-        # even we do not search, we have to get access to the index (raw documents via a searcher)
-        searcher = LuceneSearcher(args.index_dir_path)
-        # load the ranking list
-        with open(args.given_ranking_list_path, "r") as f:
-            run = pytrec_eval.parse_run(f)
-            hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
 
 
     ##############################

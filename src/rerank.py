@@ -127,7 +127,7 @@ def rerank_rankllama(
 
     # Split passages into groups of 10 passages
     # due to GPU resources limitation.
-    passages_parts = np.array_split(passages, 20)
+    passages_parts = np.array_split(passages, 5)
     scores = []
 
     for passages_part in passages_parts:
@@ -145,6 +145,10 @@ def rerank_rankllama(
             logits = outputs.logits
             part_scores = logits[:,0]
             scores.extend(list(part_scores))
+        
+        # transform to torch float32
+        scores = [float(score) for score in scores]
+        
 
     return scores
 
@@ -188,6 +192,7 @@ def rerank_t5_DP(
             true_false = softmax(batch_logits[:, 0, targeted_ids]).detach().cpu().numpy() # B 2
             true_prob = true_false[:,0]
             scores.extend(true_prob.tolist())
+        
 
     return scores
 
