@@ -1,10 +1,14 @@
 import json
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 from dataclasses import dataclass, field, asdict 
 from constants import IKAT_23_EVALUATED_TURNS
 from tqdm import tqdm
 import math
+from pyserini.search.lucene import LuceneSearcher
 
+def load_document_by_id(doc_id, searcher):
+    doc = json.loads(searcher.doc(doc_id).raw())
+    return doc
 
 @dataclass
 class Result:
@@ -193,6 +197,14 @@ class Turn:
             ptkb_provenance = reformulation_object.ptkb_provenance
         
         return ptkb_provenance
+    
+    def get_gold_provenance_passages(self, index_dir_path) -> Any:
+        '''
+        Get the gold provenance passages for the current turn
+        '''
+        searcher = LuceneSearcher(index_dir_path)
+        return [load_document_by_id(doc_id, searcher) for doc_id in self.response_provenance]
+
 
     def rewrite_a_is_better_than_b_on_at_stage(self, a_name, b_name, metric_name, stage):
         '''
@@ -542,6 +554,8 @@ def get_context_by_qid(
     sorted_context = sorted(context, key=lambda x: x.get_turn_order())
 
     return sorted_context
+
+
 
     
 

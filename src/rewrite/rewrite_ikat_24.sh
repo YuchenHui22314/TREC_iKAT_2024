@@ -24,7 +24,7 @@ rewrite_model="gpt-4o-2024-08-06"
 reformulation_name="gpt-4o_rar"
 
 
-LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log.txt"
+LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
 
 # Run the program with the specified arguments
 python3 rewrite.py \

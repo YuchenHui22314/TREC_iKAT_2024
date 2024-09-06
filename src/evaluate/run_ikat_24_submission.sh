@@ -64,7 +64,7 @@ retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw")
 reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
 
 
-LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log.txt
+LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2024.txt
 
 function run_evaluation() {
     local retrieval_query_type="$1"

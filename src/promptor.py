@@ -101,6 +101,78 @@ class RewriteAndResponsePromptor:
         except:
             return None
 
+class PersonalizedResponseGenPromptor:
+    def __init__(
+        self, 
+        #demo_file
+        ) -> None:
+        
+        #self.demo = self.get_demo(demo_file, cot_format)
+
+
+        # head_instruction
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The profile of the user, in form of several sentences describing his/her background information.\n\t(3) Several reference passages found by a search engin for answering last question asked by the user in the dialog.\nYour task is as follows:\n\t(1) Understand the dialog and the User Profile.\n\t(2) Answer the user's last question in the dialog using the provided reference passages, such that the answer is suitable for showing to the user. It should be fluent, satisfy their information needs, and not contain extraneous or redundant informations. Precisely, it should satisfy the following criteria:\n\t\ta. Naturalness: The response should be perfectly human-like and fluent, and should be consistent with previous dialog turns.\n\t\tb. Groundedness: The response should be directly grounded on the information provided in the passages, instead of inventing it by your self.\n\t\tc. Personalization: The response should be a personalized answer, taking the user profile into account.\n\t\td. If you think some provided passage is not relevant to the user's last question, do not use it.\n\t\te. The length of the response should be appropriate and not longer than 220 words."
+
+
+        self.tail_instruction = f"Now, please provide the response for the **Last Question** under the **Dialog Context**, considering the **User Profile** and using **Reference Passages**. The output format should always be:\n\nResponse: $Response\n\nGo ahead!"
+
+                            
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, passages_list, last_question):
+
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("Here is the **User Profile**:\n")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = "\n".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = []
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"Question {i+1}: {turn.current_utterance}\nResponse {i+1}: {turn.current_response}")
+        
+        this_dialog[0] = "Here is the **Dialog Context**:\n\n" + this_dialog[0]
+            
+        # current turn
+        this_dialog.append("**Last Question**: " + last_question)
+        this_dialog = "\n\n".join(this_dialog)  
+
+
+        # provanence passages:
+        passages_instruction = []
+        passages_instruction.append("Here are the **Reference Passages**:\n")
+        for i, doc_content in enumerate(passages_list):
+            passages_instruction.append(f"Reference Passage {i+1}: {doc_content}")
+        
+        passages_instruction = "\n".join(passages_instruction)
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        this_prompt.append(ptkb_instruction)
+        this_prompt.append(this_dialog)
+        this_prompt.append(passages_instruction)
+        this_prompt.append(self.tail_instruction)
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        text = text.strip()
+        if text[:10] != "Response: ":
+            return None
+        else:
+            return text[10:]
+    
 class RARPersonalizedCoTPromptor:
     def __init__(
         self, 

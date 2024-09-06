@@ -50,6 +50,7 @@ class PyScoredDoc:
         self.docid = docid
         self.score = score
 
+
 def search(
     retrieval_query_list: List[str], 
     reranking_query_list: List[str], 
@@ -76,7 +77,6 @@ def search(
         - args.file_name_stem: str
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
-        - args.run_from_rerank: bool
         - args.given_ranking_list_path: str
     # Sparse
         - args.retrieval_model: str
@@ -105,9 +105,9 @@ def search(
     
     '''
 
-    # we have the possibility to load a custom ranking list before reranking
-    if args.run_from_rerank:
-        assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank is true, because we do not do retrieval in this case."
+    # we have the possibility to load a custom ranking list instead of searching or reranking
+    if args.retrieval_model == "none":
+        assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank or --run_from_generate is true, because we do not do retrieval/retrieval+reranking in these cases."
 
         # even we do not search, we have to get access to the index (raw documents via a searcher)
         searcher = LuceneSearcher(args.index_dir_path)
@@ -116,32 +116,30 @@ def search(
             run = pytrec_eval.parse_run(f)
             hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
 
-    ## If we do have to search
-    else:
-        # sparse search
-        if args.retrieval_model == "BM25":
-            print("BM 25 searching...")
-            searcher = LuceneSearcher(args.index_dir_path)
-            searcher.set_bm25(args.bm25_k1, args.bm25_b)
+    # sparse search
+    if args.retrieval_model == "BM25":
+        print("BM 25 searching...")
+        searcher = LuceneSearcher(args.index_dir_path)
+        searcher.set_bm25(args.bm25_k1, args.bm25_b)
 
-            # rm3 pseudo relevance feedback
-            if args.qe_type == "rm3":
-                searcher.set_rm3(
-                    fb_terms = args.fb_terms,
-                    fb_docs = args.fb_docs,
-                    original_query_weight = args.original_query_weight
-                )
-                    
-            hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
-
-        # dense search
-        elif args.retrieval_model in ["ance", "dpr"]:
-            print(f"{args.retrieval_model} searching...")
-            searcher = FaissSearcher(
-                args.index_dir_path,
-                args.dense_query_encoder_path 
+        # rm3 pseudo relevance feedback
+        if args.qe_type == "rm3":
+            searcher.set_rm3(
+                fb_terms = args.fb_terms,
+                fb_docs = args.fb_docs,
+                original_query_weight = args.original_query_weight
             )
-            hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+                
+        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+
+    # dense search
+    elif args.retrieval_model in ["ance", "dpr"]:
+        print(f"{args.retrieval_model} searching...")
+        searcher = FaissSearcher(
+            args.index_dir_path,
+            args.dense_query_encoder_path 
+        )
+        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
 
 
     ##############################

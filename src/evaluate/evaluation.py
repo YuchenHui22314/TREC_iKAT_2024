@@ -62,7 +62,7 @@ def get_args():
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
     
     parser.add_argument("--retrieval_model", type=str, default="BM25",
-                        choices= ["BM25", "ance", "dpr", "splade", "repllama"])
+                        choices= ["none","BM25", "ance", "dpr", "splade", "repllama"])
 
     # hugging_face cache_dir
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
@@ -87,7 +87,9 @@ def get_args():
 
     # response generation:
     parser.add_argument("--generation_model", type=str, default="none",
-                        choices=['none',])
+                        choices=['none','gpt-4o-2024-08-06'])
+    parser.add_argument("--generation_prompt", type=str, default="none",
+                        choices=['none','raw'])
 
     # BM25 parameters
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
@@ -115,8 +117,6 @@ def get_args():
     parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
 
     parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
-
-    parser.add_argument("--run_from_rerank", action="store_true", help="if we will run from a given ranking list then rerank + generation ")
 
     parser.add_argument("--given_ranking_list_path", type=str, default="none", help="when run_from_rerank == true, we have to provide the path of a given ranking list then rerank.")
 
@@ -167,6 +167,7 @@ def get_args():
                             "rar_rw_fuse_rar_personalized_cot1_rwrs",
                             "gpt-4o_rar_personalized_cot1_rw",
                             "gpt-4o_rar_personalized_cot1_rwrs",
+                            "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rw",
                             "gpt-4o_rar_rw_fuse_rar_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw"
                             ],)
@@ -198,7 +199,7 @@ def get_args():
                             "rar_ptkb_sum_rw",
                             "rar_personalized_cot1_rw",
                             "rar_personalized_cotN_rw",
-
+                            "gpt-4o_rar_personalized_cot1_rw"
                             ],)
 
     parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
@@ -369,7 +370,13 @@ if __name__ == "__main__":
         ##########################
         # response generation TODO
         ##########################
-        response_dict = generate_responses(hits, args) 
+        response_dict = generate_responses(
+            turn_list,
+            hits, 
+            generation_query_list,
+            qid_list_string,
+            args
+            ) 
 
         ##############################
         #  Export to ikat format
