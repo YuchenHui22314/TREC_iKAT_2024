@@ -49,6 +49,9 @@ class PyScoredDoc:
     def __init__(self, docid: str, score: float):
         self.docid = docid
         self.score = score
+    
+    def __repr__(self):
+        return f"docid: {self.docid}, score: {self.score}"
 
 
 def search(
@@ -115,6 +118,12 @@ def search(
         with open(args.given_ranking_list_path, "r") as f:
             run = pytrec_eval.parse_run(f)
             hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
+        print(hits["0-1"][0:5])
+        #sort the hits by score
+        for qid in hits.keys():
+            hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
+
+        
 
     # sparse search
     if args.retrieval_model == "BM25":
@@ -250,7 +259,7 @@ def search(
                     doc_object.score = 1/(rank + 1)
             
             # sort the hits by score
-            # hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     elif "monot5" in args.reranker:
 
@@ -295,7 +304,7 @@ def search(
                     doc_object.score = 1/(rank + 1)
             
             # sort the hits by score
-            # hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     ##############################
     # save ranking list 
@@ -304,6 +313,10 @@ def search(
 
     # generate run dictionary required by pytrec_eval
     run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+
+    #sort the hits by score
+    for qid in hits.keys():
+        hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
 
     # save ranking list
     # format: query-id Q0 document-id rank score run_name

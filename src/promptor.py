@@ -173,7 +173,7 @@ class PersonalizedResponseGenPromptor:
         else:
             return text[10:]
     
-class RARPersonalizedCoTPromptor:
+class RARNonPersonalizedCoTPromptor:
     def __init__(
         self, 
         demo_file, 
@@ -188,7 +188,7 @@ class RARPersonalizedCoTPromptor:
         self.demo = self.get_demo(demo_file, cot_format)
 
         if self.enable_cot:
-            cot_1 = "\n\t(2) Provide your reasoning process in terms of how to adopt de-contextualizaiton (a. & b.) as well as personalization (c.) before rewriting the question. \n\t(3) "
+            cot_1 = "\n\t(2) Provide your reasoning process in terms of how to adopt de-contextualizaiton (a. & b.) before rewriting the question. \n\t(3) "
             cot_2 = "Please also provide your reasoning that justifies the way you rewrite the query. The style of the reasoning should be similar to those given in the examples. "
             cot_3 = "Reason: $Reason\n"
             if cot_format == "cot_seperate":
@@ -206,14 +206,14 @@ class RARPersonalizedCoTPromptor:
 
 
         # head_instruction
-        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) Help the assistant rewrite the user's question such that:\n\t\ta. The rewritten question can fully express the user's information needs without the need of dialog context. \n\t\tb. The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.\n\t\tc. Please analyze the quesiton's nature, and judge if it is necessary to personalize. If so, please add personalized elements to the question based on the user's profile.{cot_1}Provide an informative response to the question."
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\tYour tasks are as follows:\n\t(1) Help the assistant rewrite the user's question such that:\n\t\ta. The rewritten question can fully express the user's information needs without the need of dialog context. \n\t\tb. The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.{cot_1}Provide an informative response to the question."
 
         if self.enable_cot:
-            self.instruction += "\n\nNow, I will give you several example multi-turn dialogs with their user profiles, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant."
+            self.instruction += "\n\nNow, I will give you several example multi-turn dialogs, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant."
             if one_shot_cot:
-                self.instruction += " The reasoning explaining the de-contextualizaiton and personalization consideration while rewriting the question is also provided before the rewrite part."
+                self.instruction += " The reasoning explaining the de-contextualizaiton consideration while rewriting the question is also provided before the rewrite part."
 
-        self.tail_instruction = f"Now, please provide the rewrite and the response for the **Last Question** under the **Dialog Context**, considering the **User Profile**. {cot_2}The output format should always be:\n\n{cot_3}{cot_4}Rewrite: $Rewrite\nResponse: $Response \n\nGo ahead!"
+        self.tail_instruction = f"Now, please provide the rewrite and the response for the **Last Question** under the **Dialog Context**. {cot_2}The output format should always be:\n\n{cot_3}{cot_4}Rewrite: $Rewrite\nResponse: $Response \n\nGo ahead!"
 
         self.stop_tokens = None
                             

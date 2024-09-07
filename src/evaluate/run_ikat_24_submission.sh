@@ -12,19 +12,17 @@ index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_ind
 #index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
-retrieval_model="BM25"
+retrieval_model="none"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 # rankllama, rankgpt, monot5_base, monot5_base_10k
-reranker="monot5_base_10k"
+reranker="none"
 #rankllama
 rerank_quant="none" # can be "none" ,"8b", "4b"
 #rankgpt
 rankgpt_llm="gpt-3.5-turbo"
 window_size=4
 step=1
-#response generation:
-generation_model="none"
 #BM25
 bm25_k1=0.9
 bm25_b=0.4
@@ -33,15 +31,19 @@ qe_type="none"
 fb_terms=20
 fb_docs=10
 original_query_weight=0.5
+#response generation:
+generation_model="gpt-4o-2024-08-06"
+generation_prompt="raw"
+#number of documents to consider at each step.
 retrieval_top_k=1000
 rerank_top_k=50
 generation_top_k=3
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.20,recall.50,recall.100,recall.1000,recip_rank"
 #given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
 #given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_personcot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
-given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
-# project specific
-run_name="BM25_GPT4o_fusion3_MonoT5_persCot1"
+given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw]-S2[gpt-4o_rar_personalized_cot1_rw]-g[none]-[BM25]-[monot5_base_10k_4_1_none]-[s2_top50].txt"
+###################### project specific ###############
+run_name="RALI_gpt4o_fusion_rerank_new"
 # turn to true to yield trec submission format.
 rewrite_model="no_rewrite"
 # raw_llm_rm_PDCReORf
@@ -62,6 +64,7 @@ prompt_type="no_prompt"
 #retrieval_query_types=("gpt-4o_rar_rw")
 retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw")
 reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
+generation_query_types=("gpt-4o_rar_personalized_cot1_rw")
 
 
 LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2024.txt
@@ -95,13 +98,14 @@ function run_evaluation() {
     --fb_terms $fb_terms \
     --fb_docs $fb_docs \
     --original_query_weight $original_query_weight \
+    --generation_prompt $generation_prompt \
+    --generation_model $generation_model \
     --retrieval_top_k $retrieval_top_k \
     --rerank_top_k $rerank_top_k \
     --generation_top_k $generation_top_k \
     --metrics $metrics \
     --save_ranking_list \
     --run_rag \
-    --run_from_rerank \
     --given_ranking_list_path $given_ranking_list_path \
     --run_name $run_name \
     --save_results_to_object \
@@ -121,6 +125,9 @@ for retrieval_query_type in "${retrieval_query_types[@]}"
 do
     for reranking_query_type in "${reranking_query_types[@]}"
     do
-        run_evaluation $retrieval_query_type $reranking_query_type $generation_query_type
+        for generation_query_type in "${generation_query_types[@]}"
+        do
+            run_evaluation $retrieval_query_type $reranking_query_type $generation_query_type
+        done
     done
 done

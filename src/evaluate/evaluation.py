@@ -85,11 +85,6 @@ def get_args():
     parser.add_argument("--window_size", type=int, default="5") 
     parser.add_argument("--step", type=int, default="1") 
 
-    # response generation:
-    parser.add_argument("--generation_model", type=str, default="none",
-                        choices=['none','gpt-4o-2024-08-06'])
-    parser.add_argument("--generation_prompt", type=str, default="none",
-                        choices=['none','raw'])
 
     # BM25 parameters
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
@@ -101,6 +96,12 @@ def get_args():
     parser.add_argument("--fb_terms", type=int, default="10", help="RM3 parameter for number of expansion terms.")
     parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
     parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
+
+    # response generation:
+    parser.add_argument("--generation_model", type=str, default="none",
+                        choices=['none','gpt-4o-2024-08-06'])
+    parser.add_argument("--generation_prompt", type=str, default="none",
+                        choices=['none','raw'])
 
     # distinguish retrieval topk and rerank topk, as well as generation top k
     parser.add_argument("--retrieval_top_k", type=int, default="1000")

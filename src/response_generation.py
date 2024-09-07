@@ -12,12 +12,14 @@ import json
 from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
 
+import sys
+import os
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 
 from topics import (
     Turn,
     load_document_by_id,
-    get_trun_by_qid,
+    get_turn_by_qid,
     get_context_by_qid,
 )
 
@@ -39,11 +41,6 @@ def generate_responses(
 
     generation_query_dic = {qid: generation_query for qid, generation_query in zip(qid_list_string, generation_query_list)}
 
-    ####################################
-    # initialize the response generator
-    ####################################
-    if args.generation_prompt == "raw":
-        generate_promptor = PersonalizedResponseGenPromptor()
 
     ####################################
     # initialize LLM
@@ -52,7 +49,7 @@ def generate_responses(
     if "gpt" in args.generation_model:
         generator = OpenAILM(
         api_key = os.environ['openai_key'],
-        model_name = rewrite_model,
+        model_name = args.generation_model,
         n = 1,
         max_tokens=2048,
         wait_till_success=True 
@@ -64,40 +61,47 @@ def generate_responses(
     searcher = LuceneSearcher(args.index_dir_path)
 
     for qid, hit_list in tqdm(hits.items(), desc="Generating responses", total = len(hits)):
+        print(hit_list[0:5])
 
         # arguments needed for prompting
-        current_turn = get_trun_by_qid(qid, turn_list)
+        current_turn = get_turn_by_qid(qid, turn_list)
 
         ptkb_dict = current_turn.ptkb
         context = get_context_by_qid(qid, turn_list)
         candidate_doc_list = [load_document_by_id(doc_object.docid,searcher)["contents"] for doc_object in hit_list[:top_k]]
         
 
-        # build prompt
-        prompt = generate_promptor.build_turn_prompt(
-            context=context,
-            ptkb_dict=ptkb_dict,
-            passages_list=candidate_doc_list,
-            last_question=generation_query_dic[qid],
-            )
-        
-        # generate response
-        response = generator.generate_text(prompt)
-        response_finale = generate_promptor.parse_returned_text(response[0])
-        if response_finale == None:
-            print("error with qid: ", qid)
-        
-        # TODO: add response generation code here
-        response_dict[qid] = [response_finale]
-        print("############################################")
-        print("qid: ", qid)
-        print("query: ", generation_query_dic[qid])
-        print("candidate_doc_list: \n")
-        for doc in candidate_doc_list:
+        ####################################
+        # initialize the response generator
+        ####################################
+        if args.generation_prompt == "raw":
+
+            generate_promptor = PersonalizedResponseGenPromptor()
+            # build prompt
+            prompt = generate_promptor.build_turn_prompt(
+                context=context,
+                ptkb_dict=ptkb_dict,
+                passages_list=candidate_doc_list,
+                last_question=generation_query_dic[qid],
+                )
+            
+            print("############################################")
+            print("docids: ", [doc_object.docid for doc_object in hit_list[:top_k]])
             print("###")
-            print(doc)
-        print("###")
-        print("response: ", response_finale)
-        
+            print(prompt)
+            print("###")
+
+            # generate response
+            response = generator.generate_text(prompt)
+            response_finale = generate_promptor.parse_returned_text(response[0])
+            if response_finale == None:
+                print("error with qid: ", qid)
+
+            print("response: ", response_finale, flush=True)
+            
+            response_dict[qid] = [response_finale]
+        else:
+            response_dict[qid] = ["No response generated"]
+            
     
     return response_dict
