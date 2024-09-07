@@ -26,13 +26,13 @@ def is_english_word(word):
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
-from llm import OpenAILM
 from promptor import (
     RewriteAndResponsePromptor,
     PersonalizedCIRQueryExpansionPromptor,
     SummarizePTKBPromptor,
     PersonalizeViaPTKBSummaryPrompter,
-    RARPersonalizedCoTPromptor
+    RARPersonalizedCoTPromptor,
+    RARNonPersonalizedCoTPromptor
 )
 
 from topics import (
@@ -47,7 +47,8 @@ from topics import (
 )
 
 from llm import (
-    LM
+    LM,
+    OpenAILM
 )
 
 def get_args():
@@ -83,6 +84,7 @@ def get_args():
         "rar_personalized_cot0",
         "rar_personalized_cotN",
         "gpt-4o_rar_personalized_cot1",
+        "gpt-4o_rar_non_personalized_cot1",
         ]
     ) 
     args = parser.parse_args()
@@ -216,7 +218,7 @@ if __name__ == '__main__':
             enable_cot = False
         )
 
-    if "rar_personalized_cot" in reformulation_name:
+    if ("rar_personalized_cot" in reformulation_name) or ("rar_non_personalized_cot" in reformulation_name):
         enable_cot = True
         zero_shot_cot = False
         one_shot_cot = False
@@ -226,14 +228,23 @@ if __name__ == '__main__':
             one_shot_cot = True
         if reformulation_name[-1] == "N":
             enable_cot = False
-
-        prompter = RARPersonalizedCoTPromptor(
-            demo_file = demo_file,
-            enable_cot = enable_cot,
-            zero_shot_cot = zero_shot_cot,
-            one_shot_cot = one_shot_cot,
-            cot_format="cot_seperate"
-        )
+        
+        if "non" in reformulation_name:
+            prompter = RARNonPersonalizedCoTPromptor(
+                demo_file = demo_file,
+                enable_cot = enable_cot,
+                zero_shot_cot = zero_shot_cot,
+                one_shot_cot = one_shot_cot,
+                cot_format="cot_seperate"
+            )
+        else:
+            prompter = RARPersonalizedCoTPromptor(
+                demo_file = demo_file,
+                enable_cot = enable_cot,
+                zero_shot_cot = zero_shot_cot,
+                one_shot_cot = one_shot_cot,
+                cot_format="cot_seperate"
+            )
 
 
 
@@ -273,13 +284,12 @@ if __name__ == '__main__':
     for turn in tqdm(turn_list, total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
 
-        if "rar_personalized_cot" in reformulation_name:
+        if "rar_personalized_cot" in reformulation_name or "rar_non_personalized_cot" in reformulation_name:
 
             prompt = prompter.build_turn_prompt(
                 context,
                 turn.ptkb,
                 turn)
-
             response = rewriter.generate_text(prompt)
             liste = prompter.parse_returned_text(response[0])
         
@@ -310,6 +320,7 @@ if __name__ == '__main__':
                 reformulated_query = response,
                 ptkb_provenance = []
             )
+
 
 
 

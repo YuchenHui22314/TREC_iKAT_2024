@@ -3,9 +3,10 @@
 # Default argument values
 input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
 output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json"
-demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
+#demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/demonstration_using_ikat23.json"
+demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/non_personalized_demonstration_using_ikat23.json"
 #rewrite_model="gpt-3.5-turbo" # gpt-3.5-turbo-0125
 rewrite_model="gpt-4o-2024-08-06"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
@@ -21,7 +22,8 @@ rewrite_model="gpt-4o-2024-08-06"
 #reformulation_name="rar_personalized_cot1"
 #reformulation_name="gpt-4o_rar_personalized_cot1"
 #reformulation_name="rar_cot"
-reformulation_name="gpt-4o_rar"
+#reformulation_name="gpt-4o_rar"
+reformulation_name="gpt-4o_rar_non_personalized_cot1"
 
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
