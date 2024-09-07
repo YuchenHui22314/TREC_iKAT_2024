@@ -62,7 +62,7 @@ prompt_type="no_prompt"
 #retrieval_query_types=("rar_rw_fuse_rar_personcot1_rw")
 #retrieval_query_types=("rar_rw_fuse_rar_rwrs")
 #retrieval_query_types=("gpt-4o_rar_rw")
-retrieval_query_types=("gpt-4o_non_personalized_cot1_rw")
+retrieval_query_types=("gpt-4o_rar_non_personalized_cot1_rw")
 reranking_query_types=("none")
 generation_query_types=("none")
 
@@ -74,7 +74,7 @@ function run_evaluation() {
     local reranking_query_type="$2"
     local generation_query_type="$3"
 
-    echo "Running with retrieval_query_type: $retrieval_query_type, reranking_query_type: $reranking_query_type"
+    echo "Running with retrieval_query_type: $retrieval_query_type, reranking_query_type: $reranking_query_type", generation_query_type: $generation_query_type
 
     python3 evaluation.py \
     --collection $collection \

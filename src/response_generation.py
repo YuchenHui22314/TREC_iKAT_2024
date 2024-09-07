@@ -61,7 +61,6 @@ def generate_responses(
     searcher = LuceneSearcher(args.index_dir_path)
 
     for qid, hit_list in tqdm(hits.items(), desc="Generating responses", total = len(hits)):
-        print(hit_list[0:5])
 
         # arguments needed for prompting
         current_turn = get_turn_by_qid(qid, turn_list)

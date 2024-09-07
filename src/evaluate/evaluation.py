@@ -170,7 +170,10 @@ def get_args():
                             "gpt-4o_rar_personalized_cot1_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rw",
                             "gpt-4o_rar_rw_fuse_rar_rwrs",
-                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw"
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw",
+                            "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rwrs",
+                            'gpt-4o_rar_non_personalized_cot1_rw',
+
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -187,7 +190,8 @@ def get_args():
                             "rar_ptkb_sum_rwrs",
                             "rar_personalized_cotN_rw",
                             "rar_personalized_cot1_rw",
-                            "gpt-4o_rar_personalized_cot1_rw"
+                            "gpt-4o_rar_personalized_cot1_rw",
+                            'gpt-4o_rar_non_personalized_cot1_rw',
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
@@ -200,7 +204,8 @@ def get_args():
                             "rar_ptkb_sum_rw",
                             "rar_personalized_cot1_rw",
                             "rar_personalized_cotN_rw",
-                            "gpt-4o_rar_personalized_cot1_rw"
+                            "gpt-4o_rar_personalized_cot1_rw",
+                            'gpt-4o_rar_non_personalized_cot1_rw',
                             ],)
 
     parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
