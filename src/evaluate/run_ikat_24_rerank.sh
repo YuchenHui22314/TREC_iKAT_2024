@@ -41,9 +41,10 @@ generation_top_k=3
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
 #given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
 #given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[rar_rw_fuse_rar_personcot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
-given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
+#given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
+given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw]-S2[none]-g[none]-[BM25]-[none_4_1_none]-[s2_top50].txt"
 ###################### project specific ###############
-run_name="BM25_GPT4o_fusion3_MonoT5_persCot1_new"
+run_name="BM25_GPT4o_fusion3_nonp_MonoT5_persCot1"
 # turn to true to yield trec submission format.
 rewrite_model="no_rewrite"
 # raw_llm_rm_PDCReORf
@@ -62,7 +63,7 @@ prompt_type="no_prompt"
 #retrieval_query_types=("rar_rw_fuse_rar_personcot1_rw")
 #retrieval_query_types=("rar_rw_fuse_rar_rwrs")
 #retrieval_query_types=("gpt-4o_rar_rw")
-retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw")
+retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw")
 reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
 generation_query_types=("none")
 

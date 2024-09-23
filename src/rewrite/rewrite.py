@@ -8,6 +8,8 @@ import numpy as np
 import json
 import argparse
 import re
+import tkinter as tk
+from tkinter import simpledialog
 from tqdm import tqdm
 
 import nltk
@@ -84,7 +86,8 @@ def get_args():
         "rar_personalized_cot0",
         "rar_personalized_cotN",
         "gpt-4o_rar_personalized_cot1",
-        "gpt-4o_rar_non_personalized_cot1",
+        "gpt-4o_rar_non_personalized_cot1",              # modify the few shot example to remove personalization
+        "gpt-4o_rar_manual_depersonalized_cot1",         # directly modify the resulting rewrite to remove personalizaiton.
         ]
     ) 
     args = parser.parse_args()
@@ -283,6 +286,46 @@ if __name__ == '__main__':
     turn_list = load_turns_from_json(input_query_path)
     for turn in tqdm(turn_list, total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
+
+        # copy the rewrite named "gpt-4o_rar_personalized_cot1_rw"
+        if "gpt-4o_rar_manual_depersonalized_cot1" == reformulation_name:
+            print("ok")
+            original_reformulation = turn.find_reformulation("gpt-4o_rar_personalized_cot1_rw")
+            reformulated_query = original_reformulation.reformulated_query
+
+            assert reformulated_query != None, f"helas, reformulated_query named gpt-4o_rar_personalized_cot1_rw for turn id {turn.turn_id} is None"
+
+            # an interactive way to remove personalization
+            root = tk.Tk()
+            root.withdraw()  # 隐藏主窗口
+
+            # 弹出对话框，提示用户输入内容
+            user_input = simpledialog.askstring(title="输入框", prompt="请输入内容:")
+
+            # 输出用户输入的内容
+            if user_input is not None:
+                print(f"用户输入的内容是: {user_input}")
+            else:
+                print("用户取消了输入")
+
+            root.quit()
+
+            print(f"############################################")
+            print(f"This is turn id {turn.turn_id}")
+            print(f"Original reformulated query: {reformulated_query}")
+            print(f"##############")
+            print("now please provide the depersonalized query, if you want to keep the original query, just press enter")
+            print("############################################")
+            depersonalized_query = input("Depersonalized query: ")
+
+
+            # add with new name
+            turn.add_reformulation(
+                reformulation_name = reformulation_name + "_rw",
+                reformulated_query = reformulated_query,
+                ptkb_provenance = []
+            )
+
 
         if "rar_personalized_cot" in reformulation_name or "rar_non_personalized_cot" in reformulation_name:
 

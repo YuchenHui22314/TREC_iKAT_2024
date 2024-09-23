@@ -135,11 +135,11 @@ def get_args():
                         choices = ["no_rewrite", "gpt-4-turbo", "gpt-3.5-turbo"],
                         )
 
-    parser.add_argument("--retrieval_query_type", type=str, default="oracle_utterance", 
+    parser.add_argument("--retrieval_query_type", type=str, default="oracle", 
                         choices=[
                             "none",
                             "raw", 
-                            "oracle_utterance",
+                            "oracle",
                             "rar_rwrs",
                             "rar_rw",
                             "rar_cot_rw",
@@ -173,6 +173,7 @@ def get_args():
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw",
                             "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rwrs",
                             'gpt-4o_rar_non_personalized_cot1_rw',
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw",
 
                             ],)
 
@@ -180,7 +181,7 @@ def get_args():
                         choices=[
                             "none",
                             "raw", 
-                            "oracle_utterance",
+                            "oracle",
                             "rar_rw",
                             "raw_llm_rm_P__Re___",
                             "raw_llm_rm____Re___",
@@ -198,7 +199,7 @@ def get_args():
                         choices=[
                             "none",
                             "raw", 
-                            "oracle_utterance",
+                            "oracle",
                             "rar_rw",
                             "rar_ptkb_sum_cot0_rw",
                             "rar_ptkb_sum_rw",
