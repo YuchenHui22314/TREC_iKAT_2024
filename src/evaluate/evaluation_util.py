@@ -118,7 +118,6 @@ def search(
         with open(args.given_ranking_list_path, "r") as f:
             run = pytrec_eval.parse_run(f)
             hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
-        print(hits["0-1"][0:5])
         #sort the hits by score
         for qid in hits.keys():
             hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)

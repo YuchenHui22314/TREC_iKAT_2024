@@ -169,11 +169,14 @@ def get_args():
                             "gpt-4o_rar_personalized_cot1_rw",
                             "gpt-4o_rar_personalized_cot1_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rw",
+                            "gpt-4o_rar_rwrs_fuse_personalized_cot1_rw",
                             "gpt-4o_rar_rw_fuse_rar_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw",
                             "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rwrs",
                             'gpt-4o_rar_non_personalized_cot1_rw',
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw",
+                            "gpt-4o_rar_manual_depersonalized_cot1_rw",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw"
 
                             ],)
 
