@@ -234,13 +234,14 @@ def search(
         def linear_weighted_score_fusion_reduce_function(hits_0_and_weight, hits_1_and_weight):
             hits_0 = hits_0_and_weight[0] # 0 is the query, 1 is the weight
             hits_1 = hits_1_and_weight[0] # 0 is the query, 1 is the weight
-            return linear_weighted_score_fusion(
+            hits_and_weight_new = linear_weighted_score_fusion(
                 hits_0, 
                 hits_1, 
                 args.retrieval_top_k, 
                 None,
                 hits_1_and_weight[1],  # the weight associated with the second query is the right one to use (just a design choice)
                 args.run_name)
+            return hits_and_weight_new
         
         # search for all queries to get the hits
         hits_list = []
@@ -252,7 +253,7 @@ def search(
         hits_and_weights = list(zip(hits_list, fuse_weights))
 
         # get the fused ranking list
-        hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)
+        hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)[0]
 
 
     ##############################
@@ -690,4 +691,4 @@ def linear_weighted_score_fusion(
     print('Fusing {} queries ({:0.3f} s/query)'.format(len(qids), time_per_query))
     print('Finished.')
 
-    return final_hits_dict
+    return (final_hits_dict, None)
