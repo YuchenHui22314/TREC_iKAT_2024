@@ -111,29 +111,31 @@ def get_args():
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.50,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.50,recall.100,recall.1000")
 
-    #parser.add_argument("--rel_threshold", type=int, default="1")
-
     parser.add_argument("--save_results_to_object",  action="store_true", help="if we will save eval results (metrics + response) to turn/topic object.")
 
     parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
 
     parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
 
-    parser.add_argument("--given_ranking_list_path", type=str, default="none", help="when run_from_rerank == true, we have to provide the path of a given ranking list then rerank.")
+    parser.add_argument("--given_ranking_list_path", type=str, default="none", help="when retrieval_model == 'none', we have to provide the path of a given ranking list then rerank.")
 
 
     parser.add_argument("--run_eval",  action="store_true", help="if we will run the evaluation component (+ saving)")
-    #########################
+
+    #### Fusion ####
+    parser.add_argument("--fusion_type", type=str, default="none",
+                        choices=['none','linear weighted score'])
+
+    parser.add_argument('--QRs_to_rank', type=str, nargs='+', help='List of reformulation names to fuse')
+    parser.add_argument('--fuse_weights', type=float, nargs='+', help='weights for linear weighted score fusion')
+
+
+    ####################################
     # ikat 2024 project related config
-    ########################
+    ###################################
 
     parser.add_argument("--run_name", type=str, default="none",
                         help="run name for trec ikat submission. If none, will use file name stem as run name.")
-
-
-    parser.add_argument("--rewrite_model", type=str, default="no_rewrite",
-                        choices = ["no_rewrite", "gpt-4-turbo", "gpt-3.5-turbo"],
-                        )
 
     parser.add_argument("--retrieval_query_type", type=str, default="oracle", 
                         choices=[
@@ -212,30 +214,13 @@ def get_args():
                             'gpt-4o_rar_non_personalized_cot1_rw',
                             ],)
 
-    parser.add_argument("--prompt_type", type = str, default="no_prompt", help="""could be one of 
-    [no_prompt,
-
-        ] 
-    """)
-
 
 
     args = parser.parse_args()
     return args
 
-
-def query_type_rewrite(
-    original_query_type:str,
-) -> str:
-        if original_query_type == "reformulation":
-        ## TODO: TBD for CIR
-            query_type = f'reformulated_description_by_[{args.rewrite_model}]_using_[{args.prompt_type}]'
-        else:
-            query_type = original_query_type
-        
-        return query_type
     
-def get_query_list(args):
+def get_query_list(retrieval_query_type, reranking_query_type, generation_query_type, args):
 
     turn_list = []
     query_list = []
@@ -271,12 +256,9 @@ def get_query_list(args):
 
         # load query/reformulated query according to query type.
         # possible to call a llm to rewrite the query at this step.
-        args.retrieval_query_type = query_type_rewrite(args.retrieval_query_type) 
-        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        args.reranking_query_type = query_type_rewrite(args.reranking_query_type)
-        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        args.generation_query_type = query_type_rewrite(args.generation_query_type)
-        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        retrieval_query_list = [turn.query_type_2_query(retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        reranking_query_list = [turn.query_type_2_query(reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        generation_query_list = [turn.query_type_2_query(generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
     
 
 
@@ -359,7 +341,13 @@ if __name__ == "__main__":
 
     # the reason to get turn list is to add per-query 
     # search results. 
+
     retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list = get_query_list(args)
+
+    if args.fusion_type != "none":
+        args.fusion_query_lists = []
+        for QR_name in args.QRs_to_rank:
+            args.fusion_query_lists.append([turn.query_type_2_query(QR_name, args.fb_terms, args.original_query_weight) for turn in turn_list])
 
 
     if args.run_rag:

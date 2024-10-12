@@ -43,8 +43,6 @@ metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,
 given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[none]-[none_4_1_none]-[s2_top50].txt"
 # project specific
 run_name="none"
-# turn to true to yield trec submission format.
-rewrite_model="no_rewrite"
 # raw_llm_rm_PDCReORf
 retrieval_query_type="none"
 reranking_query_type="none"
@@ -114,11 +112,9 @@ function run_evaluation() {
     --run_eval \
     --run_name $run_name \
     --save_results_to_object \
-    --rewrite_model $rewrite_model \
     --retrieval_query_type $retrieval_query_type \
     --reranking_query_type $reranking_query_type \
-    --generation_query_type $generation_query_type \
-    --prompt_type $prompt_type &>> $LOG_FILE
+    --generation_query_type $generation_query_type &>> $LOG_FILE
 }
 
     # --save_results_to_object \

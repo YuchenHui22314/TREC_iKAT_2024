@@ -81,6 +81,11 @@ def search(
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
         - args.given_ranking_list_path: str
+    # Fusion
+        - args.fusion_type: str
+        - args.QRs_to_rank: List[str]
+        - args.fuse_weights: List[float]
+        - args.fusion_query_lists: List[List[str]]
     # Sparse
         - args.retrieval_model: str
         - args.retrieval_top_k: int
@@ -451,3 +456,97 @@ def extract_filename(path):
     # Remove the extension
     filename, ext = os.path.splitext(filename_with_ext)
     return filename
+
+
+######################### Rank list fusion #########################
+############# adapted from fuse.py in TREC_iKAT_2024/src #############
+
+
+def linear_weighted_score_fusion(
+    hits_0=None, 
+    hits_1=None, 
+    topk=1000, 
+    output=None, 
+    alpha=0.1, 
+    run_name='fusion'):
+    """
+    Performs rank list fusion by combining results from dense and sparse retrieval methods. 
+    This function reads ranked lists from two input files, fuses the rankings based on the 
+    provided alpha value, and writes the fused results to an output file.
+
+    Arguments:
+    - hits_0 (dict): pyserini hits object. Each element inside must can .docid and .score
+    - hits_1 (dict): pyserini hits object. Each element inside must can .docid and .score
+    - topk (int): Number of hits to retrieve for each query. Default is 1000.
+    - output (str): Path to the output file where fused rankings will be saved.
+                    The output format will be: qid Q0 docid rank score run_name.
+    - alpha (float): Weighting factor for the sparse retrieval scores in the fusion process. 
+                     Default is 0.1. Higher alpha gives more weight to sparse retrieval scores.
+    - run_name (str): Identifier for the current run, used in the output file. Default is 'fusion'.
+    
+    Returns:
+    - None. The function writes the output directly to the specified output file.
+    """
+    
+    def read_rank_list(hits):
+        """Reads a rank list from the a hits object and returns document IDs and scores."""
+
+        qid_docid_list = defaultdict(list)
+        qid_score_list = defaultdict(list)
+
+        for qid, docs in hits.items():
+            for doc in docs:
+                qid_docid_list[qid].append(doc.docid)
+                qid_score_list[qid].append(doc.score)
+        return qid_docid_list, qid_score_list
+
+    def fuse(docid_list0, docid_list1, doc_score_list0, doc_score_list1, alpha):
+        """Fuses the rank lists from dense and sparse retrieval based on the alpha value."""
+        score = defaultdict(float)
+        score0 = defaultdict(float)
+        for i, docid in enumerate(docid_list0):
+            score0[docid] += doc_score_list0[i]
+        min_val0 = min(doc_score_list0)
+        min_val1 = min(doc_score_list1)
+        for i, docid in enumerate(docid_list1):
+            if score0[docid] == 0:
+                score[docid] += min_val0 + doc_score_list1[i] * alpha
+            else:
+                score[docid] += doc_score_list1[i] * alpha
+        for i, docid in enumerate(docid_list0):
+            if score[docid] == 0:
+                score[docid] += min_val1 * alpha
+            score[docid] += doc_score_list0[i]
+        score = {k: v for k, v in sorted(score.items(), key=lambda item: item[1], reverse=True)}
+        return score
+
+    # read hits
+    print('Read ranked list0...')
+    qid_docid_list0, qid_score_list0 = read_rank_list(hits_0)
+    print('Read ranked list1...')
+    qid_docid_list1, qid_score_list1 = read_rank_list(hits_1)
+
+    # final hits list
+    final_hits_dict = defaultdict(list)
+
+    qids = qid_docid_list0.keys()
+    widgets = ['Progress: ', Percentage(), ' ', Bar('#'),' ', Timer(),
+               ' ', ETA(), ' ', FileTransferSpeed()]
+    pbar = ProgressBar(widgets=widgets, maxval=len(qids)).start()
+    start_time = time.time()
+    
+    for j, qid in enumerate(qids):
+        rank_doc_score = fuse(qid_docid_list0[qid], qid_docid_list1[qid], qid_score_list0[qid], qid_score_list1[qid], alpha)
+        for rank, doc in enumerate(rank_doc_score):
+            if rank == topk:
+                break
+            score = rank_doc_score[doc]
+            final_hits_dict[qid].append(PyScoredDoc(doc, score))
+        pbar.update(j + 1)
+    
+    time_per_query = (time.time() - start_time) / len(qids)
+    print('Fusing {} queries ({:0.3f} s/query)'.format(len(qids), time_per_query))
+    fout.close()
+    print('Finished.')
+
+    return final_hits_dict

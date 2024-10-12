@@ -1,4 +1,5 @@
 import json
+import warnings
 from typing import List, Dict, Tuple, Any
 from dataclasses import dataclass, field, asdict 
 from constants import IKAT_23_EVALUATED_TURNS
@@ -375,7 +376,8 @@ class Turn:
             if reformulation is not None:
                 final_query = reformulation.reformulated_query
             else:
-                raise e
+                final_query = ""
+                warnings.warn(f"################################# ATTENTION!!!!! \nReformulation {query_type} not found in turn {self.turn_id} !!!!!!!!!\n#################################")
 
 
         return final_query
