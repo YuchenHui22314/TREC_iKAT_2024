@@ -27,6 +27,7 @@ from response_generation import (
     ) 
 
 from evaluation_util import (
+    get_query_list,
     search,
     evaluate,
     generate_and_save_ikat_submission,
@@ -124,10 +125,10 @@ def get_args():
 
     #### Fusion ####
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear weighted score'])
+                        choices=['none','linear_weighted_score'])
 
-    parser.add_argument('--QRs_to_rank', type=str, nargs='+', help='List of reformulation names to fuse')
-    parser.add_argument('--fuse_weights', type=float, nargs='+', help='weights for linear weighted score fusion')
+    parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
+    parser.add_argument('--fuse_weights', type=float, nargs='+', default = [2.71828], help='weights for linear weighted score fusion')
 
 
     ####################################
@@ -220,53 +221,6 @@ def get_args():
     return args
 
     
-def get_query_list(retrieval_query_type, reranking_query_type, generation_query_type, args):
-
-    turn_list = []
-    query_list = []
-    qid_list_string = []
-    reranking_query_list = []
-    generation_query_list = []
-
-    '''
-    load turns from json file. Output format:
-    retrieval_query_list: List[str] 
-    reranking_query_list: List[str]
-    generation_query_list: List[str]
-    qid_list_string: List[str]
-    turn_list: List[Turn] 
-    '''
-
-    # apply topic specific processing
-    if "ikat" in args.topics:
-        turn_list = load_turns_from_json(
-            input_topic_path=args.input_query_path,
-            range_start=0,
-            range_end=-1
-            )
-        
-        # filter out the non-evaluated turns for ikat 23
-        if args.topics == "ikat_23_test":
-            evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
-        elif args.topics == "ikat_24_test":
-            evaluated_turn_list = turn_list
-
-        qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
-
-
-        # load query/reformulated query according to query type.
-        # possible to call a llm to rewrite the query at this step.
-        retrieval_query_list = [turn.query_type_2_query(retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        reranking_query_list = [turn.query_type_2_query(reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        generation_query_list = [turn.query_type_2_query(generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-    
-
-
-    assert len(retrieval_query_list) != 0, "No queries found, args.topics may be wrong"
-    assert len(retrieval_query_list) == len(qid_list_string), "Number of queries and qid_list_string not match"
-
-    
-    return retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list
 
 
 if __name__ == "__main__":
@@ -299,7 +253,10 @@ if __name__ == "__main__":
         qe = f"_rm3"
     file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
 
-    # folder path where the evaluation results will be saved
+    ###################################################################
+    #  generate folder paths where the evaluation results will be saved
+    ###################################################################
+
     base_folder = os.path.join(args.output_dir_path, args.collection, args.topics)
 
     # create necessary directories 
@@ -337,18 +294,19 @@ if __name__ == "__main__":
     ###################################################
     # get query list and qid list as well as Turn list
     ###################################################
+
     print(f"loading quries")
 
-    # the reason to get turn list is to add per-query 
-    # search results. 
-
-    retrieval_query_list, reranking_query_list, generation_query_list, qid_list_string, turn_list = get_query_list(args)
-
-    if args.fusion_type != "none":
-        args.fusion_query_lists = []
-        for QR_name in args.QRs_to_rank:
-            args.fusion_query_lists.append([turn.query_type_2_query(QR_name, args.fb_terms, args.original_query_weight) for turn in turn_list])
-
+    # get query lsit for retreival, reranking, generation, and fusion, as well as qid list.
+    # the reason to get turn list is to add per-query search results. 
+    (
+        retrieval_query_list, 
+        reranking_query_list, 
+        generation_query_list, 
+        fusion_query_lists, 
+        qid_list_string, 
+        turn_list 
+        ) =         get_query_list(args)
 
     if args.run_rag:
 
@@ -358,16 +316,19 @@ if __name__ == "__main__":
         args.ranking_list_path = ranking_list_path
         args.file_name_stem = file_name_stem
 
+        args.retrieval_query_list = retrieval_query_list
+        args.reranking_query_list = reranking_query_list
+        args.fusion_query_lists = fusion_query_lists
+        args.qid_list_string = qid_list_string
+
         hits, run = search(
-            retrieval_query_list,
-            reranking_query_list,
-            qid_list_string,
             args
             )
 
         ##########################
         # response generation TODO
         ##########################
+
         response_dict = generate_responses(
             turn_list,
             hits, 

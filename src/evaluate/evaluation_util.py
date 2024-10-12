@@ -5,6 +5,10 @@ import argparse
 import os
 import numpy as np
 import json
+from functools import reduce
+from collections import defaultdict
+import time
+from progressbar import *
 from typing import Mapping, Tuple, List, Optional, Union, Any, Dict
 from tqdm import tqdm
 from dataclasses import asdict
@@ -54,28 +58,111 @@ class PyScoredDoc:
         return f"docid: {self.docid}, score: {self.score}"
 
 
+# Get the filename without extension nor parent directory
+def extract_filename(path):
+    # Extract the filename with extension
+    filename_with_ext = os.path.basename(path)
+    # Remove the extension
+    filename, ext = os.path.splitext(filename_with_ext)
+    return filename
+
+# get query list & qid list for pyserirni batch search.
+def get_query_list(args):
+
+    turn_list = []
+    query_list = []
+    qid_list_string = []
+    reranking_query_list = []
+    generation_query_list = []
+
+    '''
+    Arguments:
+    load turns from json file. Output format:
+    retrieval_query_list: List[str] 
+    reranking_query_list: List[str]
+    generation_query_list: List[str]
+    qid_list_string: List[str]
+    turn_list: List[Turn] 
+    args.topics: str
+    args.input_query_path: str
+    args.retrieval_query_type: str
+    args.reranking_query_type: str
+    args.generation_query_type: str
+    args.fb_terms: int
+    args.original_query_weight: float
+    args.fusion_type: str
+    args.QRs_to_rank: List[str]
+    args.fuse_weights: List[float]
+    args.fusion_query_lists: List[List[str]]
+
+    Returns:
+    retrieval_query_list: List[str]
+    reranking_query_list: List[str]
+    generation_query_list: List[str]
+    fusion_query_lists: List[List[str]]
+    qid_list_string: List[str]
+    turn_list: List[Turn]
+
+    '''
+
+    # apply topic specific processing
+    if "ikat" in args.topics:
+        turn_list = load_turns_from_json(
+            input_topic_path=args.input_query_path,
+            range_start=0,
+            range_end=-1
+            )
+        
+        # filter out the non-evaluated turns for ikat 23
+        if args.topics == "ikat_23_test":
+            evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
+        elif args.topics == "ikat_24_test":
+            evaluated_turn_list = turn_list
+
+        qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
+
+
+        # load query/reformulated query according to query type.
+        # possible to call a llm to rewrite the query at this step.
+        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+    
+
+        if args.fusion_type != "none":
+            fusion_query_lists = []
+            for QR_name in args.QRs_to_rank:
+                fusion_query_lists.append([turn.query_type_2_query(QR_name, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list])
+        else:
+            fusion_query_lists = None
+
+
+    assert len(retrieval_query_list) != 0, "No queries found, args.topics may be wrong"
+    assert len(retrieval_query_list) == len(qid_list_string), "Number of queries and qid_list_string not match"
+
+    
+    return retrieval_query_list, reranking_query_list, generation_query_list, fusion_query_lists, qid_list_string, turn_list
+
+
+# 1st stage retrieval + 2nd stage reranking
 def search(
-    retrieval_query_list: List[str], 
-    reranking_query_list: List[str], 
-    qid_list_string: List[str], 
     args: Any
-    ) -> Dict[str, List[Any]]:
+    ) -> Dict[str, List[PyScoredDoc]]:
     """
     Perform search and retrieval using different models and rerankers.
 
     Args:
-        retrieval_query_list (List[str]): List of retrieval queries.
-        reranking_query_list (List[str]): List of reranking queries.
-        qid_list_string (List[str]): List of query IDs.
         args (Any): Additional arguments.
 
     Returns:
-        Dict[str, List[Any]]: Pyserini hits object, where "Any" is a Anserini hit object. The List[Any] would be reranked if reranker is used. 
+        Dict[str, List[Any]]: Pyserini hits object, where "PyScoredDOc" is similar to an Anserini hit object. The Lists would be reranked if reranker is used. 
     """
-
 
     '''
     All required arguments are:
+        - args.retrieval_query_list: List[str]: List of retrieval queries.
+        - args.reranking_query_list: List[str]: List of reranking queries.
+        - args.qid_list_string: List[str]: List of query IDs.
         - args.run_name: str
         - args.file_name_stem: str
         - args.ranking_list_path: str
@@ -113,7 +200,10 @@ def search(
     
     '''
 
+    ##########################################################################################
     # we have the possibility to load a custom ranking list instead of searching or reranking
+    ##########################################################################################
+
     if args.retrieval_model == "none":
         assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank or --run_from_generate is true, because we do not do retrieval/retrieval+reranking in these cases."
 
@@ -129,41 +219,45 @@ def search(
 
         
 
-    # sparse search
-    if args.retrieval_model == "BM25":
-        print("BM 25 searching...")
-        searcher = LuceneSearcher(args.index_dir_path)
-        searcher.set_bm25(args.bm25_k1, args.bm25_b)
+    #######################
+    # First stage retrieval
+    #######################
 
-        # rm3 pseudo relevance feedback
-        if args.qe_type == "rm3":
-            searcher.set_rm3(
-                fb_terms = args.fb_terms,
-                fb_docs = args.fb_docs,
-                original_query_weight = args.original_query_weight
-            )
-                
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+    # No fusion
+    if args.fusion_type == "none":
+        hits = Retrieval(args)
+    # fusion 1: linear weighted score
+    elif args.fusion_type == "linear_weighted_score":
+        assert len(args.QRs_to_rank) -1 == len(args.fuse_weights), "The number of QRs to fuse should be one more than the number of weights."
+        fuse_weights = [None] + args.fuse_weights       # the first weight would not be used, just a dummy value.
+        
+        def linear_weighted_score_fusion_reduce_function(hits_0_and_weight, hits_1_and_weight):
+            hits_0 = hits_0_and_weight[0] # 0 is the query, 1 is the weight
+            hits_1 = hits_1_and_weight[0] # 0 is the query, 1 is the weight
+            return linear_weighted_score_fusion(
+                hits_0, 
+                hits_1, 
+                args.retrieval_top_k, 
+                None,
+                hits_1_and_weight[1],  # the weight associated with the second query is the right one to use (just a design choice)
+                args.run_name)
+        
+        # search for all queries to get the hits
+        hits_list = []
+        for QR in args.fusion_query_lists:
+            args.retrieval_query_list = QR
+            hits_list.append(Retrieval(args))
 
-    # dense search
-    elif args.retrieval_model in ["ance", "dpr"]:
-        print(f"{args.retrieval_model} searching...")
-        searcher = FaissSearcher(
-            args.index_dir_path,
-            args.dense_query_encoder_path 
-        )
-        hits = searcher.batch_search(retrieval_query_list, qid_list_string, k = args.retrieval_top_k, threads = 40)
+        # make a list of tuples, each tuple contains a query and a weight
+        hits_and_weights = list(zip(hits_list, fuse_weights))
 
-
-    ##############################
-    # TODO: add splade
-    ##############################
+        # get the fused ranking list
+        hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)
 
 
     ##############################
     # reranking
     ##############################
-
 
     if not args.reranker == "none":
 
@@ -331,7 +425,7 @@ def search(
             run_name = args.run_name 
 
         with open(args.ranking_list_path, "w") as f:
-            for qid in qid_list_string:
+            for qid in args.qid_list_string:
                 for i, item in enumerate(hits[qid]):
                     f.write("{} {} {} {} {} {}".format(
                         qid,
@@ -347,6 +441,60 @@ def search(
 
     return hits, run
 
+############## First stage retrieval ###############
+def Retrieval(args):
+
+    '''
+    All required arguments are:
+        - args.retrieval_query_list: List[str]
+        - args.qid_list_string: List[str]
+    # Sparse
+        - args.retrieval_model: str
+        - args.retrieval_top_k: int
+        - args.index_dir_path: str
+        - args.bm25_k1: float
+        - args.bm25_b: float
+        - args.qe_type: str
+        - args.fb_terms: int
+        - args.fb_docs: int
+        - args.original_query_weight: float
+    # Dense
+        - args.dense_query_encoder_path: str
+        - args.index_dir_path: str
+    '''
+
+    # sparse search
+    if args.retrieval_model == "BM25":
+        print("BM 25 searching...")
+        searcher = LuceneSearcher(args.index_dir_path)
+        searcher.set_bm25(args.bm25_k1, args.bm25_b)
+
+        # rm3 pseudo relevance feedback
+        if args.qe_type == "rm3":
+            searcher.set_rm3(
+                fb_terms = args.fb_terms,
+                fb_docs = args.fb_docs,
+                original_query_weight = args.original_query_weight
+            )
+                
+        print("the length of retrieval_query_list is ", len(args.retrieval_query_list))
+        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
+
+    # dense search
+    elif args.retrieval_model in ["ance", "dpr"]:
+        print(f"{args.retrieval_model} searching...")
+        searcher = FaissSearcher(
+            args.index_dir_path,
+            args.dense_query_encoder_path 
+        )
+        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
+    
+
+    ##############################
+    # TODO: add splade
+    ##############################
+
+    return hits
 
 def evaluate(
     run: dict,
@@ -450,15 +598,9 @@ def generate_and_save_ikat_submission(
         json.dump(result_dict, f, indent=4)
 
 
-def extract_filename(path):
-    # Extract the filename with extension
-    filename_with_ext = os.path.basename(path)
-    # Remove the extension
-    filename, ext = os.path.splitext(filename_with_ext)
-    return filename
 
 
-######################### Rank list fusion #########################
+######################### Ranking list fusion #########################
 ############# adapted from fuse.py in TREC_iKAT_2024/src #############
 
 
@@ -546,7 +688,6 @@ def linear_weighted_score_fusion(
     
     time_per_query = (time.time() - start_time) / len(qids)
     print('Fusing {} queries ({:0.3f} s/query)'.format(len(qids), time_per_query))
-    fout.close()
     print('Finished.')
 
     return final_hits_dict

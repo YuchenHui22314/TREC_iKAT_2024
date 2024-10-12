@@ -13,7 +13,7 @@ index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_ind
 #index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
-retrieval_model="none"
+retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k
@@ -42,7 +42,9 @@ generation_top_k=3
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
 given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[none]-[none_4_1_none]-[s2_top50].txt"
 # fusion
-fusion_type="none"
+fusion_type='linear_weighted_score'
+QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
+fuse_weights=(0.1 0.4)
 # project specific
 run_name="none"
 # raw_llm_rm_PDCReORf
@@ -63,9 +65,9 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 # retrieval_query_types=("rar_rw_fuse_rar_rwrs")
 # reranking_query_types=("rar_personalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
-# retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") 
 #retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw")
-retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
+#retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
+retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") 
 reranking_query_types=("none")
 generation_query_types=("none")
 
@@ -112,6 +114,8 @@ function run_evaluation() {
     --run_rag \
     --run_eval \
     --fusion_type $fusion_type \
+    --QRs_to_rank "${QRs_to_rank[@]}" \
+    --fuse_weights "${fuse_weights[@]}" \
     --run_name $run_name \
     --save_results_to_object \
     --retrieval_query_type $retrieval_query_type \
