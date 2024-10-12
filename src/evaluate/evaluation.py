@@ -306,7 +306,7 @@ if __name__ == "__main__":
         fusion_query_lists, 
         qid_list_string, 
         turn_list 
-        ) =         get_query_list(args)
+        ) =  get_query_list(args)
 
     if args.run_rag:
 
@@ -324,6 +324,12 @@ if __name__ == "__main__":
         hits, run = search(
             args
             )
+        
+        # delet redundant keys in args
+        del args.retrieval_query_list
+        del args.reranking_query_list
+        del args.fusion_query_lists
+        del args.qid_list_string
 
         ##########################
         # response generation TODO
