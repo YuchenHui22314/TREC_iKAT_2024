@@ -12,6 +12,8 @@ from progressbar import *
 from typing import Mapping, Tuple, List, Optional, Union, Any, Dict
 from tqdm import tqdm
 from dataclasses import asdict
+import random
+import pickle
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
@@ -254,6 +256,17 @@ def search(
 
         # get the fused ranking list
         hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)[0]
+    
+    elif args.fusion_type == "round_robin":
+        # first search.
+        hits_list = []
+        for QR in args.fusion_query_lists:
+            args.retrieval_query_list = QR
+            hits_list.append(Retrieval(args))
+        
+        # round robin fusion. Random selet at each run.
+        hits = round_robin_fusion(hits_list, args.retrieval_top_k, 42)
+
 
 
     ##############################
@@ -412,6 +425,9 @@ def search(
 
     # generate run dictionary required by pytrec_eval
     run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+    # save to pickle
+    with open(f"/data/rech/huiyuche/TREC_iKAT_2024/test/{args.file_name_stem}.pkl", "wb") as f:
+        pickle.dump(run, f)
 
     #sort the hits by score
     for qid in hits.keys():
@@ -692,3 +708,38 @@ def linear_weighted_score_fusion(
     print('Finished.')
 
     return (final_hits_dict, None)
+
+def round_robin_fusion(hits_list, topk, random_seed):
+    """
+    Performs rank list fusion by combining results from multiple retrieval methods using round robin.
+    This function reads ranked lists from multiple input, fuses the rankings based on the 
+    round robin strategy, and returns the fused results.
+
+    Arguments:
+    - hits_list (List[dict]): List of pyserini hits objects. Each element inside must can .docid and .score
+    - topk (int): Number of hits to retrieve for each query. Default is 1000.
+    
+    Returns:
+    - dict: The fused ranking list.
+    """
+    final_hits_dict = defaultdict(list)
+    qids = hits_list[0].keys()
+    for qid in qids:
+        for rank in range(topk):
+            candidate_docs = [hits[qid][rank] for hits in hits_list]
+            # shuffle the candidate docs randomly
+            random.seed(random_seed)
+            random.shuffle(candidate_docs)
+            for doc in candidate_docs:
+                # check if doc is already in the final list
+                if doc.docid not in [d.docid for d in final_hits_dict[qid]]:
+                    final_hits_dict[qid].append(doc)
+            if len(final_hits_dict[qid]) >= topk:
+                # cut to topk
+                final_hits_dict[qid] = final_hits_dict[qid][:topk]
+                # reassign scores according to the rank
+                for i, doc in enumerate(final_hits_dict[qid]):
+                    doc.score = 1/(i + 1)
+                break
+
+    return final_hits_dict

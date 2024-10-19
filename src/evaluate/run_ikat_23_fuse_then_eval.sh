@@ -42,7 +42,7 @@ generation_top_k=3
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
 given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[none]-[none_4_1_none]-[s2_top50].txt"
 # fusion
-fusion_type='linear_weighted_score'
+fusion_type='round_robin' #'linear_weighted_score'
 QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 fuse_weights=(0.1 0.4)
 # project specific
@@ -67,7 +67,8 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
-retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") 
+#retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") 
+retrieval_query_types=("round_robin_gpt-4o_3_lists")
 reranking_query_types=("none")
 generation_query_types=("none")
 

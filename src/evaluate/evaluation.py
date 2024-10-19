@@ -125,8 +125,7 @@ def get_args():
 
     #### Fusion ####
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score'])
-
+                        choices=['none','linear_weighted_score','round_robin'])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
     parser.add_argument('--fuse_weights', type=float, nargs='+', default = [2.71828], help='weights for linear weighted score fusion')
 
@@ -179,7 +178,9 @@ def get_args():
                             'gpt-4o_rar_non_personalized_cot1_rw',
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw",
                             "gpt-4o_rar_manual_depersonalized_cot1_rw",
-                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw"
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw",
+                            "gpt-4o_rar_rw+gpt-4o_rar_rwrs+gpt-4o_rar_personalized_cot1_rw",
+                            "round_robin_gpt-4o_3_lists",
 
                             ],)
 
