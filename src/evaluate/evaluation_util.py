@@ -282,12 +282,13 @@ def search(
     ##############################
 
 
-    # generate run dictionary required by pytrec_eval
-    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
-
     #sort the hits by score
     for qid in hits.keys():
         hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
+
+    # generate run dictionary required by pytrec_eval
+    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+
 
     # save ranking list
     # format: query-id Q0 document-id rank score run_name

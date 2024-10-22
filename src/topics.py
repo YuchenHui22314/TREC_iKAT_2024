@@ -349,6 +349,7 @@ class Turn:
                 final_query = " ".join(reformulation_list)
         elif "fuse" in query_type:
             final_query = "ranking list fusion, no query needed"
+            warnings.warn(f"################################# ATTENTION!!!!! you should specify a concret fusion type to get correct answer !!!!!!!!!\n#################################")
         elif "llm_rm" in query_type:
             initial_query = self.query_type_2_query(query_type.split("_")[0],0,0.0)
 

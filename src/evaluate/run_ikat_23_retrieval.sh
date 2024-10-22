@@ -63,7 +63,7 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 # reranking_query_types=("rar_personalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 # retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
-retrieval_query_types=(                            "gpt-4o_rar_rw+gpt-4o_rar_rwrs+gpt-4o_rar_personalized_cot1_rw")
+retrieval_query_types=("oracle")
 reranking_query_types=("none")
 generation_query_types=("none")
 
