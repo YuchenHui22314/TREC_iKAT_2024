@@ -157,7 +157,7 @@ def search(
         args (Any): Additional arguments.
 
     Returns:
-        Dict[str, List[Any]]: Pyserini hits object, where "PyScoredDOc" is similar to an Anserini hit object. The Lists would be reranked if reranker is used. 
+        Dict[str, List[Any]]: Pyserini hits object, where "PyScoredDoc" similar to an Anserini hit object. The Lists would be reranked if reranker is used. 
     """
 
     '''
@@ -170,6 +170,7 @@ def search(
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
         - args.given_ranking_list_path: str
+        - args.index_dir_path: str
     # Fusion
         - args.fusion_type: str
         - args.QRs_to_rank: List[str]
@@ -178,7 +179,6 @@ def search(
     # Sparse
         - args.retrieval_model: str
         - args.retrieval_top_k: int
-        - args.index_dir_path: str
         - args.bm25_k1: float
         - args.bm25_b: float
         - args.qe_type: str
@@ -257,6 +257,7 @@ def search(
         # get the fused ranking list
         hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)[0]
     
+    # fusion2: lottery fusion
     elif args.fusion_type == "round_robin":
         # first search.
         hits_list = []
@@ -274,17 +275,141 @@ def search(
     ##############################
 
     if not args.reranker == "none":
+        hits = rerank(hits, args)
 
-        print(f"{args.reranker} reranking top {args.rerank_top_k}...")
-         
+    ##############################
+    # save ranking list 
+    ##############################
 
-        # generate a qid-reranking_query dictionary
-        reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(qid_list_string, reranking_query_list)}
+
+    # generate run dictionary required by pytrec_eval
+    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+
+    #sort the hits by score
+    for qid in hits.keys():
+        hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
+
+    # save ranking list
+    # format: query-id Q0 document-id rank score run_name
+    if args.save_ranking_list:
+        if args.run_name == "none":
+            run_name = args.file_name_stem
+        else:
+            run_name = args.run_name 
+
+        with open(args.ranking_list_path, "w") as f:
+            for qid in args.qid_list_string:
+                for i, item in enumerate(hits[qid]):
+                    f.write("{} {} {} {} {} {}".format(
+                        qid,
+                        "Q0",
+                        item.docid,
+                        i+1,
+                        item.score,
+                        run_name
+                        ))
+                    f.write('\n')
+
+    return hits, run
+
+############## First stage retrieval ###############
+def Retrieval(args):
+
+    '''
+    All required arguments are:
+        - args.retrieval_query_list: List[str]
+        - args.qid_list_string: List[str]
+        - args.index_dir_path: str
+    # Sparse
+        - args.retrieval_model: str
+        - args.retrieval_top_k: int
+        - args.bm25_k1: float
+        - args.bm25_b: float
+        - args.qe_type: str
+        - args.fb_terms: int
+        - args.fb_docs: int
+        - args.original_query_weight: float
+    # Dense
+        - args.dense_query_encoder_path: str
+    '''
+
+    # sparse search
+    if args.retrieval_model == "BM25":
+        print("BM 25 searching...")
+        searcher = LuceneSearcher(args.index_dir_path)
+        searcher.set_bm25(args.bm25_k1, args.bm25_b)
+
+        # rm3 pseudo relevance feedback
+        if args.qe_type == "rm3":
+            searcher.set_rm3(
+                fb_terms = args.fb_terms,
+                fb_docs = args.fb_docs,
+                original_query_weight = args.original_query_weight
+            )
+                
+        print("the length of retrieval_query_list is ", len(args.retrieval_query_list))
+        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
+
+    # dense search
+    elif args.retrieval_model in ["ance", "dpr"]:
+        print(f"{args.retrieval_model} searching...")
+        searcher = FaissSearcher(
+            args.index_dir_path,
+            args.dense_query_encoder_path 
+        )
+        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
+    
+
+    ##############################
+    # TODO: add splade
+    ##############################
+
+    return hits
+
+###################### Reranking ######################
+def rerank(hits, args):
+
+    """
+    Perform reranking on hits objects.
+
+    Args:
+        hits (Dict[str, List[Any]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score.
+        args (Any): Additional arguments.
+
+    Returns:
+        hits (Dict[str, List[Any]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score. The result list should be sorted 
+    """
+
+    '''
+    All required arguments are:
+        - args.reranking_query_list: List[str]: List of reranking queries.
+        - args.reranker: str
+        - args.rerank_top_k: int
+        - args.qid_list_string: List[str]: List of query IDs.
+        - args.index_dir_path: str path to the pyserini index.
+        # RankGPT
+            - args.step: int
+            - args.window_size: int
+            - args.rankgpt_llm: str
+        # Rankllama
+            - args.rerank_quant: str
+            - args.cache_dir: str  (also applied for T5)
+
+    
+    '''
+
+    print(f"{args.reranker} reranking top {args.rerank_top_k}...")
+
+    # generate a qid-reranking_query dictionary
+    reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(args.qid_list_string, args.reranking_query_list)}
+
+    searcher = LuceneSearcher(args.index_dir_path)
+
+    if args.reranker == "rankgpt":
+
 
         # generate input format required by rankgpt
         rank_gpt_list, _ = hits_2_rankgpt_list(searcher, reranking_query_dic, hits)
-
-    if args.reranker == "rankgpt":
 
         # get hyperparameters
         llm_name = args.rankgpt_llm
@@ -417,100 +542,7 @@ def search(
             
             # sort the hits by score
             hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
-
-    ##############################
-    # save ranking list 
-    ##############################
-
-
-    # generate run dictionary required by pytrec_eval
-    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
-    # save to pickle
-    with open(f"/data/rech/huiyuche/TREC_iKAT_2024/test/{args.file_name_stem}.pkl", "wb") as f:
-        pickle.dump(run, f)
-
-    #sort the hits by score
-    for qid in hits.keys():
-        hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
-
-    # save ranking list
-    # format: query-id Q0 document-id rank score run_name
-    if args.save_ranking_list:
-        if args.run_name == "none":
-            run_name = args.file_name_stem
-        else:
-            run_name = args.run_name 
-
-        with open(args.ranking_list_path, "w") as f:
-            for qid in args.qid_list_string:
-                for i, item in enumerate(hits[qid]):
-                    f.write("{} {} {} {} {} {}".format(
-                        qid,
-                        "Q0",
-                        item.docid,
-                        i+1,
-                        item.score,
-                        run_name
-                        ))
-                    f.write('\n')
-
-
-
-    return hits, run
-
-############## First stage retrieval ###############
-def Retrieval(args):
-
-    '''
-    All required arguments are:
-        - args.retrieval_query_list: List[str]
-        - args.qid_list_string: List[str]
-    # Sparse
-        - args.retrieval_model: str
-        - args.retrieval_top_k: int
-        - args.index_dir_path: str
-        - args.bm25_k1: float
-        - args.bm25_b: float
-        - args.qe_type: str
-        - args.fb_terms: int
-        - args.fb_docs: int
-        - args.original_query_weight: float
-    # Dense
-        - args.dense_query_encoder_path: str
-        - args.index_dir_path: str
-    '''
-
-    # sparse search
-    if args.retrieval_model == "BM25":
-        print("BM 25 searching...")
-        searcher = LuceneSearcher(args.index_dir_path)
-        searcher.set_bm25(args.bm25_k1, args.bm25_b)
-
-        # rm3 pseudo relevance feedback
-        if args.qe_type == "rm3":
-            searcher.set_rm3(
-                fb_terms = args.fb_terms,
-                fb_docs = args.fb_docs,
-                original_query_weight = args.original_query_weight
-            )
-                
-        print("the length of retrieval_query_list is ", len(args.retrieval_query_list))
-        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
-
-    # dense search
-    elif args.retrieval_model in ["ance", "dpr"]:
-        print(f"{args.retrieval_model} searching...")
-        searcher = FaissSearcher(
-            args.index_dir_path,
-            args.dense_query_encoder_path 
-        )
-        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
-    
-
-    ##############################
-    # TODO: add splade
-    ##############################
-
+        
     return hits
 
 def evaluate(
@@ -525,10 +557,14 @@ def evaluate(
     Evaluate the ranking list using pytrec_eval.
     Args:
         run (dict): ranking list in dictionary format required by pytrec_eval. If None, the ranking list will be read from ranking_list_path.
+            - example:     
+                     run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
         qrel_file_path (str): path to the trec format qrel file
         ranking_list_path (str): path to the trec format ranking list file
         metrics_list (List[str]): list of metrics to evaluate
+            - example: ["map", "ndcg_cut.10", "P.5"]
         metrics_list_key_form (List[str]): list of metrics in key form (change . to _)
+            - example: ["map", "ndcg_cut_10", "P_5"]
     '''
 
     # read qrels
@@ -545,6 +581,18 @@ def evaluate(
     query_metrics_dic = evaluator.evaluate(run)
 
     # average metrics
+    '''
+    example:
+    metrics = { 
+        "ndcg_cut_10" : [0.1, 0.2, 0.3, 0.4, 0.5], 
+        "map" : [0.1, 0.2, 0.3, 0.4, 0.5],
+            }
+    query_metrics_dic = {
+        "qid1" : {"ndcg_cut_10" : 0.1, "map" : 0.2},
+        "qid2" : {"ndcg_cut_10" : 0.2, "map" : 0.3},
+        "qid3" : {"ndcg_cut_10" : 0.3, "map" : 0.4},
+    }
+    '''
     metrics = {metric : [metrics[metric] for metrics in query_metrics_dic.values()] for metric in metrics_list_key_form}   
 
     averaged_metrics = { metric : np.average(metric_list) for metric, metric_list in metrics.items() }

@@ -1,11 +1,16 @@
-#!/bin/bash
+#!/bin/bash -l
 
+#SBATCH -p rali
 #SBATCH --job-name=rerank_test_yuchen
 #SBATCH --nodes=1
+#SBATCH --ntasks-per-node=31        # max thread number
 #SBATCH --gpus-per-node=rtx_a5000:4
+#SBATCH --mem=66G
+
 
 cd /data/rech/huiyuche/TREC_iKAT_2024/src/evaluate
 conda activate /data/rech/huiyuche/envs/trec_ikat
+echo "conda activated"
 
 # rewrites choices
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
@@ -71,7 +76,7 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 # reranking_query_types=("rar_personalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 # retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
-retrieval_query_types=("oracle+raw")
+retrieval_query_types=("oracle")
 reranking_query_types=("oracle")
 generation_query_types=("none")
 LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
@@ -82,6 +87,7 @@ function run_evaluation() {
     local generation_query_type="$3"
 
     echo "Running with retrieval_query_type: $retrieval_query_type, reranking_query_type: $reranking_query_type, generation_query_type: $generation_query_type"
+
 
     python3 evaluation.py \
     --collection $collection \
