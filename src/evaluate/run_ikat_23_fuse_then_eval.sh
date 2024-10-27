@@ -17,7 +17,7 @@ retrieval_model="BM25"
 cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k
-reranker="rankgpt"
+reranker="none"
 #rankllama
 rerank_quant="none" # can be "none" ,"8b", "4b"
 #rankgpt
@@ -42,9 +42,9 @@ generation_top_k=3
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
 given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[none]-[none_4_1_none]-[s2_top50].txt"
 # fusion
-fusion_type='linear_weighted_score' #'round_robin'
+fusion_type='linear_combination' #'round_robin', 'lienar_combination' 'linear_weighted_score'
 QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
-fuse_weights=(0.1 0.4)
+fuse_weights=(1 0.1 0.4)   # if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score 
 # project specific
 run_name="none"
 # raw_llm_rm_PDCReORf
@@ -69,7 +69,7 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
 #retrieval_query_types=("round_robin_gpt-4o_3_lists")
 retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") 
-reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
+reranking_query_types=("none")
 generation_query_types=("none")
 
 

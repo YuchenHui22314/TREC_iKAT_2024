@@ -125,9 +125,12 @@ def get_args():
 
     #### Fusion ####
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score','round_robin'])
+                        choices=['none','linear_weighted_score','linear_combination','round_robin'])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
     parser.add_argument('--fuse_weights', type=float, nargs='+', default = [2.71828], help='weights for linear weighted score fusion')
+    parser.add_argument("--fusion_normalization", type=str, default="none",
+                        choices=['none','sigmoid','min_max'])
+
 
 
     ####################################

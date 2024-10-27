@@ -232,6 +232,7 @@ def search(
     elif args.fusion_type == "linear_weighted_score":
         assert len(args.QRs_to_rank) -1 == len(args.fuse_weights), "The number of QRs to fuse should be one more than the number of weights."
         fuse_weights = [None] + args.fuse_weights       # the first weight would not be used, just a dummy value.
+        print("fusing ranking lists with linear weighted score...")
         
         def linear_weighted_score_fusion_reduce_function(hits_0_and_weight, hits_1_and_weight):
             hits_0 = hits_0_and_weight[0] # 0 is the query, 1 is the weight
@@ -259,6 +260,7 @@ def search(
     
     # fusion2: lottery fusion
     elif args.fusion_type == "round_robin":
+        print("fusing ranking lists with round robin...")
         # first search.
         hits_list = []
         for QR in args.fusion_query_lists:
@@ -267,6 +269,26 @@ def search(
         
         # round robin fusion. Random selet at each run.
         hits = round_robin_fusion(hits_list, args.retrieval_top_k, 42)
+    
+    # fusion3: linear combination.
+    # difference with linear_weighted_score is that now we can specify the weight of the 1st query. More general than linear_weighted_score. 
+    # I should have directly imiplemented this. 
+    elif args.fusion_type == "linear_combination":
+        print("fusing ranking lists with linear combination...")
+        # first search.
+        hits_list = []
+        for QR in args.fusion_query_lists:
+            args.retrieval_query_list = QR
+            hits_list.append(Retrieval(args))
+        
+        # check weight length
+        assert len(args.fuse_weights) == len(args.fusion_query_lists), "The number of weights should be equal to the number of query lists."
+
+        # use same weights for all queries
+        qid_weights_dict = {qid: args.fuse_weights for qid in args.qid_list_string}
+
+        # linear combination fusion
+        hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
 
 
 
@@ -757,6 +779,75 @@ def linear_weighted_score_fusion(
     print('Finished.')
 
     return (final_hits_dict, None)
+
+
+def per_query_linear_combination(hits_list, qid_weights_dict, top_k):
+    """
+    perform linear combination of ranking list. Each query may have a different group
+    of weights. 
+    
+    Arguments:
+    - hits_list (List[dict]): List of pyserini hits objects. Each element inside must can .docid and .score
+    - qid_weights_dict (dict): dictionary of str : List[float]. weights assignment for each query.
+    - topk (int): Number of hits to retrieve for each query. Default is 1000.
+    """
+
+    def hits_2_qid_docid_score_dict(hits):
+        """
+        The resulting structure would be: {qid: {docid: score}}
+        """
+
+        qid_docid_score_dict = defaultdict(dict)
+
+        for qid, docs in hits.items():
+            for doc in docs:
+                qid_docid_score_dict[qid][doc.docid] = doc.score
+
+        return qid_docid_score_dict 
+
+    def fuse_one_query(docid_score_dict_list, alpha_list):
+        """
+        fuse the candidate ranking lists of one query.
+        docid_score_dict_list: List[dict]: List of {docid: score} dictionaries
+        alpha_list: List[float]: weights for each candidate ranking list
+        """
+
+        set_of_all_possible_docids = \
+            set([docid for docid_score_dict in docid_score_dict_list for docid in docid_score_dict.keys()])
+
+        # for each candidate ranking list, fill in the missing docids with the minimum score
+        for docid_score_dict in docid_score_dict_list:
+            min_val = min(docid_score_dict.values())
+            for docid in set_of_all_possible_docids:
+                if docid not in docid_score_dict:
+                    docid_score_dict[docid] = min_val 
+        # fuse the ranking lists by weighted sum
+        fused_docid_score_dict = defaultdict(float)
+        for docid in set_of_all_possible_docids:
+            for i, docid_score_dict in enumerate(docid_score_dict_list):
+                fused_docid_score_dict[docid] += docid_score_dict[docid] * alpha_list[i]
+        
+        return fused_docid_score_dict
+    
+    # read hits for each candidate ranking list
+    all_qid_docid_score_dict_list = [hits_2_qid_docid_score_dict(hits) for hits in hits_list]
+    qids = all_qid_docid_score_dict_list[0].keys()
+
+    # Fusion
+    final_hits_dict = defaultdict(list)
+    for qid in qids:
+        docid_score_dict_list = [qid_docid_score_dict[qid] for qid_docid_score_dict in all_qid_docid_score_dict_list]
+        alpha_list = qid_weights_dict[qid]
+        fused_docid_score_dict = fuse_one_query(docid_score_dict_list, alpha_list)
+        # sort the fused ranking list
+        fused_docid_score_dict = {k: v for k, v in sorted(fused_docid_score_dict.items(), key=lambda item: item[1], reverse=True)}
+        for rank, doc in enumerate(fused_docid_score_dict):
+            if rank == top_k:
+                break
+            final_hits_dict[qid].append(PyScoredDoc(doc, fused_docid_score_dict[doc]))
+
+    return final_hits_dict
+
 
 def round_robin_fusion(hits_list, topk, random_seed):
     """
