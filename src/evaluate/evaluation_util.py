@@ -248,10 +248,12 @@ def search(
         
         # search for all queries to get the hits
         hits_list = []
+        print('search starts')
         for QR in args.fusion_query_lists:
             args.retrieval_query_list = QR
             hits_list.append(Retrieval(args))
 
+        print('search finished')
         # make a list of tuples, each tuple contains a query and a weight
         hits_and_weights = list(zip(hits_list, fuse_weights))
 
@@ -410,6 +412,7 @@ def rerank(hits, args):
         - args.rerank_top_k: int
         - args.qid_list_string: List[str]: List of query IDs.
         - args.index_dir_path: str path to the pyserini index.
+        - args.rerank_batch_size: int batch size for reranking.
         # RankGPT
             - args.step: int
             - args.window_size: int
@@ -417,8 +420,6 @@ def rerank(hits, args):
         # Rankllama
             - args.rerank_quant: str
             - args.cache_dir: str  (also applied for T5)
-
-    
     '''
 
     print(f"{args.reranker} reranking top {args.rerank_top_k}...")
@@ -502,7 +503,8 @@ def rerank(hits, args):
                 reranking_query,
                 [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
                 tokenizer,
-                model
+                model,
+                args.rerank_batch_size
             )
 
             np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
@@ -528,6 +530,14 @@ def rerank(hits, args):
             reranker_name = "castorini/monot5-base-msmarco"
         elif args.reranker == "monot5_base_10k":
             reranker_name = "castorini/monot5-base-msmarco-10k"
+        elif args.reranker == "monot5_large":
+            reranker_name = "castorini/monot5-large-msmarco"
+        elif args.reranker == "monot5_large_10k":
+            reranker_name = "castorini/monot5-large-msmarco-10k"
+        elif args.reranker == "monot5_3b":
+            reranker_name = "castorini/monot5-3b-msmarco"
+        elif args.reranker == "monot5_3b_10k":
+            reranker_name = "castorini/monot5-3b-msmarco-10k"
         else:
             raise NotImplementedError(f"reranker {args.reranker} not implemented")
 
@@ -548,6 +558,7 @@ def rerank(hits, args):
                 model,
                 decoder_stard_id,
                 targeted_ids,
+                args.rerank_batch_size
             )
 
             np_reranked_scores = np.array(reranked_scores, dtype=np.float32)

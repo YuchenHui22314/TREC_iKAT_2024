@@ -75,8 +75,14 @@ def get_args():
 
 
     parser.add_argument("--reranker", type=str, default="none",
-                        choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k'])
+                        choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k', 'monot5_large', 'monot5_large_10k',
+                        "monot5_3b",
+                        "monot5_3b_10k",
+                        ])
 
+    # on octal31: 67 for monot5_base, 10 for rankllama 
+    # on octal40: TBD
+    parser.add_argument("--rerank_batch_size", type=int, default=67) 
     # rankllama
     parser.add_argument("--rerank_quant", type=str, default="none",
                         choices=['none','8b','4b'])

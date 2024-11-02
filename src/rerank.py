@@ -118,16 +118,30 @@ def load_t5_DDP(
 
     return tokenizer, model, decoder_stard_id, targeted_ids
 
+def get_split_num(length, batch_size):
+
+    if length < batch_size:
+        num_to_split = 1
+    elif length % batch_size == 0:
+        num_to_split = length // batch_size
+    else:
+        num_to_split = length // batch_size + 1
+    return num_to_split
+
 def rerank_rankllama(
     query: str,
     passages: List[str],
     tokenizer: Any,
-    model: Any
+    model: Any,
+    rerank_batch_size: int 
 ) -> List[float]: 
 
-    # Split passages into groups of 10 passages
+    # Split passages into groups of 10 passages (on octal31)
     # due to GPU resources limitation.
-    passages_parts = np.array_split(passages, 5)
+
+
+    num_to_split = get_split_num(len(passages), rerank_batch_size)
+    passages_parts = np.array_split(passages, num_to_split)
     scores = []
 
     for passages_part in passages_parts:
@@ -158,13 +172,16 @@ def rerank_t5_DP(
     tokenizer: Any,
     model: Any,
     decoder_input_ids: Any,
-    targeted_ids: Any
+    targeted_ids: Any,
+    rerank_batch_size: int 
     ) -> List:
 
     # Split passages into groups of 67 passages
     # due to GPU resources limitation.
     # 15 on octal31, 6 on octal40 when reranking top 1000
-    passages_parts = np.array_split(passages, 1)
+
+    num_to_split = get_split_num(len(passages), rerank_batch_size)
+    passages_parts = np.array_split(passages, num_to_split)
     scores = []
 
     for passages_part in passages_parts:
@@ -206,6 +223,7 @@ def rerank_t5_DDP(
     decoder_input_ids: Any,
     targeted_ids: Any,
     outputs: Manager().list(),
+    rerank_batch_size: int 
     ) -> None:
 
     dist.init_process_group("nccl", rank=rank, world_size=world_size)
@@ -221,7 +239,8 @@ def rerank_t5_DDP(
 
     # Split passages into groups of 67 passages
     # due to GPU resources limitation.
-    passages_parts = np.array_split(passages, 15)
+    num_to_split = get_split_num(len(passages), rerank_batch_size)
+    passages_parts = np.array_split(passages, num_to_split)
     scores = []
 
     for passages_part in passages_parts:

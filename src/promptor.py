@@ -173,6 +173,138 @@ class PersonalizedResponseGenPromptor:
         else:
             return text[10:]
     
+
+class JudgePersonalizeLevelPromptor:
+    def __init__(
+        self, 
+        enable_cot=False,
+        ) -> None:
+        
+        self.enable_cot = enable_cot
+
+        if self.enable_cot:
+            cot_1 = "\n\t(2) Provide your reasoning process in terms of why you think the level you chose is appropriate."
+            cot_2 = "Please also provide your reasoning that justifies the level you choose. "
+            cot_3 = "Reason: $Reason\n"
+        else:
+            cot_1 = ""
+            cot_2 = ""
+            cot_3 = ""
+
+        # head_instruction
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The user's last query in the dialog for information seeking\n\t(3) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) After analyzing the last query and the user profile, decide the extent to which the query needs to be personalized using information from the profile to yield relevant web search results. Please choose from the following levels:\n\t\ta. The query is self-contained and does not need personalization\n\t\tb. The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers. \n\t\tc. The user profile presents important constraints for an accurate answer, without which the search may lead to irrelevant results.\n\t\td. The query cannot retrieve reasonable results without referring to the profile.{cot_1}"
+
+        self.instruction += "\n\nNow, I will give you several sample cases with the corresponding personalization level.\n\n"
+
+        self.instruction +=\
+    '''    Level a: The query is self-contained and does not need personalization.
+      Example 1:
+        Query: "Can you explain the origins of Chinese white Wine ?"
+        Profile: User does not drink alcohol.
+        Reason: This question is about history, so the user's preferences aren't relevant.
+      Example 2:
+        Query: "What is the capital of France?"
+        Profile: User is a Canadian citizen.
+        Reason: This question is general knowledge and does not require personalization.
+
+    Level b: The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers.
+      Example 1: 
+        Query: "Can you recommend some books for me?"
+        Profile: User is a technology fan and a history lover.
+        Reason: Recommending books on technology and history can be a great bonus, but suggesting other quality reads is also helpful.
+      Example 2:
+        Query: "Compare badminton and swimming."
+        Profile: User is in a diet. 
+        Reason: Dieting may affect the user's choice of sports, but the comparison can be made without this information.
+    
+    Level c: The user profile presents important constraints for an accurate answer, without which the search may lead to irrelevant results.
+      Example 1:
+        Query: "What's a suitable recipe for a family dinner?"
+        Profile: User's child is allergic to peanuts, and the family has a strong dislike for spicy food.
+        Reason: Avoiding peanuts and spice ensures the recipe meets the family's dietary needs. Otherwise, searched recipe might be unsuitable.
+      Example 2:
+        Query: "How can I apply for a Canadian Study Permit?"
+        Profile: User is a Chinese Citizen living in Beijing.
+        Reason: Specific application process or restrictions for Beijing Chinese citizens may exist. A 
+
+    Level d: The query cannot retrieve reasonable results without referring to the profile.
+      Example 1:
+        Query: "What is my highest tolerable heart rate?"
+        Profile: User is 23 years old.
+        Reason:  highest tolerable heart rate = 220 - age. Without the user profile we cannot calculate the heart rate.
+      Example 2:
+        Query: "Can you recommend some good restaurants near me?"
+        Profile: The user is in Paris and plan to visit the Eiffel Tower today.
+        Reason: Without the user's location, we cannot find any restaurants near the user. 
+    '''
+
+
+        self.tail_instruction = f"Now, please decide the personalization necessity level of the **Last Question** under the **Dialog Context**, considering the **User Profile**. {cot_2}The output format should always be:\n\n{cot_3}Level: $Level (choose from a/b/c/d)\n\nGo ahead!"
+
+        self.stop_tokens = None
+                            
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn):
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("Here is the **User Profile**:\n")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = "\n".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = []
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"Question {i+1}: {turn.current_utterance}\nResponse {i+1}: {turn.current_response}")
+        
+        this_dialog[0] = "Here is the **Dialog Context**:\n\n" + this_dialog[0]
+            
+        # current turn
+        this_dialog.append("**Last Question**: " + current_turn.current_utterance)
+        this_dialog = "\n\n".join(this_dialog)  
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        this_prompt.append("# Now, the exmamples are over. Let's move to the dialog and the user profile you have to consider.")
+        this_prompt.append(ptkb_instruction)
+        this_prompt.append(this_dialog)
+        this_prompt.append(self.tail_instruction)
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        text = text.strip()
+        try:
+            splits = text.split('\n')
+            cot = None
+
+            for line in splits:
+                if line[:6] == "Level:":
+                    level = line[6:].strip()
+                elif line[:7] == "Reason:":
+                    cot = line[7:].strip()
+                
+            if level == None : 
+                return None 
+            if self.enable_cot and cot == None:
+                return None
+
+            return [level, cot]
+        except Exception as e:
+            print(e)
+            return None    
+
+
 class RARNonPersonalizedCoTPromptor:
     def __init__(
         self, 
