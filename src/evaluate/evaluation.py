@@ -65,20 +65,40 @@ def get_args():
     parser.add_argument("--retrieval_model", type=str, default="BM25",
                         choices= ["none","BM25", "ance", "dpr", "splade", "repllama"])
 
-    # hugging_face cache_dir
-    parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
-    ## TODO: unify -- cache_dir and --dense_query_encoder_path
-
     # where is dense encoder
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage",
                         help="should be a huggingface face format folder/link to a model") 
+    # BM25 parameters
+    parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
+    parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
+
+    # Query expansion 
+    parser.add_argument("--qe_type", type = str, default="rm3", choices=["rm3", "none", "llm_rm"])
+    # pseudo relevance feedback parameters
+    parser.add_argument("--fb_terms", type=int, default="10", help="RM3 parameter for number of expansion terms.")
+    parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
+    parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
 
 
+    #### Fusion ####
+    parser.add_argument("--fusion_type", type=str, default="none",
+                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level'])
+    parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
+    parser.add_argument('--fuse_weights', type=float, nargs='+', default = [1,0.1,0.4], help='weights for linear weighted score fusion')
+    parser.add_argument("--fusion_normalization", type=str, default="none",
+                        choices=['none','sigmoid','min_max'])
+    parser.add_argument("--per_query_weight_max_value", type=float, default=0.75)
+
+
+    #### rerank ####
     parser.add_argument("--reranker", type=str, default="none",
                         choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k', 'monot5_large', 'monot5_large_10k',
                         "monot5_3b",
                         "monot5_3b_10k",
                         ])
+    # hugging_face cache_dir
+    parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
+    ## TODO: unify -- cache_dir and --dense_query_encoder_path
 
     # on octal31: 67 for monot5_base, 10 for rankllama 
     # on octal40: TBD
@@ -93,16 +113,6 @@ def get_args():
     parser.add_argument("--step", type=int, default="1") 
 
 
-    # BM25 parameters
-    parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
-    parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
-
-    # Query expansion 
-    parser.add_argument("--qe_type", type = str, default="rm3", choices=["rm3", "none", "llm_rm"])
-    # pseudo relevance feedback parameters
-    parser.add_argument("--fb_terms", type=int, default="10", help="RM3 parameter for number of expansion terms.")
-    parser.add_argument("--fb_docs", type=int, default="10", help="RM3 parameter for number of expansion documents.")
-    parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
 
     # response generation:
     parser.add_argument("--generation_model", type=str, default="none",
@@ -128,14 +138,6 @@ def get_args():
 
 
     parser.add_argument("--run_eval",  action="store_true", help="if we will run the evaluation component (+ saving)")
-
-    #### Fusion ####
-    parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score','linear_combination','round_robin'])
-    parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
-    parser.add_argument('--fuse_weights', type=float, nargs='+', default = [2.71828], help='weights for linear weighted score fusion')
-    parser.add_argument("--fusion_normalization", type=str, default="none",
-                        choices=['none','sigmoid','min_max'])
 
 
 
@@ -190,6 +192,7 @@ def get_args():
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw",
                             "gpt-4o_rar_rw+gpt-4o_rar_rwrs+gpt-4o_rar_personalized_cot1_rw",
                             "round_robin_gpt-4o_3_lists",
+                            "personalize_level_3_lists_tune",
 
                             ],)
 
@@ -224,7 +227,6 @@ def get_args():
                             "gpt-4o_rar_personalized_cot1_rw",
                             'gpt-4o_rar_non_personalized_cot1_rw',
                             ],)
-
 
 
     args = parser.parse_args()
@@ -331,6 +333,13 @@ if __name__ == "__main__":
         args.fusion_query_lists = fusion_query_lists
         args.qid_list_string = qid_list_string
 
+        if args.fusion_type == 'per_query_personalize_level':
+            print("get personalized level for each query....")
+            args.qid_personalized_level_dict = \
+            {
+                turn.turn_id: turn.get_personalization_level() for turn in turn_list
+            }
+
         hits, run = search(
             args
             )
@@ -340,6 +349,7 @@ if __name__ == "__main__":
         del args.reranking_query_list
         del args.fusion_query_lists
         del args.qid_list_string
+        del args.qid_personalized_level_dict
 
         ##########################
         # response generation TODO

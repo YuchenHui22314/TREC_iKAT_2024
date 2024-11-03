@@ -176,6 +176,8 @@ def search(
         - args.QRs_to_rank: List[str]
         - args.fuse_weights: List[float]
         - args.fusion_query_lists: List[List[str]]
+        - args.per_query_weight_max_value: float
+        - args.qid_personalized_level_dict: Dict[str, str]
     # Sparse
         - args.retrieval_model: str
         - args.retrieval_top_k: int
@@ -248,12 +250,10 @@ def search(
         
         # search for all queries to get the hits
         hits_list = []
-        print('search starts')
         for QR in args.fusion_query_lists:
             args.retrieval_query_list = QR
             hits_list.append(Retrieval(args))
 
-        print('search finished')
         # make a list of tuples, each tuple contains a query and a weight
         hits_and_weights = list(zip(hits_list, fuse_weights))
 
@@ -288,6 +288,27 @@ def search(
 
         # use same weights for all queries
         qid_weights_dict = {qid: args.fuse_weights for qid in args.qid_list_string}
+
+        # linear combination fusion
+        hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
+
+    elif args.fusion_type == "per_query_personalize_level":
+        print("fusing ranking lists with per_query_personalize_level")
+        # first search.
+        hits_list = []
+        for QR in args.fusion_query_lists:
+            args.retrieval_query_list = QR
+            hits_list.append(Retrieval(args))
+        
+        # get weights for each query.
+        # for rw fuse rwrs, always use [1,0.1].
+        # for personalized query, use the level to get the weight.
+        decontextualized_rwrs_weight = [1,0.1]
+        qid_weights_dict = {}
+        for qid in args.qid_list_string:
+            level = args.qid_personalized_level_dict[qid]
+            float_level = from_level_to_weight(level, 4, args.per_query_weight_max_value)
+            qid_weights_dict[qid] = decontextualized_rwrs_weight + [float_level]
 
         # linear combination fusion
         hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
@@ -701,6 +722,20 @@ def generate_and_save_ikat_submission(
 
 ######################### Ranking list fusion #########################
 ############# adapted from fuse.py in TREC_iKAT_2024/src #############
+
+def from_level_to_weight(level, max_level, max_weight):
+    """
+    Convert a level to a weight.
+    1) a -> 1, b ->2, c -> 3, d -> 4.
+    level 1 -> 0
+    level 2 -> max_weight / (max_level-1)
+    .....
+    level max_level -> max_weight
+    """
+    level_map = {"a": 1, "b": 2, "c": 3, "d": 4}
+    level = level_map[level]
+    unit = max_weight / (max_level-1)
+    return unit * (level-1) 
 
 
 def linear_weighted_score_fusion(

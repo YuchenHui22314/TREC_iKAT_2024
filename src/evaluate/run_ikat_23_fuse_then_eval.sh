@@ -14,11 +14,34 @@ index_dir_path="/part/02/Tmp/yuchen/clueweb22b_ikat23_fengran_sparse_index_2/" #
 #index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
+###############
+## Retrieval
+###############
 retrieval_model="BM25"
-cache_dir="/data/rech/huiyuche/huggingface"
 dense_query_encoder_path="castorini/ance-msmarco-passage"
+#BM25
+bm25_k1=0.9
+bm25_b=0.4
+#qe
+qe_type="none"
+fb_terms=20
+fb_docs=10
+original_query_weight=0.5
+###############
+##### fusion
+###############
+#'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
+fusion_type='per_query_personalize_level' 
+QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
+# if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score
+fuse_weights=(1 0.1 0.4)
+per_query_weight_max_value=1
+###############
+## Reranking
+###############
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k, monot5_large, monot5_large_10k, monot5_3b, monot5_3b_10k,
-reranker="monot5_3b_10k"
+reranker="none"
+cache_dir="/data/rech/huiyuche/huggingface"
 # on octal31: 67 for monot5_base, 10 for rankllama, 50 for monot5_large, 10 for t5_3b
 # on octal40: TBD
 rerank_batch_size=10
@@ -28,29 +51,21 @@ rerank_quant="none" # can be "none" ,"8b", "4b"
 rankgpt_llm="gpt-3.5-turbo"
 window_size=4
 step=1
-#BM25
-bm25_k1=0.9
-bm25_b=0.4
-#qe
-qe_type="none"
-fb_terms=20
-fb_docs=10
-original_query_weight=0.5
-#response generation:
+
+########################
+## response generation:
+########################
 generation_model="none"
 generation_prompt="none"
+
 #number of documents to consider at each step.
 retrieval_top_k=1000
 rerank_top_k=50
 generation_top_k=3
+
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
 given_ranking_list_path="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rwrs_fuse_personalized_cot1_rw]-S2[none]-g[none]-[none]-[none_4_1_none]-[s2_top50].txt"
-# fusion
-#'round_robin', 'lienar_combination' 'linear_weighted_score'
-fusion_type='linear_weighted_score' 
-QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
-# if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score
-fuse_weights=(0.1 0.4)    
+
 # project specific
 run_name="none"
 # raw_llm_rm_PDCReORf
@@ -74,8 +89,8 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
 #retrieval_query_types=("round_robin_gpt-4o_3_lists")
-retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_personalized_cot1_rw") 
-reranking_query_types=("gpt-4o_rar_personalized_cot1_rw")
+retrieval_query_types=("personalize_level_3_lists_tune") 
+reranking_query_types=("none")
 generation_query_types=("none")
 
 
@@ -124,6 +139,7 @@ function run_evaluation() {
     --fusion_type $fusion_type \
     --QRs_to_rank "${QRs_to_rank[@]}" \
     --fuse_weights "${fuse_weights[@]}" \
+    --per_query_weight_max_value $per_query_weight_max_value \
     --run_name $run_name \
     --save_results_to_object \
     --retrieval_query_type $retrieval_query_type \

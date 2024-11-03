@@ -19,7 +19,8 @@ rewrite_model="gpt-4o-2024-08-06"
 #reformulation_name="rar_personalized_cotN"
 #reformulation_name="gpt-4o_rar_personalized_cot1"
 #reformulation_name="gpt-4o_rar"
-reformulation_name="gpt-4o_rar_manual_depersonalized_cot1"
+#reformulation_name="gpt-4o_rar_manual_depersonalized_cot1"
+reformulation_name="personalization_level"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2023.txt"
 
@@ -29,4 +30,4 @@ python3 rewrite.py \
   --output_query_path $output_query_path \
   --demo_file $demo_file \
   --rewrite_model $rewrite_model \
-  --reformulation_name $reformulation_name #&>> $LOG_FILE
+  --reformulation_name $reformulation_name &>> $LOG_FILE

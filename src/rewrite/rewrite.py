@@ -34,7 +34,8 @@ from promptor import (
     SummarizePTKBPromptor,
     PersonalizeViaPTKBSummaryPrompter,
     RARPersonalizedCoTPromptor,
-    RARNonPersonalizedCoTPromptor
+    RARNonPersonalizedCoTPromptor,
+    JudgePersonalizeLevelPromptor
 )
 
 from topics import (
@@ -88,6 +89,7 @@ def get_args():
         "gpt-4o_rar_personalized_cot1",
         "gpt-4o_rar_non_personalized_cot1",              # modify the few shot example to remove personalization
         "gpt-4o_rar_manual_depersonalized_cot1",         # directly modify the resulting rewrite to remove personalizaiton.
+        "personalization_level"
         ]
     ) 
     args = parser.parse_args()
@@ -196,6 +198,11 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
+    if reformulation_name == "personalization_level":
+        prompter = JudgePersonalizeLevelPromptor(
+            enable_cot=True
+        )
+
     if reformulation_name == "rar" or reformulation_name == "gpt-4o_rar":
         prompter = RewriteAndResponsePromptor(
             demo_file = demo_file, 
@@ -287,6 +294,28 @@ if __name__ == '__main__':
     for turn in tqdm(turn_list, total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
 
+        if "personalization_level" == reformulation_name:
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+            level = liste[0]
+            cot = liste[1]
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_lv",
+                reformulated_query = level,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_cot",
+                reformulated_query = cot,
+                ptkb_provenance = []
+            )
+
+
+
+            
         # copy the rewrite named "gpt-4o_rar_personalized_cot1_rw"
         if "gpt-4o_rar_manual_depersonalized_cot1" == reformulation_name:
             print("ok")
