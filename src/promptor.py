@@ -272,7 +272,7 @@ class JudgePersonalizeLevelPromptor:
         # combine to form the prompt
         this_prompt = []
         this_prompt.append(self.instruction)
-        this_prompt.append("# Now, the exmamples are over. Let's move to the dialog and the user profile you have to consider.")
+        this_prompt.append("# Now, the examples are over. Let's move to the dialog and the user profile you have to consider.")
         this_prompt.append(ptkb_instruction)
         this_prompt.append(this_dialog)
         this_prompt.append(self.tail_instruction)

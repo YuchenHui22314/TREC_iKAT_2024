@@ -35,7 +35,7 @@ fusion_type='per_query_personalize_level'
 QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 # if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score
 fuse_weights=(1 0.1 0.4)
-per_query_weight_max_value=1
+per_query_weight_max_value=1.2
 ###############
 ## Reranking
 ###############

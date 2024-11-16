@@ -307,7 +307,7 @@ def search(
         qid_weights_dict = {}
         for qid in args.qid_list_string:
             level = args.qid_personalized_level_dict[qid]
-            float_level = from_level_to_weight(level, 4, args.per_query_weight_max_value)
+            float_level = from_level_to_weight_3(level, 4, args.per_query_weight_max_value)
             qid_weights_dict[qid] = decontextualized_rwrs_weight + [float_level]
 
         # linear combination fusion
@@ -722,6 +722,33 @@ def generate_and_save_ikat_submission(
 
 ######################### Ranking list fusion #########################
 ############# adapted from fuse.py in TREC_iKAT_2024/src #############
+
+
+def from_level_to_weight_3(level, max_level, max_weight):
+    """
+    Convert a level to a weight.
+    1) a -> 1, b ->2, c -> 3, d -> 4.
+    level 1 ->  max_weight / max_level
+    level 2 -> 2* max_weight / max_level
+    .....
+    level max_level -> max_weight
+    """
+    level_map = {"a": 0.4, "b": 0.5, "c": 0.6, "d": 0.6}
+    return level_map[level] 
+
+def from_level_to_weight_2(level, max_level, max_weight):
+    """
+    Convert a level to a weight.
+    1) a -> 1, b ->2, c -> 3, d -> 4.
+    level 1 ->  max_weight / max_level
+    level 2 -> 2* max_weight / max_level
+    .....
+    level max_level -> max_weight
+    """
+    level_map = {"a": 1, "b": 2, "c": 3, "d": 4}
+    level = level_map[level]
+    unit = max_weight / max_level
+    return unit * level 
 
 def from_level_to_weight(level, max_level, max_weight):
     """
