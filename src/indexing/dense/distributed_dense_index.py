@@ -185,7 +185,7 @@ def get_args():
 
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     parser.add_argument("--use_data_percent", type=float, default=1.0, help="Percent of samples to use. Faciliating the debugging.")
-    parser.add_argument("--per_gpu_index_batch_size", type=int, default=500)
+    parser.add_argument("--per_gpu_index_batch_size", type=int, default=700)
     parser.add_argument("--num_docs_per_block", type=int, default=1000000)
 
     parser.add_argument("--max_doc_length", type=int, default=512, help="Max doc length, consistent with \"Dialog inpainter\".")

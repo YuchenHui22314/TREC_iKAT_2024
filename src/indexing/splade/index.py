@@ -72,17 +72,17 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     #parser.add_argument("--dataset", type=str, required=True, choices=["CAsT-19", "CAsT-20", "QReCC", "TopiOCQA"])
-    parser.add_argument("--collection_path", type=str, default="QReCC/qrecc_collection.tsv")
-    parser.add_argument("--pretrained_doc_encoder_path", type=str, default="checkpoints/efficient-splade-V-large-doc")
+    parser.add_argument("--collection_path", type=str, default="/part/01/Tmp/yuchen/cluweb22B_ikat_v2.tsv")
+    parser.add_argument("--pretrained_doc_encoder_path", type=str, default="/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879")
     
-    parser.add_argument("--output_index_dir_path", type=str, default="index/splade_qrecc")
+    parser.add_argument("--output_index_dir_path", type=str, default="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3")
     parser.add_argument("--force_emptying_dir", action="store_true", default=True)
 
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     parser.add_argument("--use_data_percent", type=float, default=1.0, help="Percent of samples to use. Faciliating the debugging.")
-    parser.add_argument("--per_gpu_index_batch_size", type=int, default=100)
+    parser.add_argument("--per_gpu_index_batch_size", type=int, default=190)
 
-    parser.add_argument("--max_doc_length", type=int, default=384, help="Max doc length, consistent with \"Dialog inpainter\".")
+    parser.add_argument("--max_doc_length", type=int, default=256, help="Max doc length, consistent with \"Dialog inpainter\".")
 
 
     args = parser.parse_args()
@@ -105,3 +105,5 @@ if __name__ == "__main__":
     set_seed(args)
 
     indexing(args)
+    
+    #  python /data/rech/huiyuche/TREC_iKAT_2024/src/indexing/splade/index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
