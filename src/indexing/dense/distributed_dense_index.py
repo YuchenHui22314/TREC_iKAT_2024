@@ -132,42 +132,83 @@ def dense_indexing(args):
 
 
 # a demo, please change the parameters when you use this function.
-def merge_blocks_to_large_blocks():
-    num_block = 8
-    num_rank = 7
-    expected_num_doc_per_block = 5000000
+def merge_blocks_to_large_blocks(
+    input_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance",
+    output_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged",
+    num_block = 116,
+    num_rank = 4,
+    expected_num_doc_per_block = 1000000
+):
+    '''
+    Merge ranks in to blocks. E.g. if we have 4 ranks (GPUs), and 116 blocks, we initially have 116 * 4 = 464 sub blocks.
+    then we merge them into 116 blocks.
+    We can also use a customized block size which is larger than the one used while indexing. This function will automatically merge smaller blocks into larger blocks. the disired block size is expected_num_doc_per_block.
+    '''
     embs = []
     embids = []
     new_block_id = 0
     for block_id in range(num_block):
         for rank in range(num_rank):
-            emb_filename = "/media/nvme/fengran/index/ance_cast1920/doc_emb_block.rank_{}.{}.pb".format(rank, block_id)
-            embid_filename = "/media/nvme/fengran/index/ance_cast1920/doc_embid_block.rank_{}.{}.pb".format(rank, block_id)
+
+            emb_filename = f"{input_folder}/doc_emb_block.rank_{rank}.{block_id}.pb"
+            embid_filename = f"{input_folder}/doc_embid_block.rank_{rank}.{block_id}.pb"
+
+            # laod the sub block crsp. to the rank and the block
             cur_embs = pload(emb_filename)
             cur_embids = pload(embid_filename)
+
+            # accumulate the docs from the last loop
             embs.append(cur_embs)
             embids.extend(cur_embids)
             print("len embs = {}".format(sum([len(x) for x in embs])))
             print("len embids = {}".format(len(embids)))
+
+            # when we accumulate sufficient number of docs,  store them into a new block
+            # of size expected_num_doc_per_block.
             if len(embids) >= expected_num_doc_per_block:
-                num_remain = len(embids) - expected_num_doc_per_block
-                remain_embids = embids[-num_remain:]
+
                 print("before concat")
+                # [(block_size,embed_size), (b,e), (b,e)] -> [block_size*?, embed_size]
                 embs = np.concatenate(embs)
                 print("after concat")
-                remain_embs = embs[-num_remain:]
-                
-                pstore(embs[:expected_num_doc_per_block], "/media/nvme/fengran/index/ance_cast1920_merged/doc_emb_block.{}.pb".format(new_block_id), True)
-                pstore(embids[:expected_num_doc_per_block], "/media/nvme/fengran/index/ance_cast1920_merged/doc_embid_block.{}.pb".format(new_block_id), True)
+
+                pstore(
+                    embs[:expected_num_doc_per_block], 
+                    f"{output_folder}/doc_emb_block.{new_block_id}.pb", 
+                    True
+                    )
+                pstore(
+                    embids[:expected_num_doc_per_block], 
+                    f"{output_folder}/doc_embid_block.{new_block_id}.pb", 
+                    True
+                    )
+
+                # get the remaining docs for next loop accumulation
+                num_remain = len(embids) - expected_num_doc_per_block
+                if num_remain == 0:
+                    embids = []
+                    embs = []
+                else:
+                    embids = embids[-num_remain:]
+                    embs = embs[-num_remain:]
+
                 new_block_id += 1
-                embs = [remain_embs]
-                embids = remain_embids
                 gc.collect()
 
     if len(embids) > 0:
         embs = np.concatenate(embs)
-        pstore(embs, "/media/nvme/fengran/index/ance_cast1920_merged/doc_emb_block.{}.pb".format(new_block_id), True)
-        pstore(embids, "/media/nvme/fengran/index/ance_cast1920_merged/doc_embid_block.{}.pb".format(new_block_id), True)
+
+        pstore(
+            embs, 
+            f"{output_folder}/doc_emb_block.{new_block_id}.pb", 
+            True
+            )
+
+        pstore(
+            embids, 
+            f"{output_folder}/doc_embid_block.{new_block_id}.pb", 
+            True
+            )
 
 
 
@@ -221,8 +262,16 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     set_seed(args)
-    dense_indexing(args)
-    #merge_blocks_to_large_blocks()
+    #dense_indexing(args)
+    merge_blocks_to_large_blocks(
+    input_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance",
+    output_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged",
+    num_block = 116,
+    num_rank = 4,
+    expected_num_doc_per_block = 1000000
+    )
 
 # python  -m torch.distributed.launch --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
 # torchrun --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
+# For merge
+# python -m torch.distributed.launch --nproc_per_node 1 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt

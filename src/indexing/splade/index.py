@@ -73,9 +73,9 @@ def get_args():
 
     #parser.add_argument("--dataset", type=str, required=True, choices=["CAsT-19", "CAsT-20", "QReCC", "TopiOCQA"])
     parser.add_argument("--collection_path", type=str, default="/part/01/Tmp/yuchen/cluweb22B_ikat_v2.tsv")
-    parser.add_argument("--pretrained_doc_encoder_path", type=str, default="/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879")
+    parser.add_argument("--pretrained_doc_encoder_path", type=str, default="/data/rech/huiyuche/huggingface/models--naver--splade-cocondenser-selfdistil/snapshots/0f718e09b0540c68c15c5c2b50de731b6e89090a")
     
-    parser.add_argument("--output_index_dir_path", type=str, default="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3")
+    parser.add_argument("--output_index_dir_path", type=str, default="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade++")
     parser.add_argument("--force_emptying_dir", action="store_true", default=True)
 
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")

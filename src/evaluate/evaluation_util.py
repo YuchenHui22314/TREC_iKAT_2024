@@ -79,7 +79,6 @@ def get_query_list(args):
 
     '''
     Arguments:
-    load turns from json file. Output format:
     retrieval_query_list: List[str] 
     reranking_query_list: List[str]
     generation_query_list: List[str]
