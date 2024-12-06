@@ -17,8 +17,10 @@ qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
 ###############
 ## Retrieval
 ###############
-retrieval_model="BM25"
+retrieval_model="BM25" # can be "BM25", "ance", "dpr", "splade"
+#Dense
 dense_query_encoder_path="castorini/ance-msmarco-passage"
+query_encoder_batch_size=200
 #BM25
 bm25_k1=0.9
 bm25_b=0.4

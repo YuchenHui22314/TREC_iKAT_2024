@@ -18,6 +18,8 @@ from transformers import RobertaConfig, RobertaForSequenceClassification, Robert
 from models import ANCE
 from utils import check_dir_exist_or_build, pstore, pload, set_seed, get_optimizer
 from data_format import padding_seq_to_same_length, Retrieval_qrecc, Retrieval_topiocqa, Search_q_Retrieval, Retrieval_trec
+import sys
+sys.path.append('../')
 
 '''
 Test process, perform dense retrieval on collection (e.g., MS MARCO):
@@ -220,54 +222,51 @@ def get_test_query_embedding(args):
 
     Arguments:
     args.pretrained_encoder_path: str, the path of the pretrained encoder
-    args.
+    args.model_name: str, the model name (huggingface repo name)
+    args.gpu_id: int, if None, use cpu
+    args.query_encoder_batch_size : int
+    args.qid_list_string: List[str], the list of query ids
+    args.retrieval_query_list: List[str], the list of queries
+
+    Returns:
+    embeddings: np.array, the embeddings of queries. shape: (num_query, emb_dim)
+    embedding2id: List[str], the query ids of the embeddings. shape: (num_query,)
     '''
 
     set_seed(args)
-    config = RobertaConfig.from_pretrained(args.pretrained_encoder_path)
-    tokenizer = RobertaTokenizer.from_pretrained(args.pretrained_encoder_path, do_lower_case=True)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = ANCE.from_pretrained(args.pretrained_encoder_path, config=config).to(device)
+    # laod query encoder and tokenizer
+    if model_name == "ance":
+        config = RobertaConfig.from_pretrained(args.pretrained_encoder_path)
+        tokenizer = RobertaTokenizer.from_pretrained(args.pretrained_encoder_path, do_lower_case=True)
+        query_device = f"cuda:{gpu_id}" if type(args.gpu_id) == int else "cpu"
+        model = ANCE.from_pretrained(args.pretrained_encoder_path, config=config).to(query_device)
 
     # test dataset/dataloader
-    args.batch_size = args.per_gpu_test_batch_size * max(1, args.n_gpu)
-    logger.info("Buidling test dataset...")
-    #test_dataset = Retrieval_topiocqa(args, tokenizer, args.test_file_path)
-    test_dataset = Search_q_Retrieval(args, tokenizer, args.test_file_path)
-    test_loader = DataLoader(test_dataset, 
-                                batch_size = args.batch_size, 
-                                shuffle=False, 
-                                collate_fn=test_dataset.get_collate_fn(args))
-    
+    print("Buidling test dataset...")
+    test_dataset = Retrieval_trec(
+        tokenizer = tokenizer,
+        retrieval_query_list = args.retrieval_query_list,
+        qid_list_string = args.qid_list_string
+        )
+    test_loader = DataLoader(
+        test_dataset, 
+        batch_size = args.query_encoder_batch_size, 
+        shuffle=False, 
+        collate_fn=test_dataset.get_collate_fn()
+        )
 
-    logger.info("Generating query embeddings for testing...")
+    print("Generating query embeddings for testing...")
     model.zero_grad()
 
     embeddings = []
     embedding2id = []
 
     with torch.no_grad():
-        for batch in tqdm(test_loader, disable=args.disable_tqdm):
+        for batch in tqdm(test_loader, desc="generating query embeddings"):
             model.eval()
-            bt_sample_ids = batch["bt_sample_ids"] # question id
-            # test type
-            if args.test_type == "rewrite":
-                input_ids = batch["bt_rewrite"].to(args.device)
-                input_masks = batch["bt_rewrite_mask"].to(args.device)
-            elif args.test_type == "raw":
-                input_ids = batch["bt_raw_query"].to(args.device)
-                input_masks = batch["bt_raw_query_mask"].to(args.device)
-            elif args.test_type == "convq":
-                input_ids = batch["bt_conv_q"].to(args.device)
-                input_masks = batch["bt_conv_q_mask"].to(args.device)
-            elif args.test_type == "convqa":
-                input_ids = batch["bt_conv_qa"].to(args.device)
-                input_masks = batch["bt_conv_qa_mask"].to(args.device)
-            elif args.test_type == "convqp":
-                input_ids = batch["bt_conv_qp"].to(args.device)
-                input_masks = batch["bt_conv_qp_mask"].to(args.device)
-            else:
-                raise ValueError("test type:{}, has not been implemented.".format(args.test_type))
+            bt_sample_ids = batch["qid"] # question id
+            input_ids = batch["input_ids"].to(query_device)
+            input_masks = batch["attention_mask"].to(query_device)
             
             query_embs = model(input_ids, input_masks)
             query_embs = query_embs.detach().cpu().numpy()
@@ -280,16 +279,29 @@ def get_test_query_embedding(args):
     return embeddings, embedding2id
 
 
-def output_test_res(query_embedding2id,
-                    retrieved_scores_mat, # score_mat: score matrix, test_query_num * (top_k * block_num)
-                    retrieved_pid_mat, # pid_mat: corresponding passage ids
-                    #offset2pid,
-                    args):
+def get_dense_ranking_list(
+    query_embedding2id,
+    retrieved_scores_mat, 
+    retrieved_pid_mat, 
+    #offset2pid,
+    args):
+
+    '''
+    Arguments:
+    query_embedding2id: List[str], the query ids of the embeddings. shape: (num_query,)
+    retrieved_scores_mat: np.array, the scores of retrieved passages. shape: (num_query, topk*2)
+    retrieved_pid_mat: np.array, the passage ids of the retrieved passages. shape: (num_query, topk*2)
+    args.retrieval_top_k
+
+
+
+    ''' 
     
 
     qids_to_ranked_candidate_passages = {}
-    topN = args.top_k
+    topN = args.retrieval_top_k
 
+    # for each query
     for query_idx in range(len(retrieved_pid_mat)):
         seen_pid = set()
         query_id = query_embedding2id[query_idx]

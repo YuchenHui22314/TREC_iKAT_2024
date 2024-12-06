@@ -619,6 +619,21 @@ def evaluate(
             - example: ["map", "ndcg_cut.10", "P.5"]
         metrics_list_key_form (List[str]): list of metrics in key form (change . to _)
             - example: ["map", "ndcg_cut_10", "P_5"]
+    
+    Returns:
+        query_metrics_dic (dict): metrics for each query
+            - example:          
+                query_metrics_dic = {       
+                    "qid1" : {"ndcg_cut_10" : 0.1, "map" : 0.2},
+                    "qid2" : {"ndcg_cut_10" : 0.2, "map" : 0.3},
+                    "qid3" : {"ndcg_cut_10" : 0.3, "map" : 0.4},
+                }
+        averaged_metrics (dict): averaged metrics
+            - example:
+                averaged_metrics = {
+                    "ndcg_cut_10" : 0.1,
+                    "map" : 0.2,
+                }
     '''
 
     # read qrels
@@ -641,11 +656,6 @@ def evaluate(
         "ndcg_cut_10" : [0.1, 0.2, 0.3, 0.4, 0.5], 
         "map" : [0.1, 0.2, 0.3, 0.4, 0.5],
             }
-    query_metrics_dic = {
-        "qid1" : {"ndcg_cut_10" : 0.1, "map" : 0.2},
-        "qid2" : {"ndcg_cut_10" : 0.2, "map" : 0.3},
-        "qid3" : {"ndcg_cut_10" : 0.3, "map" : 0.4},
-    }
     '''
     metrics = {metric : [metrics[metric] for metrics in query_metrics_dic.values()] for metric in metrics_list_key_form}   
 
