@@ -970,81 +970,66 @@ class QR_qrecc(Dataset):
 
         return collate_fn
 
-class Retrieval_ikat(Dataset):
+
+class Retrieval_trec(Dataset):
     def __init__(
         self, 
-        args, 
         tokenizer, 
         retrieval_query_list, 
-        qid_list_string, 
+        qid_list_string,
         collection=None
         ):
-        self.examples = []
-        
-        with open(filename, encoding="utf-8") as f:
-            data = f.readlines()
 
-        n = len(data)
+        self.queries = retrieval_query_list
+        self.qids = qid_list_string 
+        self.tokenizer = tokenizer
 
-        for i in tqdm(trange(n)):
-            record = json.loads(data[i])
-            # <CUR> oracle_query <CTX> cq_{k-1} <SEP> ... cq_{1} (<BOS>)
-            sample_id = record['sample_id']
-            flat_concat = []
-            cur_utt_text = record["cur_utt_text"]
-            ctx_utts_text = record["ctx_utts_text"]
-
-                
-            cur_utt = tokenizer.encode(cur_utt_text, add_special_tokens = True, max_length = args.max_query_length)
-            flat_concat.extend(cur_utt)
-            for j in range(len(ctx_utts_text) - 1, -1, -1):
-                max_length = 64
-                if args.use_prefix and first_context:
-                    #ctx_utts_text[j] = "The historical information-seeking dialog context is:" + ctx_utts_text[j]
-                    ctx_utts_text[j] = "[Context]: " + ctx_utts_text[j]
-                    first_context = False
-                utt = tokenizer.encode(ctx_utts_text[j], add_special_tokens=True, max_length=max_length, truncation=True) # not remove [CLS]
-                if len(flat_concat) + len(utt) > args.max_concat_length:
-                    flat_concat += utt[:args.max_concat_length - len(flat_concat) - 1] + [utt[-1]]    # must ended with [SEP]
-                    break
-                else:
-                    flat_concat.extend(utt) 
-
-            flat_concat, flat_concat_mask = padding_seq_to_same_length(flat_concat, max_pad_length = args.max_concat_length)
-            self.examples.append([sample_id, flat_concat, flat_concat_mask, cur_utt_text, ctx_utts_text])
-    
     def __len__(self):
-        return len(self.examples)
+        return len(self.queries)
 
-    def __getitem__(self, item):
-        return self.examples[item]
-
+    def __getitem__(self, index):
+        qid = self.qids[index]
+        query = self.queries[index]
+        
+        encoded_query = self.tokenizer(
+            query, 
+            add_special_tokens = True, 
+            padding = "longest",
+            return_tensors = "pt",
+            max_length = 512)
+        
+        return {
+            "qid": qid,
+            "query": query,
+            "input_ids": encoded_query["input_ids"].squeeze(),
+            "attention_mask": encoded_query["attention_mask"].squeeze(),
+        }
+            
+    
     @staticmethod
-    def get_collate_fn(args):
+    def get_collate_fn():
         
         def collate_fn(batch: list):
-            collated_dict = {"bt_sample_ids": [],
-                             "bt_conv_qa": [],
-                             "bt_conv_qa_mask": [],
-                             "bt_cur_utt_text":[],
-                             "bt_ctx_utts_text":[],
-                             "bt_oracle_utt_text":[],
-                            }
-            for example in batch:
-                collated_dict["bt_sample_ids"].append(example[0])
-                collated_dict["bt_conv_qa"].append(example[1])
-                collated_dict["bt_conv_qa_mask"].append(example[2])
-                collated_dict["bt_cur_utt_text"].append(example[3])
-                collated_dict["bt_ctx_utts_text"].append(example[4])
-
-            not_need_to_tensor_keys = set(["bt_sample_ids", "bt_cur_utt_text", "bt_ctx_utts_text", "bt_cur_response_text", "bt_oracle_utt_text"])
-
-            for key in collated_dict:
-                if key not in not_need_to_tensor_keys:
-                    collated_dict[key] = torch.tensor(collated_dict[key], dtype=torch.long)
-            return collated_dict
+            # padding
+            input_ids = torch.nn.utils.rnn.pad_sequence(
+                [torch.tensor(item["input_ids"]) for item in batch],
+                batch_first = True,
+                padding_value = 0
+            )
+            attention_mask = torch.nn.utils.rnn.pad_sequence(
+                [torch.tensor(item["attention_mask"]) for item in batch],
+                batch_first = True,
+                padding_value = 0
+            )
+            return {
+                "qid": [item["qid"] for item in batch],
+                "query": [item["query"] for item in batch],
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+            }
 
         return collate_fn
+
 class QR_cast(Dataset):
     def __init__(self, args, tokenizer, filename, collection=None):
         self.examples = []

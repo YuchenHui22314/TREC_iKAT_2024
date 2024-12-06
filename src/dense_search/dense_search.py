@@ -17,7 +17,7 @@ from transformers import RobertaConfig, RobertaForSequenceClassification, Robert
 
 from models import ANCE
 from utils import check_dir_exist_or_build, pstore, pload, set_seed, get_optimizer
-from data_format import padding_seq_to_same_length, Retrieval_qrecc, Retrieval_topiocqa, Search_q_Retrieval, Retrieval_ikat
+from data_format import padding_seq_to_same_length, Retrieval_qrecc, Retrieval_topiocqa, Search_q_Retrieval, Retrieval_trec
 
 '''
 Test process, perform dense retrieval on collection (e.g., MS MARCO):
