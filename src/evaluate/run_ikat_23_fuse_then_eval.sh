@@ -10,17 +10,26 @@ collection="ClueWeb_ikat"
 topics="ikat_23_test"
 input_query_path="../../data/topics/ikat23/ikat_2023_test.json"
 # use /part/02 for octal30, /part/01 for octal31
-index_dir_path="/part/02/Tmp/yuchen/clueweb22b_ikat23_fengran_sparse_index_2/" # Please use local disk index to achieve the fastest access
-#index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
+#index_dir_path="/part/02/Tmp/yuchen/clueweb22b_ikat23_fengran_sparse_index_2/" # Please use local disk index to achieve the fastest access
+index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/" # Please use local disk index to achieve the fastest access
 output_dir_path="../../results"
 qrel_file_path="../../data/qrels/ikat_23_qrel.txt"
+seed=42
 ###############
 ## Retrieval
 ###############
-retrieval_model="BM25" # can be "BM25", "ance", "dpr", "splade"
+# can be :"none","BM25", "ance", "dpr", "splade". If "none", read ranking list from given_ranking_list_path
+retrieval_model="ance" 
+retrieval_top_k=1000
 #Dense
-dense_query_encoder_path="castorini/ance-msmarco-passage"
+dense_query_encoder_path="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
 query_encoder_batch_size=200
+dense_index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged"
+faiss_n_gpu=4
+embed_dim=768
+tempmem=-1
+query_gpu_id=3
+passage_block_num=3 # 116 for ikat
 #BM25
 bm25_k1=0.9
 bm25_b=0.4
@@ -32,8 +41,8 @@ original_query_weight=0.5
 ###############
 ##### fusion
 ###############
-#'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-fusion_type='per_query_personalize_level' 
+#'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
+fusion_type='none' 
 QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 # if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score
 fuse_weights=(1 0.1 0.4)
@@ -43,6 +52,7 @@ per_query_weight_max_value=1.2
 ###############
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k, monot5_large, monot5_large_10k, monot5_3b, monot5_3b_10k,
 reranker="none"
+rerank_top_k=50
 cache_dir="/data/rech/huiyuche/huggingface"
 # on octal31: 67 for monot5_base, 10 for rankllama, 50 for monot5_large, 10 for t5_3b
 # on octal40: TBD
@@ -59,10 +69,6 @@ step=1
 ########################
 generation_model="none"
 generation_prompt="none"
-
-#number of documents to consider at each step.
-retrieval_top_k=1000
-rerank_top_k=50
 generation_top_k=3
 
 metrics="map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
@@ -91,7 +97,8 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw")
 #retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
 #retrieval_query_types=("round_robin_gpt-4o_3_lists")
-retrieval_query_types=("personalize_level_3_lists_tune") 
+#retrieval_query_types=("personalize_level_3_lists_tune") 
+retrieval_query_types=("oracle") 
 reranking_query_types=("none")
 generation_query_types=("none")
 
@@ -109,12 +116,21 @@ function run_evaluation() {
     --collection $collection \
     --topics $topics \
     --input_query_path $input_query_path \
-    --index_dir_path $index_dir_path \
+    --sparse_index_dir_path $index_dir_path \
     --output_dir_path $output_dir_path \
     --qrel_file_path $qrel_file_path \
+    --seed $seed \
     --retrieval_model $retrieval_model \
     --cache_dir $cache_dir \
     --dense_query_encoder_path $dense_query_encoder_path \
+    --query_encoder_batch_size $query_encoder_batch_size \
+    --dense_index_dir_path $dense_index_dir_path \
+    --faiss_n_gpu $faiss_n_gpu \
+    --use_gpu_for_faiss\
+    --embed_dim $embed_dim \
+    --tempmem $tempmem \
+    --query_gpu_id $query_gpu_id \
+    --passage_block_num $passage_block_num \
     --reranker $reranker \
     --rerank_batch_size $rerank_batch_size \
     --given_ranking_list_path $given_ranking_list_path \
@@ -150,6 +166,7 @@ function run_evaluation() {
 }
 
     # --save_results_to_object \
+    # --use_pyserini_dense_search\
 
 
 for retrieval_query_type in "${retrieval_query_types[@]}"

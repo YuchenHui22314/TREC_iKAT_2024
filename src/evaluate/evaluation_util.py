@@ -15,6 +15,11 @@ from dataclasses import asdict
 import random
 import pickle
 
+from pyserini.search.lucene import LuceneSearcher
+from pyserini.search import FaissSearcher
+from pyserini.search import get_topics, get_qrels
+import pytrec_eval
+
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
 
@@ -29,6 +34,8 @@ from topics import (
     )
 
 from rank_gpt import run_retriever, sliding_windows
+
+from dense_search.dense_search import dense_search
 
 from rerank import (
     load_rankllama, 
@@ -46,10 +53,6 @@ from response_generation import (
     generate_responses
     ) 
 
-from pyserini.search.lucene import LuceneSearcher
-from pyserini.search import FaissSearcher
-from pyserini.search import get_topics, get_qrels
-import pytrec_eval
 
 class PyScoredDoc:
     def __init__(self, docid: str, score: float):
@@ -149,6 +152,7 @@ def get_query_list(args):
 def search(
     args: Any
     ) -> Dict[str, List[PyScoredDoc]]:
+
     """
     Perform search and retrieval using different models and rerankers.
 
@@ -169,7 +173,7 @@ def search(
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
         - args.given_ranking_list_path: str
-        - args.index_dir_path: str
+        - args.seed: int, the random seed
     # Fusion
         - args.fusion_type: str
         - args.QRs_to_rank: List[str]
@@ -177,18 +181,29 @@ def search(
         - args.fusion_query_lists: List[List[str]]
         - args.per_query_weight_max_value: float
         - args.qid_personalized_level_dict: Dict[str, str]
-    # Sparse
+    # Retrieval
         - args.retrieval_model: str
-        - args.retrieval_top_k: int
-        - args.bm25_k1: float
-        - args.bm25_b: float
-        - args.qe_type: str
-        - args.fb_terms: int
-        - args.fb_docs: int
-        - args.original_query_weight: float
-    # Dense
-        - args.dense_query_encoder_path: str
-        - args.index_dir_path: str
+        - args.retrieval_top_k: int, the number of topk passages to return
+        # Sparse
+            - args.sparse_index_dir_path: str
+            - args.bm25_k1: float
+            - args.bm25_b: float
+            - args.qe_type: str
+            - args.fb_terms: int
+            - args.fb_docs: int
+            - args.original_query_weight: float
+        # Dense
+            - args.use_pyserini_dense_search: bool
+            - args.dense_query_encoder_path: str
+            - args.query_encoder_batch_size : int
+            - args.dense_index_dir_path: str
+            - args.faiss_n_gpu: int, the number of gpus
+            - args.use_gpu_for_faiss: bool, whether to use gpu for faiss
+            - args.query_gpu_id: int, if -1, use cpu
+            - args.embed_dim: int, the dimension of embeddings
+            - args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
+            - args.query_gpu_id: int, Which GPU should the query encoder use. if -1, use cpu
+            - args.passage_block_num: int, the number of passage blocks
     # Reranker
         - args.reranker: str
         - args.rerank_top_k: int
@@ -211,7 +226,7 @@ def search(
         assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank or --run_from_generate is true, because we do not do retrieval/retrieval+reranking in these cases."
 
         # even we do not search, we have to get access to the index (raw documents via a searcher)
-        searcher = LuceneSearcher(args.index_dir_path)
+        searcher = LuceneSearcher(args.sparse_index_dir_path)
         # load the ranking list
         with open(args.given_ranking_list_path, "r") as f:
             run = pytrec_eval.parse_run(f)
@@ -229,6 +244,8 @@ def search(
     # No fusion
     if args.fusion_type == "none":
         hits = Retrieval(args)
+
+
     # fusion 1: linear weighted score
     elif args.fusion_type == "linear_weighted_score":
         assert len(args.QRs_to_rank) -1 == len(args.fuse_weights), "The number of QRs to fuse should be one more than the number of weights."
@@ -364,9 +381,9 @@ def Retrieval(args):
     All required arguments are:
         - args.retrieval_query_list: List[str]
         - args.qid_list_string: List[str]
-        - args.index_dir_path: str
     # Sparse
         - args.retrieval_model: str
+        - args.sparse_index_dir_path: str
         - args.retrieval_top_k: int
         - args.bm25_k1: float
         - args.bm25_b: float
@@ -375,13 +392,25 @@ def Retrieval(args):
         - args.fb_docs: int
         - args.original_query_weight: float
     # Dense
+        - args.use_pyserini_dense_search: bool
         - args.dense_query_encoder_path: str
+        - args.query_encoder_batch_size : int
+        - args.dense_index_dir_path: str
+        - args.faiss_n_gpu: int, the number of gpus
+        - args.use_gpu: bool, whether to use gpu for faiss
+        - args.embed_dim: int, the dimension of embeddings
+        - args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
+        - args.query_gpu_id: int, Which GPU should the query encoder use. if -1, use cpu
+        - args.passage_block_num: int, the number of passage blocks
+
+    Returns:
+        hits (Dict[str, List[Any]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score.
     '''
 
     # sparse search
     if args.retrieval_model == "BM25":
         print("BM 25 searching...")
-        searcher = LuceneSearcher(args.index_dir_path)
+        searcher = LuceneSearcher(args.sparse_index_dir_path)
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
 
         # rm3 pseudo relevance feedback
@@ -398,12 +427,15 @@ def Retrieval(args):
     # dense search
     elif args.retrieval_model in ["ance", "dpr"]:
         print(f"{args.retrieval_model} searching...")
-        searcher = FaissSearcher(
-            args.index_dir_path,
-            args.dense_query_encoder_path 
-        )
-        hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
-    
+
+        if args.use_pyserini_dense_search:
+            searcher = FaissSearcher(
+                args.dense_index_dir_path,
+                args.dense_query_encoder_path 
+            )
+            hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
+        else:
+            hits = dense_search(args)
 
     ##############################
     # TODO: add splade
@@ -431,7 +463,7 @@ def rerank(hits, args):
         - args.reranker: str
         - args.rerank_top_k: int
         - args.qid_list_string: List[str]: List of query IDs.
-        - args.index_dir_path: str path to the pyserini index.
+        - args.sparse_index_dir_path: str path to the pyserini index.
         - args.rerank_batch_size: int batch size for reranking.
         # RankGPT
             - args.step: int
@@ -447,10 +479,9 @@ def rerank(hits, args):
     # generate a qid-reranking_query dictionary
     reranking_query_dic = {qid: reranking_query for qid, reranking_query in zip(args.qid_list_string, args.reranking_query_list)}
 
-    searcher = LuceneSearcher(args.index_dir_path)
+    searcher = LuceneSearcher(args.sparse_index_dir_path)
 
     if args.reranker == "rankgpt":
-
 
         # generate input format required by rankgpt
         rank_gpt_list, _ = hits_2_rankgpt_list(searcher, reranking_query_dic, hits)

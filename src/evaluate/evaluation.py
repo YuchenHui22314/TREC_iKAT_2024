@@ -50,25 +50,38 @@ def get_args():
 
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
                         choices=["ClueWeb_ikat"])
-
     parser.add_argument("--topics", type=str, default="ikat_23_test",
                         choices = ["ikat_23_test", "ikat_24_test"])
-
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
-
-    parser.add_argument("--index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
-
     parser.add_argument("--output_dir_path", type=str, default="../../results")
-
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
-    
+    parser.add_argument("--seed", type=int, default=42)
+
+    ###################
+    #### retrieval ####
+    ###################
+
     parser.add_argument("--retrieval_model", type=str, default="BM25",
                         choices= ["none","BM25", "ance", "dpr", "splade", "repllama"])
-
-    # where is dense encoder
+    parser.add_argument("--retrieval_top_k", type=int, default="1000")
+    # splade
+    parser.add_argument("--splade_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
+    
+    # dense
+    parser.add_argument("--use_pyserini_dense_search", action="store_true", help="if we will use pyserini dense search or our own dense search implementation.")
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage",
                         help="should be a huggingface face format folder/link to a model") 
+    parser.add_argument("--query_encoder_batch_size", type=int, default=200)
+    parser.add_argument("--dense_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
+    parser.add_argument("--faiss_n_gpu", type=int, default=4)
+    parser.add_argument("--use_gpu_for_faiss", action="store_true")
+    parser.add_argument("--embed_dim", type=int, default=768)
+    parser.add_argument("--tempmem", type=int, default=-1)
+    parser.add_argument("--query_gpu_id", type=int, default=1)
+    parser.add_argument("--passage_block_num", type=int, default=116)
+
     # BM25 parameters
+    parser.add_argument("--sparse_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
 
@@ -80,7 +93,9 @@ def get_args():
     parser.add_argument("--original_query_weight", type=float, default="0.5", help="RM3 parameter for weight to assign to the original query.") 
 
 
+    ###################
     #### Fusion ####
+    ###################
     parser.add_argument("--fusion_type", type=str, default="none",
                         choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level'])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
@@ -90,15 +105,17 @@ def get_args():
     parser.add_argument("--per_query_weight_max_value", type=float, default=0.75)
 
 
+    ###################
     #### rerank ####
+    ###################
     parser.add_argument("--reranker", type=str, default="none",
                         choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k', 'monot5_large', 'monot5_large_10k',
                         "monot5_3b",
                         "monot5_3b_10k",
                         ])
+    parser.add_argument("--rerank_top_k", type=int, default="50")
     # hugging_face cache_dir
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
-    ## TODO: unify -- cache_dir and --dense_query_encoder_path
 
     # on octal31: 67 for monot5_base, 10 for rankllama 
     # on octal40: TBD
@@ -119,12 +136,10 @@ def get_args():
                         choices=['none','gpt-4o-2024-08-06'])
     parser.add_argument("--generation_prompt", type=str, default="none",
                         choices=['none','raw'])
-
-    # distinguish retrieval topk and rerank topk, as well as generation top k
-    parser.add_argument("--retrieval_top_k", type=int, default="1000")
-    parser.add_argument("--rerank_top_k", type=int, default="50")
     parser.add_argument("--generation_top_k", type=int, default="3")
 
+
+    # after evaluation
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.50,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.50,recall.100,recall.1000")
 
@@ -249,13 +264,8 @@ if __name__ == "__main__":
     ###############
     # check args
     ###############
-
-    assert os.path.exists(args.input_query_path), "Input query file not found"
-    assert os.path.exists(args.index_dir_path), "Index dir not found"
     assert os.path.exists(args.qrel_file_path), "Qrel file not found"
     assert os.path.exists(args.output_dir_path), "Output dir not found"
-
-    
 
     #########################################################
     #  generate an identifiable name for current run
@@ -349,7 +359,8 @@ if __name__ == "__main__":
         del args.reranking_query_list
         del args.fusion_query_lists
         del args.qid_list_string
-        del args.qid_personalized_level_dict
+        if "qid_personalized_level_dict" in args:
+            del args.qid_personalized_level_dict
 
         ##########################
         # response generation TODO

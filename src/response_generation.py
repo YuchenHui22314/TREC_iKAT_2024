@@ -58,7 +58,7 @@ def generate_responses(
 
     response_dict = {}
     top_k = args.generation_top_k
-    searcher = LuceneSearcher(args.index_dir_path)
+    searcher = LuceneSearcher(args.sparse_index_dir_path)
 
     for qid, hit_list in tqdm(hits.items(), desc="Generating responses", total = len(hits)):
 

@@ -15,32 +15,33 @@ import numpy as np
 import pytrec_eval
 from transformers import RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer
 
-from models import ANCE
-from utils import check_dir_exist_or_build, pstore, pload, set_seed, get_optimizer
-from data_format import padding_seq_to_same_length, Retrieval_qrecc, Retrieval_topiocqa, Search_q_Retrieval, Retrieval_trec
 import sys
 sys.path.append('../')
+from dense_search.models import ANCE
+from dense_search.utils import check_dir_exist_or_build, pstore, pload, set_seed, get_optimizer
+from dense_search.data_format import padding_seq_to_same_length, Retrieval_qrecc, Retrieval_topiocqa, Search_q_Retrieval, Retrieval_trec
 
-'''
-Test process, perform dense retrieval on collection (e.g., MS MARCO):
-2. establish index with Faiss on GPU for fast dense retrieval
-3. load the model, build the test query dataset/dataloader, and get the query embeddings. 
-4. iteratively searched on each passage block one by one to got the retrieved scores and passge ids for each query.
-5. merge the results on all pasage blocks
-6. output the result
-'''
+
+
+class PyScoredDoc:
+    def __init__(self, docid: str, score: float):
+        self.docid = docid
+        self.score = score
+    
+    def __repr__(self):
+        return f"docid: {self.docid}, score: {self.score}"
 
 def build_faiss_index(args):
     '''
     Build the Faiss index for dense retrieval.
-    args.n_gpu: int, the number of gpus
-    args.use_gpu: bool, whether to use gpu 
+    args.faiss_n_gpu: int, the number of gpus
+    args.use_gpu_for_faiss: bool, whether to use gpu 
     args.embed_dim: int, the dimension of embeddings
-    args.tempmem: int, the temporary memory for Faiss index
+    args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
     '''
     print("Building index...")
     # ngpu = faiss.get_num_gpus()
-    ngpu = args.n_gpu
+    ngpu = args.faiss_n_gpu
     gpu_resources = []
     tempmem = args.tempmem
 
@@ -52,7 +53,8 @@ def build_faiss_index(args):
 
     cpu_index = faiss.IndexFlatIP(args.embed_dim)  
     index = None
-    if args.use_gpu:
+    if args.use_gpu_for_faiss:
+        print("Using GPU for Faiss")
         co = faiss.GpuMultipleClonerOptions()
         co.shard = True
         co.usePrecomputed = False
@@ -112,8 +114,8 @@ def search_one_by_one_with_faiss(passage_block_num, passge_embeddings_dir, index
         except:
             raise LoadError    
 
-        logger.info('passage embedding shape: ' + str(passage_embedding.shape))
-        logger.info("query embedding shape: " + str(query_embeddings.shape))
+        print('passage embedding shape: ' + str(passage_embedding.shape))
+        print("query embedding shape: " + str(query_embeddings.shape))
         index.add(passage_embedding)
 
 
@@ -168,7 +170,7 @@ def search_one_by_one_with_faiss(passage_block_num, passge_embeddings_dir, index
             merged_candidate_matrix = candidate_matrix
             continue
         
-        # if not first bloack, merge
+        # if not first block, merge
         ############################
         # Merge block results
         ############################
@@ -221,9 +223,9 @@ def get_test_query_embedding(args):
     Load the model, build the test query dataset/dataloader, and get the query embeddings.
 
     Arguments:
-    args.pretrained_encoder_path: str, the path of the pretrained encoder
-    args.model_name: str, the model name (huggingface repo name)
-    args.gpu_id: int, if None, use cpu
+    args.dense_query_encoder_path: str, the path of the pretrained encoder
+    args.retrieval_model: str, the model name 
+    args.query_gpu_id: int, if None, use cpu
     args.query_encoder_batch_size : int
     args.qid_list_string: List[str], the list of query ids
     args.retrieval_query_list: List[str], the list of queries
@@ -233,13 +235,13 @@ def get_test_query_embedding(args):
     embedding2id: List[str], the query ids of the embeddings. shape: (num_query,)
     '''
 
-    set_seed(args)
+    set_seed(args.seed, True)
     # laod query encoder and tokenizer
-    if model_name == "ance":
-        config = RobertaConfig.from_pretrained(args.pretrained_encoder_path)
-        tokenizer = RobertaTokenizer.from_pretrained(args.pretrained_encoder_path, do_lower_case=True)
-        query_device = f"cuda:{gpu_id}" if type(args.gpu_id) == int else "cpu"
-        model = ANCE.from_pretrained(args.pretrained_encoder_path, config=config).to(query_device)
+    if args.retrieval_model == "ance":
+        config = RobertaConfig.from_pretrained(args.dense_query_encoder_path)
+        tokenizer = RobertaTokenizer.from_pretrained(args.dense_query_encoder_path, do_lower_case=True)
+        query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0  else "cpu"
+        model = ANCE.from_pretrained(args.dense_query_encoder_path, config=config).to(query_device)
 
     # test dataset/dataloader
     print("Buidling test dataset...")
@@ -284,22 +286,23 @@ def get_dense_ranking_list(
     retrieved_scores_mat, 
     retrieved_pid_mat, 
     #offset2pid,
-    args):
+    retrieval_top_k
+    ):
 
     '''
     Arguments:
     query_embedding2id: List[str], the query ids of the embeddings. shape: (num_query,)
     retrieved_scores_mat: np.array, the scores of retrieved passages. shape: (num_query, topk*2)
     retrieved_pid_mat: np.array, the passage ids of the retrieved passages. shape: (num_query, topk*2)
-    args.retrieval_top_k
+    retrieval_top_k: int, the number of topk passages to return
 
-
+    Returns:
+    PyScoredDoc_list: Dict[qid, list_of(PyScoredDoc)], the ranking list of passages for each query
 
     ''' 
-    
-
     qids_to_ranked_candidate_passages = {}
-    topN = args.retrieval_top_k
+    topN = retrieval_top_k
+
 
     # for each query
     for query_idx in range(len(retrieved_pid_mat)):
@@ -310,145 +313,102 @@ def get_dense_ranking_list(
         top_ann_score = retrieved_scores_mat[query_idx].copy()
         selected_ann_idx = top_ann_pid[:topN]
         selected_ann_score = top_ann_score[:topN].tolist()
-        rank = 0
 
         if query_id in qids_to_ranked_candidate_passages:
             pass
         else:
-            tmp = [(0, 0)] * topN
+            ranking_list = []
             #tmp_ori = [0] * topN
-            qids_to_ranked_candidate_passages[query_id] = tmp
+            qids_to_ranked_candidate_passages[query_id] = ranking_list
         
         for pred_pid, score in zip(selected_ann_idx, selected_ann_score):
             #pred_pid = offset2pid[idx]
-
+            scored_doc = PyScoredDoc(str(pred_pid), float(score))
             if not pred_pid in seen_pid:
-                qids_to_ranked_candidate_passages[query_id][rank] = (pred_pid, score)
-                rank += 1
+                qids_to_ranked_candidate_passages[query_id].append(scored_doc)
                 seen_pid.add(pred_pid)
         
-
-    # for case study and more intuitive observation
-    logger.info('Loading query and passages\' real text...')
-    
         
-    # all passages
-    # all_passages = load_collection(args.passage_collection_path)
-
-    # write to file
-    logger.info('begin to write the output...')
-
-    output_trec_file = oj(args.qrel_output_path, args.output_trec_file)
-    with open(output_trec_file, "w") as g:
-        for qid, passages in qids_to_ranked_candidate_passages.items():
-            #query = qid2query[qid]
-            rank_list = []
-            for i in range(topN):
-                pid, score = passages[i]
-                g.write(str(qid) + " Q0 " + str(pid) + " " + str(i + 1) + " " + str(-i - 1 + 200) + ' ' + str(score) + " ance\n")
-
-    logger.info("output file write ok at {}".format(output_trec_file))
-    trec_res = print_trec_res(output_trec_file, args.trec_gold_qrel_file_path, args.rel_threshold)
-    return trec_res
-
-def print_trec_res(run_file, qrel_file, rel_threshold=1):
-    with open(run_file, 'r' )as f:
-        run_data = f.readlines()
-    with open(qrel_file, 'r') as f:
-        qrel_data = f.readlines()
     
-    qrels = {}
-    qrels_ndcg = {}
-    runs = {}
-    
-    for line in qrel_data:
-        line = line.split('\t')
-        query = line[0]
-        passage = line[2]
-        rel = int(line[3])
-        if query not in qrels:
-            qrels[query] = {}
-        if query not in qrels_ndcg:
-            qrels_ndcg[query] = {}
+    return qids_to_ranked_candidate_passages 
 
-        # for NDCG
-        qrels_ndcg[query][passage] = rel
-        # for MAP, MRR, Recall
-        if rel >= rel_threshold:
-            rel = 1
-        else:
-            rel = 0
-        qrels[query][passage] = rel
-    
-    for line in run_data:
-        line = line.split(' ')
-        query = line[0].replace('-','_')
-        #breakpoint()
-        passage = line[2]
-        rel = int(line[4])
-        if query not in runs:
-            runs[query] = {}
-        runs[query][passage] = rel
-    
 
-    # pytrec_eval eval
-    evaluator = pytrec_eval.RelevanceEvaluator(qrels, {"map", "recip_rank", "recall.5", "recall.10", "recall.20", "recall.100"})
-    res = evaluator.evaluate(runs)
-    map_list = [v['map'] for v in res.values()]
-    mrr_list = [v['recip_rank'] for v in res.values()]
-    recall_100_list = [v['recall_100'] for v in res.values()]
-    recall_20_list = [v['recall_20'] for v in res.values()]
-    recall_10_list = [v['recall_10'] for v in res.values()]
-    recall_5_list = [v['recall_5'] for v in res.values()]
 
-    evaluator = pytrec_eval.RelevanceEvaluator(qrels_ndcg, {"ndcg_cut.3"})
-    res = evaluator.evaluate(runs)
-    ndcg_3_list = [v['ndcg_cut_3'] for v in res.values()]
-
-    res = {
-            #"MAP": np.average(map_list),
-            "MRR": round(np.average(mrr_list)*100, 5),
-            "NDCG@3": round(np.average(ndcg_3_list)*100, 5), 
-            #"Recall@5": round(np.average(recall_5_list)*100, 5),
-            "Recall@10": round(np.average(recall_10_list)*100, 5),
-            #"Recall@20": round(np.average(recall_20_list)*100, 5),
-            "Recall@100": round(np.average(recall_100_list)*100, 5),
-        }
-
-    
-    logger.info("---------------------Evaluation results:---------------------")    
-    logger.info(res)
-    return res
-
-def gen_metric_score_and_save(args, index, query_embeddings, query_embedding2id):
+def calculate_score_and_get_rakning_list(args, index, query_embeddings, query_embedding2id):
     # score_mat: score matrix, test_query_num * (top_n * block_num)
     # pid_mat: corresponding passage ids
+    '''
+    Arguments:
+    args.passage_block_num: int, the number of passage blocks
+    args.dense_index_dir_path: str, the directory of passage embedding blocks
+    args.retrieval_top_k: int, the number of topk passages to return
+    index: faiss index
+    query_embeddings: (num_query, emb_dim) the embeddings of queries
+    query_embedding2id: List[str], the query ids of the embeddings. shape: (num_query,)
+    
+    Returns:
+    PyScoredDoc_dict: Dict[qid, list_of(PyScoredDoc)], the ranking list of passages for each query
+    '''
+
     retrieved_scores_mat, retrieved_pid_mat = search_one_by_one_with_faiss(
-                                                     args,
-                                                     args.passage_embeddings_dir_path, 
+                                                     args.passage_block_num,
+                                                     args.dense_index_dir_path, 
                                                      index, 
                                                      query_embeddings, 
-                                                     args.top_k) 
+                                                     args.retrieval_top_k) 
 
     #with open(args.passage_offset2pid_path, "rb") as f:
     #    offset2pid = pickle.load(f)
     
-    output_test_res(query_embedding2id,
-                    retrieved_scores_mat,
-                    retrieved_pid_mat,
-                    #offset2pid,
-                    args)
-
-
-def main():
-    args = get_args()
-    set_seed(args) 
+    PyScoredDoc_dict = get_dense_ranking_list(
+        query_embedding2id,
+        retrieved_scores_mat,
+        retrieved_pid_mat,
+        #offset2pid,
+        args.retrieval_top_k)
     
+    return PyScoredDoc_dict
+
+
+def dense_search(args):
+
+    '''
+    Perform dense retrieval on collection (e.g., MS MARCO):
+    2. establish index with Faiss on GPU for fast dense retrieval
+    3. load the model, build the test query dataset/dataloader, and get the query embeddings. 
+    4. iteratively searched on each passage block one by one to got the retrieved scores and passge ids for each query.
+    5. merge the results on all pasage blocks
+    6. output the result
+
+    Arguments:
+    args.seed: int, the random seed
+    args.faiss_n_gpu: int, the number of gpus
+    args.use_gpu_for_faiss: bool, whether to use gpu 
+    args.embed_dim: int, the dimension of embeddings
+    args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
+
+    args.dense_query_encoder_path: str, the path of the pretrained encoder
+    args.retrieval_model: str, the model name 
+    args.query_gpu_id: int, if -1, use cpu
+    args.query_encoder_batch_size : int
+    args.qid_list_string: List[str], the list of query ids
+    args.retrieval_query_list: List[str], the list of queries
+
+    args.passage_block_num: int, the number of passage blocks
+    args.dense_index_dir_path: str, the directory of passage embedding blocks
+    args.retrieval_top_k: int, the number of topk passages to return
+
+    Returns:
+    PyScoredDoc_dict: Dict[qid, list_of(PyScoredDoc)], the ranking list of passages for each query
+    '''
+
+    set_seed(args.seed, args.faiss_n_gpu > 0) 
     index = build_faiss_index(args)
     query_embeddings, query_embedding2id = get_test_query_embedding(args)
-    gen_metric_score_and_save(args, index, query_embeddings, query_embedding2id)
+    PyScoredDoc_dict = calculate_score_and_get_rakning_list(args, index, query_embeddings, query_embedding2id)
 
-    logger.info("Test finish!")
+    return PyScoredDoc_dict
+
     
 
 
