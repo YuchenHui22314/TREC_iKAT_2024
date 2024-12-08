@@ -29,7 +29,7 @@ faiss_n_gpu=4
 embed_dim=768
 tempmem=-1
 query_gpu_id=3
-passage_block_num=3 # 116 for ikat
+passage_block_num=116 # 116 for ikat
 #BM25
 bm25_k1=0.9
 bm25_b=0.4

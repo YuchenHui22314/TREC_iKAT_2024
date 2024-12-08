@@ -265,10 +265,10 @@ if __name__ == "__main__":
     #dense_indexing(args)
     merge_blocks_to_large_blocks(
     input_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance",
-    output_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged",
+    output_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2",
     num_block = 116,
     num_rank = 4,
-    expected_num_doc_per_block = 1000000
+    expected_num_doc_per_block = 10000000
     )
 
 # python  -m torch.distributed.launch --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
