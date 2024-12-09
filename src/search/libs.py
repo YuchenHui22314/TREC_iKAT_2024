@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import h5py
 import json
@@ -7,12 +8,24 @@ import array
 import pickle
 import numpy as np
 from tqdm import tqdm
-from collections import defaultdict
+from p_tqdm import p_map
 
 import torch
 from torch.utils.data import IterableDataset
 
 from search.utils import tensor_to_list, PyScoredDoc
+
+def load_key(key,file_name):
+    try:
+        file = h5py.File(file_name, "r")
+        doc_id = np.array(file[f"index_doc_id_{key}"], dtype=np.int32)
+        doc_value = np.array(file[f"index_doc_value_{key}"], dtype=np.float32)
+        file.close()
+        return key, doc_id, doc_value
+    except:
+        file.close()
+        return key, np.array([], dtype=np.int32), np.array([], dtype=np.float32)
+
 
 class IndexDictOfArray:
     def __init__(self, index_path=None, force_new=False, filename="array_index.h5py", dim_voc=None):
@@ -32,16 +45,22 @@ class IndexDictOfArray:
                     dim = self.file["dim"][()]
                 self.index_doc_id = dict()
                 self.index_doc_value = dict()
-                for key in tqdm(range(dim)):
-                    try:
-                        self.index_doc_id[key] = np.array(self.file["index_doc_id_{}".format(key)],
-                                                          dtype=np.int32)
-                        # ideally we would not convert to np.array() but we cannot give pool an object with hdf5
-                        self.index_doc_value[key] = np.array(self.file["index_doc_value_{}".format(key)],
-                                                             dtype=np.float32)
-                    except:
-                        self.index_doc_id[key] = np.array([], dtype=np.int32)
-                        self.index_doc_value[key] = np.array([], dtype=np.float32)
+
+                # A parallel version of the commented loop
+                results = p_map(load_key, range(dim), [self.filename]*dim, num_cpus=50)
+                self.index_doc_id = {key: doc_id for key, doc_id, _ in results}
+                self.index_doc_value = {key: doc_value for key, _, doc_value in results}
+
+                # for key in tqdm(range(dim)):
+                #     try:
+                #         self.index_doc_id[key] = np.array(self.file["index_doc_id_{}".format(key)],
+                #                                           dtype=np.int32)
+                #         # ideally we would not convert to np.array() but we cannot give pool an object with hdf5
+                #         self.index_doc_value[key] = np.array(self.file["index_doc_value_{}".format(key)],
+                #                                              dtype=np.float32)
+                #     except:
+                #         self.index_doc_id[key] = np.array([], dtype=np.int32)
+                #         self.index_doc_value[key] = np.array([], dtype=np.float32)
                 self.file.close()
                 del self.file
                 print("done loading index...")
@@ -257,12 +276,14 @@ class SparseRetrieval:
             row, col = torch.nonzero(query_emb, as_tuple=True)
             values = query_emb[tensor_to_list(row), tensor_to_list(col)]
             threshold = 0
-            filtered_indexes, scores = self.numba_score_float(self.numba_index_doc_ids,
-                                                                self.numba_index_doc_values,
-                                                                col.cpu().numpy(),
-                                                                values.cpu().numpy().astype(np.float32),
-                                                                threshold=threshold,
-                                                                size_collection=self.sparse_index.nb_docs())
+            filtered_indexes, scores = self.numba_score_float(
+                self.numba_index_doc_ids,
+                self.numba_index_doc_values,
+                col.cpu().numpy(),
+                values.cpu().numpy().astype(np.float32),
+                threshold=threshold,
+                size_collection=self.sparse_index.nb_docs()
+            )
             # threshold set to 0 by default, could be better
             filtered_indexes, scores = self.select_topk(filtered_indexes, scores, k=self.top_k)
             for id_, sc in zip(filtered_indexes, scores):

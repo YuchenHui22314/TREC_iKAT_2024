@@ -351,11 +351,12 @@ def calculate_score_and_get_rakning_list(args, index, query_embeddings, query_em
     '''
 
     retrieved_scores_mat, retrieved_pid_mat = search_one_by_one_with_faiss(
-                                                     args.passage_block_num,
-                                                     args.dense_index_dir_path, 
-                                                     index, 
-                                                     query_embeddings, 
-                                                     args.retrieval_top_k) 
+        args.passage_block_num,
+        args.dense_index_dir_path, 
+        index, 
+        query_embeddings, 
+        args.retrieval_top_k
+        ) 
 
     #with open(args.passage_offset2pid_path, "rb") as f:
     #    offset2pid = pickle.load(f)
@@ -402,7 +403,7 @@ def dense_search(args):
     PyScoredDoc_dict: Dict[qid, list_of(PyScoredDoc)], the ranking list of passages for each query
     '''
 
-    set_seed(args.seed, args.faiss_n_gpu > 0) 
+    set_seed(args.seed, args.faiss_n_gpu >= 0) 
     index = build_faiss_index(args)
     query_embeddings, query_embedding2id = get_test_query_embedding(args)
     PyScoredDoc_dict = calculate_score_and_get_rakning_list(args, index, query_embeddings, query_embedding2id)

@@ -42,7 +42,6 @@ def splade_search(args):
     
     tokenizer = AutoTokenizer.from_pretrained(args.splade_query_encoder_path) 
     
-
     # test dataset/dataloader
     print("Buidling test dataset...")
     test_dataset = Retrieval_trec(
@@ -68,13 +67,19 @@ def splade_search(args):
             inputs["input_ids"] = batch["input_ids"].to(device)
             inputs["attention_mask"] = batch["attention_mask"].to(device)
 
-            batch_query_embs, _ = model(**inputs)
+
+            batch_query_embs = model(q_kwargs = inputs)["q_rep"]
             qids = batch["qid"] 
             for i, qid in enumerate(qids):
                 qid2emb[qid] = batch_query_embs[i]
     
     # retrieve
-    dim_voc = model.transformer.config.vocab_size
+    dim_voc = None
+    for qid, emb in qid2emb.items():
+        dim_voc = emb.shape[0]
+        break
+    assert dim_voc is not None, "dim_voc is None"
+
     retriever = SparseRetrieval(
         args.splade_index_dir_path, 
         "None",  # this the output path to save the retrieval results. Useful in Kelong's code, but not here. 
