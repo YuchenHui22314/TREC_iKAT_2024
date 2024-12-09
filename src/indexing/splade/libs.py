@@ -50,16 +50,25 @@ class IndexDictOfArray:
             else:
                 self.n = 0
                 print("initializing new index...")
+                # Empty dictionary of arrays of (1) unsigned int and (2) floats
                 self.index_doc_id = defaultdict(lambda: array.array("I"))
                 self.index_doc_value = defaultdict(lambda: array.array("f"))
         else:
             self.n = 0
             print("initializing new index...")
+            # This is an inverted index. It has the following structure:
+            # (1) For each token in vocab, a list of document id of which 
+            # the document embedding vector has non-zero value for that token.
+            # It is just like the inverted index in the search engine.
+            # (2) save the float value for each element in dictionary (1)
             self.index_doc_id = defaultdict(lambda: array.array("I"))
             self.index_doc_value = defaultdict(lambda: array.array("f"))
 
     def add_batch_document(self, row, col, data, n_docs=-1):
         """add a batch of documents to the index
+            Example:
+            if batch_documents = [[0, 0, 0.3], [0, 0.4, 0], [0.5, 0, 0]]
+            then row = [0, 1, 2], col = [2, 1, 0], data = [0.3, 0.4, 0.5]
         """
         if n_docs < 0:
             self.n += len(set(row))
@@ -90,7 +99,8 @@ class IndexDictOfArray:
                 f.create_dataset("index_doc_id_{}".format(key), data=self.index_doc_id[key])
                 f.create_dataset("index_doc_value_{}".format(key), data=self.index_doc_value[key])
             f.close()
-        print("saving index distribution...")  # => size of each posting list in a dict
+        print("saving index distribution...")  
+        # => size of each posting list in a dict
         index_dist = {}
         for k, v in self.index_doc_id.items():
             index_dist[int(k)] = len(v)

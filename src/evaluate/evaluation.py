@@ -8,6 +8,8 @@ import json
 from typing import Mapping, Tuple, List, Optional, Union, Any, Dict
 from tqdm import tqdm
 from dataclasses import asdict
+import pytrec_eval
+from pyserini.search import get_topics, get_qrels
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
@@ -22,23 +24,17 @@ from topics import (
     )
 
     
+from search.search import search    
 from response_generation import (
     generate_responses
     ) 
 
 from evaluation_util import (
     get_query_list,
-    search,
     evaluate,
     generate_and_save_ikat_submission,
     extract_filename
 )
-
-from pyserini.search import get_topics, get_qrels
-import pytrec_eval
-
-
-
 
 
 def get_args():

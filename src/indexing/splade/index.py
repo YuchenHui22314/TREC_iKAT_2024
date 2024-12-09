@@ -47,8 +47,14 @@ def indexing(args):
         model.eval()
         for batch in tqdm(train_dataloader, desc="Indexing", position=0, leave=True):
             inputs = {k: v.to(args.device) for k, v in batch.items() if k not in {"id"}}
+            # batch_documents: [batch_size, dim_voc], where dim_voc is the vocab size
             batch_documents = model(d_kwargs=inputs)["d_rep"]
             
+            # find all non-zero elements in the batch_documents
+            # Example:
+            # if batch_documents = [[0, 0, 0.3], [0, 0.4, 0], [0.5, 0, 0]]
+            # then row = [0, 1, 2], col = [2, 1, 0], data = [0.3, 0.4, 0.5]
+
             row, col = torch.nonzero(batch_documents, as_tuple=True)
             data = batch_documents[row, col]
             row = row + count
