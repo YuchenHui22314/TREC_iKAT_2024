@@ -976,12 +976,13 @@ class Retrieval_trec(Dataset):
         tokenizer, 
         retrieval_query_list, 
         qid_list_string,
-        collection=None
+        max_length = 512
         ):
 
         self.queries = retrieval_query_list
         self.qids = qid_list_string 
         self.tokenizer = tokenizer
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.queries)
@@ -995,7 +996,7 @@ class Retrieval_trec(Dataset):
             add_special_tokens = True, 
             padding = "longest",
             return_tensors = "pt",
-            max_length = 512)
+            max_length = self.max_length)
         
         return {
             "qid": qid,

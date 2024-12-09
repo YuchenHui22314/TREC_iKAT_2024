@@ -7,7 +7,7 @@ import sys
 sys.path.append('..')
 from search.rerank import rerank
 from search.dense_search import dense_search
-#from search.splade_search import splade_search
+from search.splade_search import splade_search
 from search.utils import PyScoredDoc
 from search.fuse import (
     round_robin_fusion,
@@ -60,11 +60,13 @@ def search(
             - args.fb_terms: int
             - args.fb_docs: int
             - args.original_query_weight: float
-        # Dense
+        # Dense & Splade
             - args.use_pyserini_dense_search: bool
             - args.dense_query_encoder_path: str
-            - args.query_encoder_batch_size : int
             - args.dense_index_dir_path: str
+            - args.splade_query_encoder_path: str
+            - args.splade_index_dir_path: str
+            - args.query_encoder_batch_size : int
             - args.faiss_n_gpu: int, the number of gpus
             - args.use_gpu_for_faiss: bool, whether to use gpu for faiss
             - args.query_gpu_id: int, if -1, use cpu
@@ -260,17 +262,20 @@ def Retrieval(args):
         - args.fb_terms: int
         - args.fb_docs: int
         - args.original_query_weight: float
-    # Dense
+    # Dense & Splade
         - args.use_pyserini_dense_search: bool
         - args.dense_query_encoder_path: str
-        - args.query_encoder_batch_size : int
         - args.dense_index_dir_path: str
+        - args.splade_query_encoder_path: str
+        - args.splade_index_dir_path: str
+        - args.query_encoder_batch_size : int
         - args.faiss_n_gpu: int, the number of gpus
         - args.use_gpu: bool, whether to use gpu for faiss
         - args.embed_dim: int, the dimension of embeddings
         - args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
         - args.query_gpu_id: int, Which GPU should the query encoder use. if -1, use cpu
         - args.passage_block_num: int, the number of passage blocks
+    
 
     Returns:
         hits (Dict[str, List[Any]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score.
@@ -306,8 +311,8 @@ def Retrieval(args):
         else:
             hits = dense_search(args)
 
-    ##############################
-    # TODO: add splade
-    ##############################
+    elif "splade" in args.retrieval_model:
+        print(f"{args.retrieval_model} searching...")
+        hits = splade_search(args)
 
     return hits

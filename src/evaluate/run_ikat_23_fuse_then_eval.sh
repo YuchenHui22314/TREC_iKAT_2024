@@ -18,13 +18,15 @@ seed=42
 ###############
 ## Retrieval
 ###############
-# can be :"none","BM25", "ance", "dpr", "splade". If "none", read ranking list from given_ranking_list_path
-retrieval_model="BM25" 
+# can be :"none","BM25", "ance", "dpr", "splade_v3". If "none", read ranking list from given_ranking_list_path
+retrieval_model="splade_v3" 
 retrieval_top_k=1000
 #Dense
 dense_query_encoder_path="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
-query_encoder_batch_size=200
 dense_index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
+splade_query_encoder_path="/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+splade_index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
+query_encoder_batch_size=200
 faiss_n_gpu=4
 embed_dim=768
 tempmem=-1
@@ -42,7 +44,7 @@ original_query_weight=0.5
 ##### fusion
 ###############
 #'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-fusion_type='linear_weighted_score' 
+fusion_type='none' 
 QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 # if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score
 fuse_weights=(0.1 0.4)
@@ -51,7 +53,7 @@ per_query_weight_max_value=1.2
 ## Reranking
 ###############
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k, monot5_large, monot5_large_10k, monot5_3b, monot5_3b_10k,
-reranker="monot5_base_10k"
+reranker="none"
 rerank_top_k=50
 cache_dir="/data/rech/huiyuche/huggingface"
 # on octal31: 67 for monot5_base, 10 for rankllama, 50 for monot5_large, 10 for t5_3b
@@ -98,8 +100,8 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("gpt-4o_rar_rwrs_fuse_personalized_cot1_rw") 
 #retrieval_query_types=("round_robin_gpt-4o_3_lists")
 #retrieval_query_types=("personalize_level_3_lists_tune") 
-retrieval_query_types=("gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw") 
-reranking_query_types=("oracle")
+retrieval_query_types=("oracle") 
+reranking_query_types=("none")
 generation_query_types=("none")
 
 

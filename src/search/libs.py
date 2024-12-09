@@ -12,7 +12,7 @@ from collections import defaultdict
 import torch
 from torch.utils.data import IterableDataset
 
-from utils import tensor_to_list
+from utils import tensor_to_list, PyScoredDoc
 
 class IndexDictOfArray:
     def __init__(self, index_path=None, force_new=False, filename="array_index.h5py", dim_voc=None):
@@ -155,12 +155,17 @@ class CollateClass:
 
 
 class SparseRetrieval:
-    """retrieval from SparseIndexing
+    """
+    retrieval from Splade SparseIndexing
     """
 
     @staticmethod
     def select_topk(filtered_indexes, scores, k):
         if len(filtered_indexes) > k:
+            # take k smallist values indexes
+            # NOTE: the topk may not be sorted. argpartition
+            # just put the k smallest values in the first k indexes,
+            # but the internal order is not guaranteed. 
             sorted_ = np.argpartition(scores, k)[:k]
             filtered_indexes, scores = filtered_indexes[sorted_], -scores[sorted_]
         else:
@@ -175,16 +180,47 @@ class SparseRetrieval:
                           query_values: np.ndarray,
                           threshold: float,
                           size_collection: int):
-        scores = np.zeros(size_collection, dtype=np.float32)  # initialize array with size = size of collection
+        '''
+        Get all document scores for a given query
+        Args:
+            inverted_index_ids: dict[vocab, [doc1, doc2, ...]]
+            inverted_index_floats: dict[vocab, [value1, value2, ...]]
+            indexes_to_retrieve: [235,22314,114,514], vocab id of non-zero tokens in the query 
+            query_values: [value1, value2, ...], of length non-zero tokens in the query
+            threshold: 0
+            size_collection: literally.
+        Returns:
+            filtered_indexes: [3,5,8,...,] (all the indexes where the score > threshold)
+            -scores[filtered_indexes]: [0.1, 0.2, 0.3, ...] (the scores of the filtered indexes)
+            
+        '''
+        # initialize array with size = size of collection
+        # like: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        scores = np.zeros(size_collection, dtype=np.float32)  
         n = len(indexes_to_retrieve)
+        # for every non-zero tokens in the query
         for _idx in range(n):
-            local_idx = indexes_to_retrieve[_idx]  # which posting list to search
-            query_float = query_values[_idx]  # what is the value of the query for this posting list
-            retrieved_indexes = inverted_index_ids[local_idx]  # get indexes from posting list
-            retrieved_floats = inverted_index_floats[local_idx]  # get values from posting list
+            # get the position of the token in vocabulary.abs
+            # i.e. which posting list to search
+            local_idx = indexes_to_retrieve[_idx]  
+
+            # what is the value of the token in the query
+            query_float = query_values[_idx]  
+
+            # get the document id list containing the token
+            retrieved_indexes = inverted_index_ids[local_idx]  
+
+            # get the value of the token in each documents
+            retrieved_floats = inverted_index_floats[local_idx]  
+
             for j in numba.prange(len(retrieved_indexes)):
+                # for each document containing the token, calculate the score
+                # which is the product of the value of the token in the query and the value of the token in the document 
                 scores[retrieved_indexes[j]] += query_float * retrieved_floats[j]
-        filtered_indexes = np.argwhere(scores > threshold)[:, 0]  # ideally we should have a threshold to filter
+        
+        # filter the documents with score > threshold
+        # filtered_indexes = [3,5,8,...,] (all the indexes where the score > threshold)
+        filtered_indexes = np.argwhere(scores > threshold)[:, 0]  
         # unused documents => this should be tuned, currently it is set to 0
         return filtered_indexes, -scores[filtered_indexes]
 
@@ -204,7 +240,17 @@ class SparseRetrieval:
         
     
     def retrieve(self, qid2emb):
+        '''
+        Given a group of queries, retrieve the top k documents for each query
+        Args:
+            qid2emb: {qid: query_embedding}
+        Returns:
+            res: {qid: {doc_id: score}}
+            hits: {qid: [PyScoredDoc]}, PyScoredDoc is a namedtuple(docid, score)
+        '''
+            
         res = defaultdict(dict)
+        hits = defaultdict(list)
         for qid in tqdm(qid2emb):
             query_emb = qid2emb[qid]
             query_emb = query_emb.view(1, -1)
@@ -221,13 +267,13 @@ class SparseRetrieval:
             filtered_indexes, scores = self.select_topk(filtered_indexes, scores, k=self.top_k)
             for id_, sc in zip(filtered_indexes, scores):
                 res[str(qid)][str(self.doc_ids[id_])] = float(sc)
-            
+                hits[str(qid)].append(PyScoredDoc(docid = str(self.doc_ids[id_]), score = float(sc)))
+            # sort the hits by score
+            hits[str(qid)] = sorted(hits[str(qid)], key=lambda x: x.score, reverse=True)
 
-        with open(os.path.join(self.retrieval_output_path, "run.json"), "w") as f:
-            json.dump(res, f)
-        print("Write the retrieval result to {} successfully.".format(self.retrieval_output_path))
+        print("Splade Sparse Retrieval Done")
 
-        return res
+        return res, hits
         
 
 
