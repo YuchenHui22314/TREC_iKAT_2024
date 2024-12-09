@@ -12,7 +12,7 @@ from collections import defaultdict
 import torch
 from torch.utils.data import IterableDataset
 
-from utils import tensor_to_list, PyScoredDoc
+from search.utils import tensor_to_list, PyScoredDoc
 
 class IndexDictOfArray:
     def __init__(self, index_path=None, force_new=False, filename="array_index.h5py", dim_voc=None):

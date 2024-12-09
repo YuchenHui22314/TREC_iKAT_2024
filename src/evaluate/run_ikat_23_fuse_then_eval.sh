@@ -21,11 +21,12 @@ seed=42
 # can be :"none","BM25", "ance", "dpr", "splade_v3". If "none", read ranking list from given_ranking_list_path
 retrieval_model="splade_v3" 
 retrieval_top_k=1000
+#Splade
+splade_query_encoder_path="/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+splade_index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
 #Dense
 dense_query_encoder_path="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
 dense_index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
-splade_query_encoder_path="/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
-splade_index_dir_path="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
 query_encoder_batch_size=200
 faiss_n_gpu=4
 embed_dim=768
@@ -125,8 +126,10 @@ function run_evaluation() {
     --retrieval_model $retrieval_model \
     --cache_dir $cache_dir \
     --dense_query_encoder_path $dense_query_encoder_path \
-    --query_encoder_batch_size $query_encoder_batch_size \
     --dense_index_dir_path $dense_index_dir_path \
+    --splade_query_encoder_path $splade_query_encoder_path \
+    --splade_index_dir_path $splade_index_dir_path \
+    --query_encoder_batch_size $query_encoder_batch_size \
     --faiss_n_gpu $faiss_n_gpu \
     --use_gpu_for_faiss\
     --embed_dim $embed_dim \

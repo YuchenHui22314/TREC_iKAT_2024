@@ -60,15 +60,14 @@ def get_args():
     parser.add_argument("--retrieval_model", type=str, default="BM25",
                         choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama"])
     parser.add_argument("--retrieval_top_k", type=int, default="1000")
-    # splade
-    parser.add_argument("--splade_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
     
+    # splade
+    parser.add_argument("--splade_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
+    parser.add_argument("--splade_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
     # dense & splade
     parser.add_argument("--use_pyserini_dense_search", action="store_true", help="if we will use pyserini dense search or our own dense search implementation.")
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
     parser.add_argument("--dense_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
-    parser.add_argument("--splade_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
-    parser.add_argument("--splade_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
     parser.add_argument("--query_encoder_batch_size", type=int, default=200)
     parser.add_argument("--faiss_n_gpu", type=int, default=4)
     parser.add_argument("--use_gpu_for_faiss", action="store_true")

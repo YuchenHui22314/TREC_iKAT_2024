@@ -11,16 +11,17 @@ import torch
 from torch.utils.data import DataLoader
 from transformers import  AutoTokenizer
 
-from search.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, get_has_gold_label_test_qid_set
+from search.utils import set_seed 
 
 from search.libs import SparseRetrieval
 from search.models import Splade
-from data_format import Retrieval_trec
+from search.data_format import Retrieval_trec
 
 def splade_search(args):
     '''
     Perform Splade Sparse Retrieval.
     Args:
+        args.seed
         args.splade_query_encoder_path: str
         args.splade_index_dir_path: str
         args.query_gpu_id: int, if -1, use cpu
@@ -30,10 +31,11 @@ def splade_search(args):
         args.retrieval_top_k: int, the number of retrieved documents
     '''
 
-    device = torch.device(f"cuda{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu")
+    device = torch.device(f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu")
+    set_seed(args.seed, True)
 
     model = Splade(
-        model_dir_path=args.splade_query_encoder_path, 
+        args.splade_query_encoder_path, 
         agg = "max"
         )
     model.to(device)
@@ -47,7 +49,7 @@ def splade_search(args):
         tokenizer = tokenizer,
         retrieval_query_list = args.retrieval_query_list,
         qid_list_string = args.qid_list_string,
-        max_len = 256,
+        max_length = 256,
         )
     test_loader = DataLoader(
         test_dataset, 

@@ -50,6 +50,14 @@ def check_dir_exist_or_build(dir_list, erase_dir_content = None):
             shutil.rmtree(dir_path)
             os.makedirs(dir_path)
 
+
+def json_dumps_arguments(output_path, args):   
+    with open(output_path, "w") as f:
+        params = vars(args)
+        if "device" in params:
+            params["device"] = str(params["device"])
+        f.write(json.dumps(params, indent=4))
+
 def split_and_padding_neighbor(batch_tensor, batch_len):
     batch_len = batch_len.tolist()
     pad_len = max(batch_len)
