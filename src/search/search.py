@@ -1,7 +1,7 @@
 from functools import reduce
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 import sys
 
 sys.path.append('..')
@@ -16,6 +16,53 @@ from search.fuse import (
 )
 
 
+
+def load_ranking_list_from_file(file_path: str, sparse_index_dir_path: str) -> Dict[str, List[PyScoredDoc]]:
+    searcher = LuceneSearcher(sparse_index_dir_path)
+    # load the ranking list
+    with open(file_path, "r") as f:
+        run = pytrec_eval.parse_run(f)
+        hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
+    #sort the hits by score
+    for qid in hits.keys():
+        hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
+    
+    return hits
+
+def get_run_object_and_save_ranking_list(
+    hits: Dict[str, List[PyScoredDoc]], 
+    args: Any
+    ) -> Tuple[Dict[str, List[PyScoredDoc]], Dict[str, Dict[str, float]]]:
+
+    #sort the hits by score
+    for qid in hits.keys():
+        hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
+
+    # generate run dictionary required by pytrec_eval
+    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+
+    # save ranking list
+    # format: query-id Q0 document-id rank score run_name
+    if args.save_ranking_list:
+        if args.run_name == "none":
+            run_name = args.file_name_stem
+        else:
+            run_name = args.run_name 
+
+        with open(args.ranking_list_path, "w") as f:
+            for qid in args.qid_list_string:
+                for i, item in enumerate(hits[qid]):
+                    f.write("{} {} {} {} {} {}".format(
+                        qid,
+                        "Q0",
+                        item.docid,
+                        i+1,
+                        item.score,
+                        run_name
+                        ))
+                    f.write('\n')
+
+    return hits, run
 
 def search(
     args: Any
@@ -93,27 +140,21 @@ def search(
     # we have the possibility to load a custom ranking list instead of searching or reranking
     ##########################################################################################
 
+
     if args.retrieval_model == "none":
         assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank or --run_from_generate is true, because we do not do retrieval/retrieval+reranking in these cases."
 
-        # even we do not search, we have to get access to the index (raw documents via a searcher)
-        searcher = LuceneSearcher(args.sparse_index_dir_path)
-        # load the ranking list
-        with open(args.given_ranking_list_path, "r") as f:
-            run = pytrec_eval.parse_run(f)
-            hits = {qid: [PyScoredDoc(docid, score) for docid, score in docs.items()] for qid, docs in run.items()}
-        #sort the hits by score
-        for qid in hits.keys():
-            hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
-
-        
-
+        hits = load_ranking_list_from_file(args.given_ranking_list_path, args.sparse_index_dir_path)
+    
+    # then first try to load the ranking list from file
+    elif os.path.exists(args.ranking_list_path):
+        hits = load_ranking_list_from_file(args.ranking_list_path, args.sparse_index_dir_path)
     #######################
     # First stage retrieval
     #######################
 
     # No fusion
-    if args.fusion_type == "none":
+    if args.fusion_type == "none" and not args.retrieval_model == "none":
         hits = Retrieval(args)
 
 
@@ -210,40 +251,12 @@ def search(
         hits = rerank(hits, args)
 
     ##############################
-    # save ranking list 
+    # optionally save ranking list 
     ##############################
 
-
-    #sort the hits by score
-    for qid in hits.keys():
-        hits[qid] = sorted(hits[qid], key=lambda x: x.score, reverse=True)
-
-    # generate run dictionary required by pytrec_eval
-    run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
+    return get_run_object_and_save_ranking_list(hits, args)
 
 
-    # save ranking list
-    # format: query-id Q0 document-id rank score run_name
-    if args.save_ranking_list:
-        if args.run_name == "none":
-            run_name = args.file_name_stem
-        else:
-            run_name = args.run_name 
-
-        with open(args.ranking_list_path, "w") as f:
-            for qid in args.qid_list_string:
-                for i, item in enumerate(hits[qid]):
-                    f.write("{} {} {} {} {} {}".format(
-                        qid,
-                        "Q0",
-                        item.docid,
-                        i+1,
-                        item.score,
-                        run_name
-                        ))
-                    f.write('\n')
-
-    return hits, run
 
 ############## First stage retrieval ###############
 def Retrieval(args):
@@ -252,8 +265,8 @@ def Retrieval(args):
     All required arguments are:
         - args.retrieval_query_list: List[str]
         - args.qid_list_string: List[str]
-    # Sparse
         - args.retrieval_model: str
+    # Sparse
         - args.sparse_index_dir_path: str
         - args.retrieval_top_k: int
         - args.bm25_k1: float
@@ -282,6 +295,15 @@ def Retrieval(args):
     '''
 
     # sparse search
+    if args.retrieval_model == "none":
+        raise ValueError("retrieval_model should not be none when calling Retrieval function.")
+    
+    # before retireve, try to load the ranking list from file
+    if os.path.exists(args.ranking_list_path):
+        hits
+
+    
+
     if args.retrieval_model == "BM25":
         print("BM 25 searching...")
         searcher = LuceneSearcher(args.sparse_index_dir_path)
