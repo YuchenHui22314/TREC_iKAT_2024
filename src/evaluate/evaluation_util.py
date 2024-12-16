@@ -180,7 +180,30 @@ def evaluate(
     for qid in query_metrics_dic.keys():
         query_metrics_dic[qid]["num_rel"] = sum([1 for doc in qrel[qid].values() if doc > 0])
 
+    print("################# Retrieval eval Results #################")
+    print(json.dumps(averaged_metrics, indent=4))
+    print("##########################################################")
+
     return query_metrics_dic, averaged_metrics
+
+
+def print_formatted_latex_metrics(metrics_dict, metrics_list):
+    '''
+    usage example:
+    print_formateed_latex_metrics(
+        {"ndcg_cut_10": 0.1, "map": 0.2}, 
+        ["ndcg_cut_10", "map"]
+        )
+    '''
+
+    # Calculate the metrics and format them
+    result = []
+    for metric in metrics_list:
+        value = metrics_dict.get(metric, 0) * 100
+        result.append(f"{value:.1f}")
+    
+    # Print the result separated by tab
+    print(" & ".join(result))
 
 
 def generate_and_save_ikat_submission(

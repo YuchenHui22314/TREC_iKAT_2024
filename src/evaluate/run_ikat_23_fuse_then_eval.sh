@@ -54,7 +54,7 @@ per_query_weight_max_value=1.2
 ## Reranking
 ###############
 # none, rankllama, rankgpt, monot5_base, monot5_base_10k, monot5_large, monot5_large_10k, monot5_3b, monot5_3b_10k,
-reranker="none"
+reranker="monot5_base"
 rerank_top_k=50
 cache_dir="/data/rech/huiyuche/huggingface"
 # on octal31: 67 for monot5_base, 10 for rankllama, 50 for monot5_large, 10 for t5_3b
@@ -102,7 +102,7 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("round_robin_gpt-4o_3_lists")
 #retrieval_query_types=("personalize_level_3_lists_tune") 
 retrieval_query_types=("oracle") 
-reranking_query_types=("none")
+reranking_query_types=("oracle")
 generation_query_types=("none")
 
 

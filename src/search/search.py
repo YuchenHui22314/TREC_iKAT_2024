@@ -1,8 +1,12 @@
 from functools import reduce
+import sys
+import re
+import os
+
+from typing import Any, Dict, List, Tuple
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
-from typing import Any, Dict, List, Tuple
-import sys
+import pytrec_eval
 
 sys.path.append('..')
 from search.rerank import rerank
@@ -33,6 +37,18 @@ def get_run_object_and_save_ranking_list(
     hits: Dict[str, List[PyScoredDoc]], 
     args: Any
     ) -> Tuple[Dict[str, List[PyScoredDoc]], Dict[str, Dict[str, float]]]:
+    '''
+    Get the run object and save the ranking list if needed.
+    Args:
+        hits (Dict[str, List[PyScoredDoc]]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score.
+        args.save_ranking_list (bool): Whether to save the ranking list.
+        args.run_name (str): The name of the run.
+        args.ranking_list_path (str): The path to save the ranking list.
+        args.file_name_stem (str): The file name stem (run identifier).
+    Returns:
+        hits (Dict[str, List[PyScoredDoc]]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score. (same as input). The list should be sorted from highest to lowest score.
+        run (Dict[qid, Dict[docid, score]]): The run object required by pytrec_eval.
+    '''
 
     #sort the hits by score
     for qid in hits.keys():
@@ -66,7 +82,7 @@ def get_run_object_and_save_ranking_list(
 
 def search(
     args: Any
-    ) -> Dict[str, List[PyScoredDoc]]:
+    ) ->  Tuple[Dict[str, List[PyScoredDoc]], Dict[str, Dict[str, float]]]:
 
     """
     Perform search and retrieval using different models and rerankers.
@@ -84,7 +100,7 @@ def search(
         - args.reranking_query_list: List[str]: List of reranking queries.
         - args.qid_list_string: List[str]: List of query IDs.
         - args.run_name: str
-        - args.file_name_stem: str
+        - args.file_name_stem: str e.g. S1[raw]-S2[none]-g[raw]-[BM25]-[none_4_1_none]-[s2_top50] 
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
         - args.given_ranking_list_path: str
@@ -133,22 +149,29 @@ def search(
             - args.rerank_quant: str
             - args.cache_dir: str
 
-    
+    Returns:
+        hits (Dict[str, List[PyScoredDoc]]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score. (same as input). The list should be sorted from highest to lowest score.
+        run (Dict[qid, Dict[docid, score]]): The run object required by pytrec_eval.
+     
     '''
 
+    ########################################################
+    # First, try to load the ranking list from the file name
+    # If found, no need to search nor rerank.
+    ########################################################
+    if os.path.exists(args.ranking_list_path):
+        print("found a complete previous run at the begining, loading it...")
+        hits = load_ranking_list_from_file(args.ranking_list_path, args.sparse_index_dir_path)
+        return get_run_object_and_save_ranking_list(hits, args)
+        
     ##########################################################################################
-    # we have the possibility to load a custom ranking list instead of searching or reranking
+    # we have the possibility to load a custom ranking list in stead of first stage retrieval 
     ##########################################################################################
-
 
     if args.retrieval_model == "none":
         assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank or --run_from_generate is true, because we do not do retrieval/retrieval+reranking in these cases."
-
         hits = load_ranking_list_from_file(args.given_ranking_list_path, args.sparse_index_dir_path)
     
-    # then first try to load the ranking list from file
-    elif os.path.exists(args.ranking_list_path):
-        hits = load_ranking_list_from_file(args.ranking_list_path, args.sparse_index_dir_path)
     #######################
     # First stage retrieval
     #######################
@@ -266,6 +289,7 @@ def Retrieval(args):
         - args.retrieval_query_list: List[str]
         - args.qid_list_string: List[str]
         - args.retrieval_model: str
+        - args.ranking_list_path: str (optional)
     # Sparse
         - args.sparse_index_dir_path: str
         - args.retrieval_top_k: int
@@ -298,11 +322,27 @@ def Retrieval(args):
     if args.retrieval_model == "none":
         raise ValueError("retrieval_model should not be none when calling Retrieval function.")
     
-    # before retireve, try to load the ranking list from file
-    if os.path.exists(args.ranking_list_path):
-        hits
+    # before retireve, try to load the retrieved list from file
+    if "ranking_list_path" in args:
 
-    
+        ranking_list_dir_path = os.path.dirname(args.ranking_list_path)
+        base_name = os.path.basename(args.ranking_list_path)
+        if os.path.exists(ranking_list_dir_path):
+            for file in os.listdir(ranking_list_dir_path):
+                # find all contents in [xx], should return 6 groups
+                inside_crochets = re.findall(r'\[([^\]]+)\]', file)
+                inside_crochets_gold = re.findall(r'\[([^\]]+)\]', base_name)
+                if (
+                    inside_crochets[0] == inside_crochets_gold[0] and # QR type
+                    inside_crochets[3] == inside_crochets_gold[3] and # retriever
+                    inside_crochets[4].split("_")[0] == "none" # no reranker
+                    ):
+                    print("In Retrieval function, found a previous non-reranking run, loading it...")
+                    hits = load_ranking_list_from_file(
+                        os.path.join(ranking_list_dir_path, file),
+                        args.sparse_index_dir_path)
+                    return hits
+
 
     if args.retrieval_model == "BM25":
         print("BM 25 searching...")
