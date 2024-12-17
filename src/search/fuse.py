@@ -7,7 +7,44 @@ import random
 from typing import List
 from collections import defaultdict
 
+def normalize_scores(hits_lists, normalization_type):
+    """
+    Normalize the scores of hits objects.
+    Arguments:
+    - hits_lists (List[dict]): List of pyserini hits objects (or PyScoredDoc object). Each element inside must can .docid and .score
+    - normalization_type (str): Type of normalization to apply. Options are 'min-max' and 'max'.
+    Returns:
+    - List[dict]: Normalized hits objects.
+    """
+    def min_max_normalization(hits):
+        min_score = min([doc.score for doc in hits])
+        max_score = max([doc.score for doc in hits])
+        for doc in hits:
+            doc.score = (doc.score - min_score) / (max_score - min_score)
+        return hits
 
+    def z_score_normalization(hits):
+        mean_score = sum([doc.score for doc in hits]) / len(hits)
+        std_score = (sum([(doc.score - mean_score) ** 2 for doc in hits]) / len(hits)) ** 0.5
+        for doc in hits:
+            doc.score = (doc.score - mean_score) / std_score
+        return hits
+
+    normalization_func = {
+        'min-max': min_max_normalization,
+        'z-score': z_score_normalization
+    }
+
+    normalized_hits_lists = []
+    for hits in hits_lists:
+        normalized_hits = []
+        for doc in hits:
+            normalized_hits.append(PyScoredDoc(doc.docid, doc.score))
+        normalized_hits = normalization_func[normalization_type](normalized_hits)
+        normalized_hits_lists.append(normalized_hits)
+
+    return normalized_hits_lists
+    
 def rank_list_fusion(
     rank_file0=None, 
     rank_file1=None, 

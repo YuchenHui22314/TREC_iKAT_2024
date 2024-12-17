@@ -14,6 +14,7 @@ from search.dense_search import dense_search
 from search.splade_search import splade_search
 from search.utils import PyScoredDoc
 from search.fuse import (
+    normalize_scores,
     round_robin_fusion,
     linear_weighted_score_fusion,
     per_query_linear_combination,
@@ -109,6 +110,7 @@ def search(
         - args.fusion_type: str
         - args.QRs_to_rank: List[str]
         - args.fuse_weights: List[float]
+        - args.fusion_normalization: str
         - args.fusion_query_lists: List[List[str]]
         - args.per_query_weight_max_value: float
         - args.qid_personalized_level_dict: Dict[str, str]
@@ -180,89 +182,77 @@ def search(
     if args.fusion_type == "none" and not args.retrieval_model == "none":
         hits = Retrieval(args)
 
-
-    # fusion 1: linear weighted score
-    elif args.fusion_type == "linear_weighted_score":
-        assert len(args.QRs_to_rank) -1 == len(args.fuse_weights), "The number of QRs to fuse should be one more than the number of weights."
-        fuse_weights = [None] + args.fuse_weights       # the first weight would not be used, just a dummy value.
-        print("fusing ranking lists with linear weighted score...")
-        
-        def linear_weighted_score_fusion_reduce_function(hits_0_and_weight, hits_1_and_weight):
-            hits_0 = hits_0_and_weight[0] # 0 is the query, 1 is the weight
-            hits_1 = hits_1_and_weight[0] # 0 is the query, 1 is the weight
-            hits_and_weight_new = linear_weighted_score_fusion(
-                hits_0, 
-                hits_1, 
-                args.retrieval_top_k, 
-                None,
-                hits_1_and_weight[1],  # the weight associated with the second query is the right one to use (just a design choice)
-                args.run_name)
-            return hits_and_weight_new
-        
-        # search for all queries to get the hits
-        hits_list = []
-        for QR in args.fusion_query_lists:
-            args.retrieval_query_list = QR
-            hits_list.append(Retrieval(args))
-
-        # make a list of tuples, each tuple contains a query and a weight
-        hits_and_weights = list(zip(hits_list, fuse_weights))
-
-        # get the fused ranking list
-        hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)[0]
-    
-    # fusion2: lottery fusion
-    elif args.fusion_type == "round_robin":
-        print("fusing ranking lists with round robin...")
-        # first search.
+    # fusion
+    else:
+        # first search for all QR to get multiple hits
         hits_list = []
         for QR in args.fusion_query_lists:
             args.retrieval_query_list = QR
             hits_list.append(Retrieval(args))
         
-        # round robin fusion. Random selet at each run.
-        hits = round_robin_fusion(hits_list, args.retrieval_top_k,args.seed)
-    
-    # fusion3: linear combination.
-    # difference with linear_weighted_score is that now we can specify the weight of the 1st query. More general than linear_weighted_score. 
-    # I should have directly imiplemented this. 
-    elif args.fusion_type == "linear_combination":
-        print("fusing ranking lists with linear combination...")
-        # first search.
-        hits_list = []
-        for QR in args.fusion_query_lists:
-            args.retrieval_query_list = QR
-            hits_list.append(Retrieval(args))
+
+        # fusion 1: linear weighted score
+        if args.fusion_type == "linear_weighted_score":
+            assert len(args.QRs_to_rank) -1 == len(args.fuse_weights), "The number of QRs to fuse should be one more than the number of weights."
+            fuse_weights = [None] + args.fuse_weights       # the first weight would not be used, just a dummy value.
+            print("fusing ranking lists with linear weighted score...")
+            
+            def linear_weighted_score_fusion_reduce_function(hits_0_and_weight, hits_1_and_weight):
+                hits_0 = hits_0_and_weight[0] # 0 is the query, 1 is the weight
+                hits_1 = hits_1_and_weight[0] # 0 is the query, 1 is the weight
+                hits_and_weight_new = linear_weighted_score_fusion(
+                    hits_0, 
+                    hits_1, 
+                    args.retrieval_top_k, 
+                    None,
+                    hits_1_and_weight[1],  # the weight associated with the second query is the right one to use (just a design choice)
+                    args.run_name)
+                return hits_and_weight_new
+            
+
+            # make a list of tuples, each tuple contains a query and a weight
+            hits_and_weights = list(zip(hits_list, fuse_weights))
+
+            # get the fused ranking list
+            hits = reduce(linear_weighted_score_fusion_reduce_function, hits_and_weights)[0]
         
-        # check weight length
-        assert len(args.fuse_weights) == len(args.fusion_query_lists), "The number of weights should be equal to the number of query lists."
-
-        # use same weights for all queries
-        qid_weights_dict = {qid: args.fuse_weights for qid in args.qid_list_string}
-
-        # linear combination fusion
-        hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
-
-    elif args.fusion_type == "per_query_personalize_level":
-        print("fusing ranking lists with per_query_personalize_level")
-        # first search.
-        hits_list = []
-        for QR in args.fusion_query_lists:
-            args.retrieval_query_list = QR
-            hits_list.append(Retrieval(args))
+        # fusion2: lottery fusion
+        if args.fusion_type == "round_robin":
+            print("fusing ranking lists with round robin...")
+            
+            # round robin fusion. Random selet at each run.
+            hits = round_robin_fusion(hits_list, args.retrieval_top_k,args.seed)
         
-        # get weights for each query.
-        # for rw fuse rwrs, always use [1,0.1].
-        # for personalized query, use the level to get the weight.
-        decontextualized_rwrs_weight = [1,0.1]
-        qid_weights_dict = {}
-        for qid in args.qid_list_string:
-            level = args.qid_personalized_level_dict[qid]
-            float_level = from_level_to_weight_3(level, 4, args.per_query_weight_max_value)
-            qid_weights_dict[qid] = decontextualized_rwrs_weight + [float_level]
+        # fusion3: linear combination.
+        # difference with linear_weighted_score is that now we can specify the weight of the 1st query. More general than linear_weighted_score. 
+        # I should have directly imiplemented this. 
+        if args.fusion_type == "linear_combination":
+            print("fusing ranking lists with linear combination...")
+            
+            # check weight length
+            assert len(args.fuse_weights) == len(args.fusion_query_lists), "The number of weights should be equal to the number of query lists."
 
-        # linear combination fusion
-        hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
+            # use same weights for all queries
+            qid_weights_dict = {qid: args.fuse_weights for qid in args.qid_list_string}
+
+            # linear combination fusion
+            hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
+
+        if args.fusion_type == "per_query_personalize_level":
+            print("fusing ranking lists with per_query_personalize_level")
+            
+            # get weights for each query.
+            # for rw fuse rwrs, always use [1,0.1].
+            # for personalized query, use the level to get the weight.
+            decontextualized_rwrs_weight = [1,0.1]
+            qid_weights_dict = {}
+            for qid in args.qid_list_string:
+                level = args.qid_personalized_level_dict[qid]
+                float_level = from_level_to_weight_3(level, 4, args.per_query_weight_max_value)
+                qid_weights_dict[qid] = decontextualized_rwrs_weight + [float_level]
+
+            # linear combination fusion
+            hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
 
 
 

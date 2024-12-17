@@ -35,7 +35,8 @@ from promptor import (
     PersonalizeViaPTKBSummaryPrompter,
     RARPersonalizedCoTPromptor,
     RARNonPersonalizedCoTPromptor,
-    JudgePersonalizeLevelPromptor
+    JudgePersonalizeLevelPromptor, 
+    JudgeThenRewritePromptor
 )
 
 from topics import (
@@ -89,7 +90,8 @@ def get_args():
         "gpt-4o_rar_personalized_cot1",
         "gpt-4o_rar_non_personalized_cot1",              # modify the few shot example to remove personalization
         "gpt-4o_rar_manual_depersonalized_cot1",         # directly modify the resulting rewrite to remove personalizaiton.
-        "personalization_level"
+        "personalization_level",
+        "gpt-4o_judge_and_rewrite",
         ]
     ) 
     args = parser.parse_args()
@@ -198,7 +200,13 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
-    if reformulation_name == "personalization_level":
+    if "judge_and_rewrite" in reformulation_name:
+        prompter =  JudgeThenRewritePromptor(
+            enable_cot=True,
+            demo_file = demo_file 
+        )
+        
+    if "personalization_level" in reformulation_name:
         prompter = JudgePersonalizeLevelPromptor(
             enable_cot=True
         )
@@ -291,10 +299,40 @@ if __name__ == '__main__':
     #################################
 
     turn_list = load_turns_from_json(input_query_path)
-    for turn in tqdm(turn_list, total=len(turn_list), desc="Rewriting"):
+    for index, turn in tqdm(enumerate(turn_list), total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
+        if "judge_and_rewrite" in reformulation_name:
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+            cot = liste[0]
+            level = liste[1]
+            rewrite = liste[2]
+            response = liste[3]
 
-        if "personalization_level" == reformulation_name:
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_cot",
+                reformulated_query = cot,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_lv",
+                reformulated_query = level,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rw",
+                reformulated_query = rewrite,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rs",
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+
+        if "personalization_level" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
             response = rewriter.generate_text(prompt)

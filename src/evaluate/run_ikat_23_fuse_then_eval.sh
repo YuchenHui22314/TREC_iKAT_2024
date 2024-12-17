@@ -49,6 +49,7 @@ fusion_type='none'
 QRs_to_rank=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
 # if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score
 fuse_weights=(0.1 0.4)
+fusion_normalization="none"
 per_query_weight_max_value=1.2
 ###############
 ## Reranking
@@ -162,6 +163,7 @@ function run_evaluation() {
     --fusion_type $fusion_type \
     --QRs_to_rank "${QRs_to_rank[@]}" \
     --fuse_weights "${fuse_weights[@]}" \
+    --fusion_normalization $fusion_normalization \
     --per_query_weight_max_value $per_query_weight_max_value \
     --run_name $run_name \
     --save_results_to_object \
