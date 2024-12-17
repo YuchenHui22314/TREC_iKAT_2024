@@ -93,12 +93,15 @@ def get_args():
     #### Fusion ####
     ###################
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level'])
+                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', 'gpt-4o_judge_and_rewrite'])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
     parser.add_argument('--fuse_weights', type=float, nargs='+', default = [1,0.1,0.4], help='weights for linear weighted score fusion')
     parser.add_argument("--fusion_normalization", type=str, default="none",
-                        choices=['none','sigmoid','min_max'])
+                        choices=['none','max','min-max'])
+    parser.add_argument("--level_type", type=str, default="none", help="how did we get the personalized level")
     parser.add_argument("--per_query_weight_max_value", type=float, default=0.75)
+    parser.add_argument("--optimize_level_weights", type=str, default="false", choices=["false", "true"])
+    parser.add_argument("--target_metric", type=str, default="ndcg@3", help="Please see https://amenra.github.io/ranx/ for possible metrics." )
 
 
     ###################
@@ -204,6 +207,8 @@ def get_args():
                             "gpt-4o_rar_rw+gpt-4o_rar_rwrs+gpt-4o_rar_personalized_cot1_rw",
                             "round_robin_gpt-4o_3_lists",
                             "personalize_level_3_lists_tune",
+                            "gpt-4o_judge_and_rewrite_rw",
+                            "gpt-4o_judge_and_rewrite_optimize_test"
 
                             ],)
 
@@ -339,11 +344,15 @@ if __name__ == "__main__":
         args.fusion_query_lists = fusion_query_lists
         args.qid_list_string = qid_list_string
 
+        ##################################
+        #### Personalization Specific ####
+        ##################################
+
         if args.fusion_type == 'per_query_personalize_level':
             print("get personalized level for each query....")
             args.qid_personalized_level_dict = \
             {
-                turn.turn_id: turn.get_personalization_level() for turn in turn_list
+                turn.turn_id: turn.get_personalization_level(args.level_type) for turn in turn_list
             }
 
         hits, run = search(
@@ -404,7 +413,7 @@ if __name__ == "__main__":
 
         # evaluate
         query_metrics_dic, averaged_metrics = evaluate(
-            None,
+            run,
             args.qrel_file_path,
             ranking_list_path,
             metrics_list,

@@ -6,44 +6,76 @@ from search.utils import PyScoredDoc
 import random
 from typing import List
 from collections import defaultdict
+from ranx import (
+    fuse, 
+    optimize_fusion,
+    Qrels,
+    Run
+    )
 
-def normalize_scores(hits_lists, normalization_type):
+def normalize_scores(hits, normalization_type):
     """
     Normalize the scores of hits objects.
     Arguments:
-    - hits_lists (List[dict]): List of pyserini hits objects (or PyScoredDoc object). Each element inside must can .docid and .score
-    - normalization_type (str): Type of normalization to apply. Options are 'min-max' and 'max'.
+    - hits: (Dict[str, List[PyScoredDoc]]): Hits objects for each query.
+    - normalization_type (str): Type of normalization to apply. Options are "none", 'min-max' and 'max'.
     Returns:
-    - List[dict]: Normalized hits objects.
+    - hits (Dict[str, List[PyScoredDoc]]): Normalized hits objects.
     """
-    def min_max_normalization(hits):
-        min_score = min([doc.score for doc in hits])
-        max_score = max([doc.score for doc in hits])
-        for doc in hits:
+    def min_max_normalization(hit):
+        min_score = min([doc.score for doc in hit])
+        max_score = max([doc.score for doc in hit])
+        for doc in hit:
             doc.score = (doc.score - min_score) / (max_score - min_score)
-        return hits
+        return hit
 
-    def z_score_normalization(hits):
-        mean_score = sum([doc.score for doc in hits]) / len(hits)
-        std_score = (sum([(doc.score - mean_score) ** 2 for doc in hits]) / len(hits)) ** 0.5
-        for doc in hits:
-            doc.score = (doc.score - mean_score) / std_score
-        return hits
+    def max_normalization(hit):
+        max_score = max([doc.score for doc in hit])
+        for doc in hit:
+            doc.score = doc.score / max_score
+        return hit
 
     normalization_func = {
         'min-max': min_max_normalization,
-        'z-score': z_score_normalization
+        'max': max_normalization,
+        'none': lambda x: x
     }
 
-    normalized_hits_lists = []
-    for hits in hits_lists:
-        normalized_hits = []
-        for doc in hits:
-            normalized_hits.append(PyScoredDoc(doc.docid, doc.score))
-        normalized_hits = normalization_func[normalization_type](normalized_hits)
-        normalized_hits_lists.append(normalized_hits)
+    normalized_hits_dict = defaultdict(list)
+    for qid, hit in hits.items():
+        normalized_hits_dict[qid] = normalization_func[normalization_type](hit)
 
-    return normalized_hits_lists
+    return normalized_hits_dict
+
+def optimize_fusion_weights(
+    hits_list, 
+    qrels, 
+    target_metric
+    ):
+
+    # Generate run dictionary required by ranx
+    runs = [{qid: {doc.docid: doc.score for doc in docs}  for qid, docs in hits.items()}for hits in hits_list]
+
+    # in the qrel, filter out the qids that are not in the runs
+    qrels = {qid: qrel for qid, qrel in qrels.items() if qid in runs[0]}
+
+    runs = [Run(run) for run in runs]
+    qrels = Qrels(qrels)
+        
+
+    weights, report =  \
+        optimize_fusion(
+        qrels=qrels,
+        runs=runs,
+        norm="min-max",     
+        method="wsum",      
+        metric=target_metric,  
+        return_optimization_report = True,
+        step = 0.1
+    )
+
+    return weights["weights"], str(report)
+
     
 def rank_list_fusion(
     rank_file0=None, 

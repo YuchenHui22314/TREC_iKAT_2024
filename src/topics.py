@@ -186,12 +186,15 @@ class Turn:
         else:
             raise ValueError(f"Multiple reformulations with the same name {reformulation_name} found in the turn object with id {self.turn_id}")
     
-    def get_personalization_level(self) -> str:
+    def get_personalization_level(self, level_type) -> str:
         '''
         Get the personalization level of the current turn
         '''
-        level = self.find_reformulation("personalization_level_lv").reformulated_query[0]
+        reformulation_name = f"{level_type}_lv"
+        level = self.find_reformulation(reformulation_name).reformulated_query[0]
+
         assert level in ["a", "b", "c", "d"], f"Personalization level {level} not supported for turn {self.turn_id}"
+
         return level
         
     

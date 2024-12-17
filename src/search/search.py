@@ -2,8 +2,10 @@ from functools import reduce
 import sys
 import re
 import os
-
+from collections import defaultdict
 from typing import Any, Dict, List, Tuple
+
+from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
 import pytrec_eval
@@ -15,6 +17,7 @@ from search.splade_search import splade_search
 from search.utils import PyScoredDoc
 from search.fuse import (
     normalize_scores,
+    optimize_fusion_weights,
     round_robin_fusion,
     linear_weighted_score_fusion,
     per_query_linear_combination,
@@ -57,7 +60,6 @@ def get_run_object_and_save_ranking_list(
 
     # generate run dictionary required by pytrec_eval
     run = {qid: {doc.docid: doc.score for doc in docs} for qid, docs in hits.items()}
-
     # save ranking list
     # format: query-id Q0 document-id rank score run_name
     if args.save_ranking_list:
@@ -106,6 +108,8 @@ def search(
         - args.save_ranking_list: bool
         - args.given_ranking_list_path: str
         - args.seed: int, the random seed
+        ##### for loading previous runs #####
+        - args.retrieval_query_type: str (optional)
     # Fusion
         - args.fusion_type: str
         - args.QRs_to_rank: List[str]
@@ -114,6 +118,9 @@ def search(
         - args.fusion_query_lists: List[List[str]]
         - args.per_query_weight_max_value: float
         - args.qid_personalized_level_dict: Dict[str, str]
+        - args.optimize_level_weights: str ("true" or "false")
+        - args.qrel_file_path: str (non-necessary if args.optimize_level_weights is "false")
+        - args.target_metric: str (non-necessary if args.optimize_level_weights is "false")
     # Retrieval
         - args.retrieval_model: str
         - args.retrieval_top_k: int, the number of topk passages to return
@@ -161,10 +168,10 @@ def search(
     # First, try to load the ranking list from the file name
     # If found, no need to search nor rerank.
     ########################################################
-    if os.path.exists(args.ranking_list_path):
-        print("found a complete previous run at the begining, loading it...")
-        hits = load_ranking_list_from_file(args.ranking_list_path, args.sparse_index_dir_path)
-        return get_run_object_and_save_ranking_list(hits, args)
+    # if os.path.exists(args.ranking_list_path):
+    #     print("found a complete previous run at the begining, loading it...")
+    #     hits = load_ranking_list_from_file(args.ranking_list_path, args.sparse_index_dir_path)
+    #     return get_run_object_and_save_ranking_list(hits, args)
         
     ##########################################################################################
     # we have the possibility to load a custom ranking list in stead of first stage retrieval 
@@ -180,15 +187,26 @@ def search(
 
     # No fusion
     if args.fusion_type == "none" and not args.retrieval_model == "none":
+        if "retrieval_query_type" in args:
+            args.QR_name = args.retrieval_query_type 
         hits = Retrieval(args)
 
     # fusion
     else:
         # first search for all QR to get multiple hits
         hits_list = []
-        for QR in args.fusion_query_lists:
+        print(f"searching for all QRs..., the number of QRs is {len(args.fusion_query_lists)}")
+        for index, QR in tqdm(enumerate(args.fusion_query_lists)):
             args.retrieval_query_list = QR
-            hits_list.append(Retrieval(args))
+            args.QR_name = args.QRs_to_rank[index]
+            hits_list.append(
+                # score normalization is done here
+                normalize_scores(
+                    Retrieval(args), 
+                    args.fusion_normalization
+                    )
+                )
+        del args.QR_name
         
 
         # fusion 1: linear weighted score
@@ -219,7 +237,6 @@ def search(
         # fusion2: lottery fusion
         if args.fusion_type == "round_robin":
             print("fusing ranking lists with round robin...")
-            
             # round robin fusion. Random selet at each run.
             hits = round_robin_fusion(hits_list, args.retrieval_top_k,args.seed)
         
@@ -240,16 +257,57 @@ def search(
 
         if args.fusion_type == "per_query_personalize_level":
             print("fusing ranking lists with per_query_personalize_level")
-            
-            # get weights for each query.
-            # for rw fuse rwrs, always use [1,0.1].
-            # for personalized query, use the level to get the weight.
-            decontextualized_rwrs_weight = [1,0.1]
             qid_weights_dict = {}
-            for qid in args.qid_list_string:
-                level = args.qid_personalized_level_dict[qid]
-                float_level = from_level_to_weight_3(level, 4, args.per_query_weight_max_value)
-                qid_weights_dict[qid] = decontextualized_rwrs_weight + [float_level]
+
+            ############## Optimization of level weights ##############
+            if args.optimize_level_weights == "true":
+                # load qrel, to be used for metric calculation
+                with open(args.qrel_file_path, 'r') as f_qrel:
+                    qrel = pytrec_eval.parse_qrel(f_qrel)
+                
+                # get a inverse map of level to qid
+                level_qid_dict = defaultdict(list)
+                for qid, level in args.qid_personalized_level_dict.items():
+                    level_qid_dict[level].append(qid)
+                
+                for level, qids in level_qid_dict.items():
+                    print(f"level {level} has {len(qids)} queries.")
+                    
+                # for each personalization level, get the best weight
+                level_hits_list_dict = defaultdict(lambda: [defaultdict(list) for _ in range(len(hits_list))])
+                for i, hits in enumerate(hits_list): 
+                    for qid, doc_list in hits.items():  
+                        for level, qids in level_qid_dict.items():
+                            if qid in qids:  
+                                level_hits_list_dict[level][i][qid] = doc_list
+
+                # get the best weights for each level
+                level_weights_dict = {}
+                for level, hits_list in level_hits_list_dict.items():
+                    print(f"optimizing weights for level {level}...")
+                    weights, report = optimize_fusion_weights(
+                        hits_list, 
+                        qrel,
+                        args.target_metric, 
+                        )
+                    print(weights)
+                    level_weights_dict[level] = (weights, report)
+                
+                # record it in args.
+                args.level_weights_dict = level_weights_dict
+                # get weights for each query.
+                for qid, level in args.qid_personalized_level_dict.items():
+                    qid_weights_dict[qid] = level_weights_dict[level][0]
+
+            else:
+                # get weights for each query.
+                # for rw fuse rwrs, always use [1,0.1].
+                # for personalized query, use the level to get the weight.
+                decontextualized_rwrs_weight = [1,0.1]
+                for qid in args.qid_list_string:
+                    level = args.qid_personalized_level_dict[qid]
+                    float_level = from_level_to_weight_3(level, 4, args.per_query_weight_max_value)
+                    qid_weights_dict[qid] = decontextualized_rwrs_weight + [float_level]
 
             # linear combination fusion
             hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
@@ -279,7 +337,9 @@ def Retrieval(args):
         - args.retrieval_query_list: List[str]
         - args.qid_list_string: List[str]
         - args.retrieval_model: str
+        ##### for loading previous runs #####
         - args.ranking_list_path: str (optional)
+        - args.QR_name: str (optional)
     # Sparse
         - args.sparse_index_dir_path: str
         - args.retrieval_top_k: int
@@ -305,7 +365,7 @@ def Retrieval(args):
     
 
     Returns:
-        hits (Dict[str, List[Any]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score.
+        hits (Dict[str, List[Any]): Pyserini hits object, or a "PyScoredDoc" similar to an Anserini hit object. Must include .docid and .score. The lists are sorted.
     '''
 
     # sparse search
@@ -313,7 +373,7 @@ def Retrieval(args):
         raise ValueError("retrieval_model should not be none when calling Retrieval function.")
     
     # before retireve, try to load the retrieved list from file
-    if "ranking_list_path" in args:
+    if "ranking_list_path" in args and "QR_name" in args:
 
         ranking_list_dir_path = os.path.dirname(args.ranking_list_path)
         base_name = os.path.basename(args.ranking_list_path)
@@ -323,7 +383,7 @@ def Retrieval(args):
                 inside_crochets = re.findall(r'\[([^\]]+)\]', file)
                 inside_crochets_gold = re.findall(r'\[([^\]]+)\]', base_name)
                 if (
-                    inside_crochets[0] == inside_crochets_gold[0] and # QR type
+                    inside_crochets[0] == args.QR_name and # QR type
                     inside_crochets[3] == inside_crochets_gold[3] and # retriever
                     inside_crochets[4].split("_")[0] == "none" # no reranker
                     ):
