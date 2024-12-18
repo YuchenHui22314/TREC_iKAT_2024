@@ -71,7 +71,7 @@ def optimize_fusion_weights(
         method="wsum",      
         metric=target_metric,  
         return_optimization_report = True,
-        step = 0.1
+        step = 0.01
     )
 
     return weights["weights"], str(report)

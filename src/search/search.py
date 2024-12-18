@@ -196,7 +196,7 @@ def search(
         # first search for all QR to get multiple hits
         hits_list = []
         print(f"searching for all QRs..., the number of QRs is {len(args.fusion_query_lists)}")
-        for index, QR in tqdm(enumerate(args.fusion_query_lists)):
+        for index, QR in tqdm(enumerate(args.fusion_query_lists), total = len(args.fusion_query_lists)):
             args.retrieval_query_list = QR
             args.QR_name = args.QRs_to_rank[index]
             hits_list.append(
@@ -283,18 +283,19 @@ def search(
 
                 # get the best weights for each level
                 level_weights_dict = {}
-                for level, hits_list in level_hits_list_dict.items():
+                for level, sub_hits_list in level_hits_list_dict.items():
                     print(f"optimizing weights for level {level}...")
                     weights, report = optimize_fusion_weights(
-                        hits_list, 
+                        sub_hits_list, 
                         qrel,
                         args.target_metric, 
                         )
                     print(weights)
+                    #print(report)
                     level_weights_dict[level] = (weights, report)
                 
                 # record it in args.
-                args.level_weights_dict = level_weights_dict
+                args.level_weights_dict = weights
                 # get weights for each query.
                 for qid, level in args.qid_personalized_level_dict.items():
                     qid_weights_dict[qid] = level_weights_dict[level][0]
