@@ -100,12 +100,13 @@ def get_args():
                         choices=['none','max','min-max'])
     parser.add_argument("--level_type", type=str, default="none", help="how did we get the personalized level")
     parser.add_argument("--per_query_weight_max_value", type=float, default=0.75)
-    parser.add_argument("--optimize_level_weights", type=str, default="false", choices=["false", "true"])
-    parser.add_argument("--target_metric", type=str, default="ndcg@3", help="Please see https://amenra.github.io/ranx/ for possible metrics." )
+    parser.add_argument("--optimize_level_weights", type=str, default="false", choices=["false", "group", "2+1"])
+    parser.add_argument("--target_metrics", type=str, default="ndcg@3,mrr", help="Please see https://amenra.github.io/ranx/ for possible metrics." )
+    parser.add_argument("--optimize_step", type=float, default=0.1, help="" )
 
 
     ###################
-    #### rerank ####
+    #### rerank    ####
     ###################
     parser.add_argument("--reranker", type=str, default="none",
                         choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k', 'monot5_large', 'monot5_large_10k',
@@ -208,7 +209,10 @@ def get_args():
                             "round_robin_gpt-4o_3_lists",
                             "personalize_level_3_lists_tune",
                             "gpt-4o_judge_and_rewrite_rw",
-                            "gpt-4o_judge_and_rewrite_optimize_test"
+                            "gpt-4o_judge_and_rewrite_optimize_test",
+                            "gpt-4o_judge_and_rewrite_optimize_mrr_test",
+                            "gpt-4o_judge_and_rewrite_optimize_mrr_non_normalize_test",
+                            "original_optimize_test",
 
                             ],)
 

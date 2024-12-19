@@ -1,17 +1,33 @@
 import argparse
 from collections import defaultdict
+from typing import Callable, List
+from itertools import product
 import time
-from progressbar import *
-from search.utils import PyScoredDoc
 import random
-from typing import List
-from collections import defaultdict
+
+import pandas as pd
+from rich.progress import track
+import numpy as np
+from progressbar import *
+from tqdm import tqdm
+
+from search.utils import PyScoredDoc
+
 from ranx import (
     fuse, 
     optimize_fusion,
     Qrels,
     Run
     )
+from ranx.meta import evaluate
+from ranx.fusion import fusion_switch
+
+def get_possible_weights(step):
+    round_digits = str(step)[::-1].find(".")
+    return [round(x, round_digits) for x in np.arange(0, 1 + step, step)]
+
+def get_trial_configs(weights, n_runs):
+    return [seq for seq in product(*[weights] * n_runs) if sum(seq) == 1.0]
 
 def normalize_scores(hits, normalization_type):
     """
@@ -47,10 +63,90 @@ def normalize_scores(hits, normalization_type):
 
     return normalized_hits_dict
 
+def customize_optimize(
+    qrels: Qrels,
+    runs: List[Run],
+    metrics: List[str],
+    step: float = 0.1,
+    description: str = "Optimizing weights",
+):
+    weights = get_possible_weights(step)
+    trials = get_trial_configs(weights, len(runs))
+    fusion_method = fusion_switch("wsum")
+
+    best_score = 0.0
+    best_score_dict = {}
+    best_weights = []
+    optimization_report = {}
+
+    for weights in tqdm(trials, desc=description, total=len(trials)):
+        fused_run = fusion_method(runs, weights)
+        metric_dic = {}
+        for metric in metrics:
+            score = evaluate(qrels, fused_run, metric, save_results_in_run=False)
+            metric_dic[metric] = score
+        optimization_report[str(weights)] = metric_dic
+
+        score_sum = sum(metric_dic.values())
+        if score_sum > best_score:
+            best_score = score_sum
+            best_weights = weights
+            best_score_dict = metric_dic
+
+    
+    # print the optimization report
+     
+    # transform to pandas dataframe, first column is the weights, the rest are the metrics
+    pandas_optimization_report = defaultdict(list)
+    for weights, metrics in optimization_report.items():
+        pandas_optimization_report["weights"].append(weights)
+        for metric, score in metrics.items():
+            pandas_optimization_report[metric].append(score)
+    
+        
+    df = pd.DataFrame(pandas_optimization_report)
+    print("the best weights are: ", best_weights)
+    print("the best scores are: ", best_score_dict)
+
+    return best_weights, df
+
+def optimize_fusion_weights_n_metrics(
+    hits_list,
+    qrels,
+    target_metrics,
+    step,
+    ):
+
+    # Generate run dictionary required by ranx
+    runs = [{qid: {doc.docid: doc.score for doc in docs}  for qid, docs in hits.items()}for hits in hits_list]
+
+    # in the qrel, filter out the qids that are not in the runs
+    qrels = {qid: qrel for qid, qrel in qrels.items() if qid in runs[0]}
+
+    runs = [Run(run) for run in runs]
+    qrels = Qrels(qrels)
+
+    # optimize weights
+    weights, report_pd =  \
+        customize_optimize(
+        qrels=qrels,
+        runs=runs,
+        metrics=target_metrics,
+        step = step
+    )
+    print("################## Optimization Report ##################")
+    # set show items to infinite
+    pd.set_option('display.max_rows', None)
+    print(report_pd)
+
+    return weights, report_pd
+
+
 def optimize_fusion_weights(
     hits_list, 
     qrels, 
-    target_metric
+    target_metric,
+    step
     ):
 
     # Generate run dictionary required by ranx
@@ -67,14 +163,15 @@ def optimize_fusion_weights(
         optimize_fusion(
         qrels=qrels,
         runs=runs,
-        norm="min-max",     
+        norm=None,     
         method="wsum",      
         metric=target_metric,  
         return_optimization_report = True,
-        step = 0.01
+        step = step
     )
+    print("Optimization report: ", report)
 
-    return weights["weights"], str(report)
+    return weights["weights"], 
 
     
 def rank_list_fusion(

@@ -18,6 +18,7 @@ from search.utils import PyScoredDoc
 from search.fuse import (
     normalize_scores,
     optimize_fusion_weights,
+    optimize_fusion_weights_n_metrics,
     round_robin_fusion,
     linear_weighted_score_fusion,
     per_query_linear_combination,
@@ -118,9 +119,10 @@ def search(
         - args.fusion_query_lists: List[List[str]]
         - args.per_query_weight_max_value: float
         - args.qid_personalized_level_dict: Dict[str, str]
-        - args.optimize_level_weights: str ("true" or "false")
+        - args.optimize_level_weights: str ("group" or "false" or "2+1")
         - args.qrel_file_path: str (non-necessary if args.optimize_level_weights is "false")
-        - args.target_metric: str (non-necessary if args.optimize_level_weights is "false")
+        - args.target_metrics: str split by ","s.(non-necessary if args.optimize_level_weights is "false")
+        - args.optimize_step: float (non-necessary if args.optimize_level_weights is "false")
     # Retrieval
         - args.retrieval_model: str
         - args.retrieval_top_k: int, the number of topk passages to return
@@ -191,7 +193,9 @@ def search(
             args.QR_name = args.retrieval_query_type 
         hits = Retrieval(args)
 
+    #######################
     # fusion
+    #######################
     else:
         # first search for all QR to get multiple hits
         hits_list = []
@@ -260,7 +264,24 @@ def search(
             qid_weights_dict = {}
 
             ############## Optimization of level weights ##############
-            if args.optimize_level_weights == "true":
+            if args.optimize_level_weights == "2+1":
+
+                with open(args.qrel_file_path, 'r') as f_qrel:
+                    qrel = pytrec_eval.parse_qrel(f_qrel)
+                first_2_list = hits_list[:2]
+                
+                best_weights, report_pd = optimize_fusion_weights_n_metrics(
+                    first_2_list, 
+                    qrel, 
+                    args.target_metrics.split(","), 
+                    args.optimize_step
+                    )
+                print("wo di ren wu, wan cheng la!")
+                exit(0)
+
+                
+
+            if args.optimize_level_weights == "group":
                 # load qrel, to be used for metric calculation
                 with open(args.qrel_file_path, 'r') as f_qrel:
                     qrel = pytrec_eval.parse_qrel(f_qrel)
@@ -288,7 +309,7 @@ def search(
                     weights, report = optimize_fusion_weights(
                         sub_hits_list, 
                         qrel,
-                        args.target_metric, 
+                        args.target_metrics.split(","), 
                         )
                     print(weights)
                     #print(report)
