@@ -1,8 +1,8 @@
 #!/bin/bash
-# rewrites choices
-# P -> personalize, D -> demo, C -> cot, Re -> rel explain
-# O -> oracle, Rf -> rel feedback
 # Default argument values
+# rewrites choices
+  # P -> personalize, D -> demo, C -> cot, Re -> rel explain
+  # O -> oracle, Rf -> rel feedback
 
 #### modify (1) given rankinglist path (2) retrieval_query_types (3) retrieval model to none (4) write query type to evaluation.py if never run 
 
