@@ -29,6 +29,17 @@ def get_possible_weights(step):
 def get_trial_configs(weights, n_runs):
     return [seq for seq in product(*[weights] * n_runs) if sum(seq) == 1.0]
 
+def calculate_3_weights_from_2_consecutive_weights(weight_pair_1, weight_pair_2):
+
+    a = weight_pair_1[0]
+    b = weight_pair_1[1]
+    c = weight_pair_2[0]
+    d = weight_pair_2[1]
+    
+    list_3_final_weight = d * (a + b) / c
+    return [a, b, list_3_final_weight]
+    
+
 def normalize_scores(hits, normalization_type):
     """
     Normalize the scores of hits objects.

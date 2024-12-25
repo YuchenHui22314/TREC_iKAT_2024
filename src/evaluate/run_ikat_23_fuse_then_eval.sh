@@ -58,7 +58,7 @@ fusion_normalization="min-max"
 # can be 'per_query_personalize_level', "gpt-4o_judge_and_rewrite"
 level_type="gpt-4o_judge_and_rewrite"
 per_query_weight_max_value=1.2
-optimize_level_weights="2+1"
+optimize_level_weights="no_level"
 target_metrics="mrr,ndcg@3" #ndcg@3
 optimize_step=0.01
 
@@ -114,7 +114,8 @@ LOG_FILE=/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt
 #retrieval_query_types=("round_robin_gpt-4o_3_lists")
 #retrieval_query_types=("personalize_level_3_lists_tune") 
 #retrieval_query_types=("gpt-4o_rar_rw" "gpt-4o_rar_rwrs" "gpt-4o_rar_personalized_cot1_rw")
-retrieval_query_types=("gpt-4o_judge_and_rewrite_optimize_mrr_non_normalize_test")
+#retrieval_query_types=("gpt-4o_judge_and_rewrite_optimize_mrr_non_normalize_test")
+retrieval_query_types=("2+1_test")
 reranking_query_types=("none")
 generation_query_types=("none")
 
