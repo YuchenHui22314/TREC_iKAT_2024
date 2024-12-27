@@ -119,7 +119,7 @@ def customize_optimize(
     print("the best weights are: ", best_weights)
     print("the best scores are: ", best_score_dict)
 
-    return best_weights, df
+    return best_weights, df, best_score_dict
 
 def optimize_fusion_weights_n_metrics(
     hits_list,
@@ -138,7 +138,7 @@ def optimize_fusion_weights_n_metrics(
     qrels = Qrels(qrels)
 
     # optimize weights
-    weights, report_pd =  \
+    weights, report_pd, best_score_dict =  \
         customize_optimize(
         qrels=qrels,
         runs=runs,
@@ -150,7 +150,7 @@ def optimize_fusion_weights_n_metrics(
     pd.set_option('display.max_rows', None)
     print(report_pd)
 
-    return weights, report_pd
+    return weights, report_pd, best_score_dict
 
 
 def optimize_fusion_weights(

@@ -2,10 +2,15 @@ import json
 import warnings
 from typing import List, Dict, Tuple, Any
 from dataclasses import dataclass, field, asdict 
-from constants import IKAT_23_EVALUATED_TURNS
-from tqdm import tqdm
 import math
+
+from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
+
+from constants import (
+    IKAT_23_EVALUATED_TURNS,
+    IKAT_24_EVALUATED_TURNS
+)
 
 def load_document_by_id(doc_id, searcher):
     doc = json.loads(searcher.doc(doc_id).raw())
@@ -54,10 +59,6 @@ class Reformulation:
     reformulation_name: str = None
     reformulated_query: str = None
     ptkb_provenance: List[int] = field(default_factory=list)
-
-    
-    
-    
 
 
 @dataclass
@@ -537,6 +538,34 @@ def filter_ikat_23_evaluated_turns(
         filtered_turns = []
         for turn in turns:
             if turn.turn_id in IKAT_23_EVALUATED_TURNS:
+                filtered_turns.append(turn)
+        return filtered_turns
+
+def filter_ikat_23_evaluated_turns(
+    turns: List[Turn]
+    ) -> List[Turn]:
+
+        '''
+        Filter the turns to only include the evaluated turns in iKAT 23
+        '''
+
+        filtered_turns = []
+        for turn in turns:
+            if turn.turn_id in IKAT_23_EVALUATED_TURNS:
+                filtered_turns.append(turn)
+        return filtered_turns
+
+def filter_ikat_24_evaluated_turns(
+    turns: List[Turn]
+    ) -> List[Turn]:
+
+        '''
+        Filter the turns to only include the evaluated turns in iKAT 24
+        '''
+
+        filtered_turns = []
+        for turn in turns:
+            if turn.turn_id in IKAT_24_EVALUATED_TURNS:
                 filtered_turns.append(turn)
         return filtered_turns
 

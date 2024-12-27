@@ -3,6 +3,9 @@ import yaml
 import itertools
 import subprocess
 from copy import deepcopy
+import subprocess
+import signal
+import os
 
 from tqdm import tqdm
 
@@ -53,7 +56,7 @@ def extend_command(config, command):
 
 if __name__ == "__main__":
     # Load configuration
-    config_file = "fuse_then_eval_config.yaml"  
+    config_file = "fuse_then_eval_config_23.yaml"  
     log_file = "/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt"
     
 
@@ -72,14 +75,31 @@ if __name__ == "__main__":
     param_values = [to_iterate_parameters_dict[key] for key in param_keys]
     param_combinations = itertools.product(*param_values)
 
-    for combination in param_combinations:
-        print("begin")
-        param_dict = dict(zip(param_keys, combination))
-        command = deepcopy(base_command)
-        command = extend_command(param_dict, command)
-        command.append(f"&>> {log_file}")
-        print("runing experiment with parameters: ", param_dict)
-        command = " ".join(command) 
-        subprocess.run(command, shell=True)
+
+    processes = []
+    try:
+        for combination in param_combinations:
+            print("begin")
+            param_dict = dict(zip(param_keys, combination))
+            command = deepcopy(base_command)
+            command = extend_command(param_dict, command)
+            command.append(f"&>> {log_file}")
+            print("running experiment with parameters: ", param_dict)
+            command = " ".join(command)
+            
+            # Start child processes and record
+            process = subprocess.Popen(command, shell=True)
+            processes.append(process)
+            process.wait()
+        
+    except KeyboardInterrupt:
+        print("Ctrl+C detected, terminating child processes...")
+        for process in processes:
+            if process and process.poll() is None:  # Check if process is still running
+                os.kill(process.pid, signal.SIGKILL)  # Forcefully kill the process
+                process.wait()  # Wait for it to terminate
+            
+            
+
 
 

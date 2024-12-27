@@ -141,13 +141,13 @@ def search(
             - args.dense_index_dir_path: str
             - args.splade_query_encoder_path: str
             - args.splade_index_dir_path: str
+            - args.query_gpu_id: int, if -1, use cpu
             - args.query_encoder_batch_size : int
+            # faiss specific
             - args.faiss_n_gpu: int, the number of gpus
             - args.use_gpu_for_faiss: bool, whether to use gpu for faiss
-            - args.query_gpu_id: int, if -1, use cpu
             - args.embed_dim: int, the dimension of embeddings
             - args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
-            - args.query_gpu_id: int, Which GPU should the query encoder use. if -1, use cpu
             - args.passage_block_num: int, the number of passage blocks
     # Reranker
         - args.reranker: str
@@ -324,15 +324,17 @@ def search(
 
                 # for each personalization level, get the best weight
                 level_weights_dict = {}
+                level_best_metrics_dict = {}
                 for level, sub_hits_list in level_hits_list_dict.items():
                     print(f"optimizing weights for level {level}...")
-                    stage_2_best_weights, report_pd_2 = optimize_fusion_weights_n_metrics(
+                    stage_2_best_weights, report_pd_2, best_score_dict = optimize_fusion_weights_n_metrics(
                         sub_hits_list, 
                         qrel,
                         args.target_metrics.split(","), 
                         args.optimize_step
                         )
                     level_weights_dict[level] = stage_2_best_weights
+                    level_best_metrics_dict[level] = best_score_dict
                 
                 # get weights for each query.
                 for qid, level in args.qid_personalized_level_dict.items():
@@ -348,7 +350,7 @@ def search(
                              
                 # record it in args.
                 args.level_weights_dict = level_weights_dict 
-                print(level_weights_dict)
+                args.level_best_metrics_dict = level_best_metrics_dict
             
 
 
@@ -375,20 +377,22 @@ def search(
 
                 # for each personalization level, get the best weight
                 level_weights_dict = {}
+                level_best_metrics_dict = {}
+
                 for level, sub_hits_list in level_hits_list_dict.items():
                     print(f"optimizing weights for level {level}...")
-                    weights, report = optimize_fusion_weights_n_metrics(
+                    weights, report, best_score_dict = optimize_fusion_weights_n_metrics(
                         sub_hits_list, 
                         qrel,
                         args.target_metrics.split(","), 
                         args.optimize_step
                         )
-                    print(weights)
-                    #print(report)
                     level_weights_dict[level] = weights
+                    level_best_metrics_dict[level] = best_score_dict
                 
                 # record it in args.
                 args.level_weights_dict = level_weights_dict
+                args.level_best_metrics_dict = level_best_metrics_dict
                 print(level_weights_dict)
                 # get weights for each query.
                 for qid, level in args.qid_personalized_level_dict.items():

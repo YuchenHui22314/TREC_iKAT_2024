@@ -5,8 +5,9 @@ from argparse import ArgumentParser
 
 from tqdm import tqdm
 
-INPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/trec.nist.gov_data_ikat_2023-qrels.all-turns.txt"
-OUTPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/ikat_23_qrel.txt"
+#INPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/trec.nist.gov_data_ikat_2023-qrels.all-turns.txt"
+INPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/ikat_24_qrel.txt"
+OUTPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/ikat_24_qrel_test.txt"
 LOG_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/logs/preprocessing_qrel_log.txt" 
 
 

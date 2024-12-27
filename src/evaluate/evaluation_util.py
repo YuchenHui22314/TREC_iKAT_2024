@@ -25,6 +25,7 @@ from topics import (
     save_turns_to_json, 
     load_turns_from_json,
     filter_ikat_23_evaluated_turns,
+    filter_ikat_24_evaluated_turns,
     get_turn_by_qid
     )
 
@@ -85,7 +86,7 @@ def get_query_list(args):
         if args.topics == "ikat_23_test":
             evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
         elif args.topics == "ikat_24_test":
-            evaluated_turn_list = turn_list
+            evaluated_turn_list = filter_ikat_24_evaluated_turns(turn_list)
 
         qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
 
