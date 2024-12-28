@@ -32,8 +32,18 @@ iterate:
 
   #retrieval_query_type: ["raw", "oracle"]
   #retrieval_query_type: ["gpt-4o_judge_and_rewrite_rw", "gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_rar_personalized_cot1_rw", "oracle"]
-  retrieval_query_type: ["gpt-4o_judge_and_rewrite_optimize_4_test"]
-  retrieval_model: ["BM25", "ance", "splade_v3"] 
+  topics: ["ikat_23_test", "ikat_24_test"]
+  retrieval_query_type: [ 
+                            "gpt-4o_rar_rw_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs",
+                            "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw"]
+  retrieval_model: ["BM25"] 
 
 fixed:
   ###############################################
@@ -59,7 +69,7 @@ fixed:
   ## Retrieval
   ###############################################
   # can be :"none","BM25", "ance", "dpr", "splade_v3". If "none", read ranking list from given_ranking_list_path
-  retrieval_model: "ance"  
+  retrieval_model: "BM25"  
   retrieval_top_k: 1000  
   query_gpu_id: 2  # GPU ID for query encoder
   query_encoder_batch_size: 200  # Batch size for query encoding
@@ -92,12 +102,13 @@ fixed:
   ## Fusion
   ###############################################
   #'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-  fusion_type: "per_query_personalize_level"  
+  fusion_type: "linear_combination"  
   #QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_rar_personalized_cot1_rw"]
-  QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_judge_and_rewrite_rw"]  
-  fuse_weights: [0.1, 0.4]  
+  QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_judge_and_rewrite_rw"]  
+  # if linear combination (1,0.1,0.4) = (0.1,0.4) for linear weighted score.
+  fuse_weights: [1, 0.4]  
   # can be "none", "max", "min-max"
-  fusion_normalization: "min-max"  
+  fusion_normalization: "none"  
   # can be 'per_query_personalize_level', "gpt-4o_judge_and_rewrite"
   level_type: "gpt-4o_judge_and_rewrite"  
   per_query_weight_max_value: 1.2  

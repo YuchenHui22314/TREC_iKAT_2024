@@ -91,8 +91,7 @@ def get_query_list(args):
         qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
 
 
-        # load query/reformulated query according to query type.
-        # possible to call a llm to rewrite the query at this step.
+        # load query according to query type.
         retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
         reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
         generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]

@@ -176,6 +176,7 @@ def get_args():
                             "rar_cot_rw",
                             "rar_cot_rwrs",
                             "gpt-4o_rar_rw", 
+                            "gpt-4o_rar_rs", 
                             "gpt-4o_rar_rwrs",
                             "gpt-4o_rar_cot_rw",
                             "gpt-4o_rar_cot_rwrs",
@@ -198,6 +199,7 @@ def get_args():
                             "rar_rw_fuse_rar_rwrs_fuse_rar_personalized_cot1_rw",
                             "rar_rw_fuse_rar_personalized_cot1_rwrs",
                             "gpt-4o_rar_personalized_cot1_rw",
+                            "gpt-4o_rar_personalized_cot1_rs",
                             "gpt-4o_rar_personalized_cot1_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_personalized_cot1_rw",
                             "gpt-4o_rar_rwrs_fuse_personalized_cot1_rw",
@@ -212,6 +214,8 @@ def get_args():
                             "round_robin_gpt-4o_3_lists",
                             "personalize_level_3_lists_tune",
                             "gpt-4o_judge_and_rewrite_rw",
+                            "gpt-4o_judge_and_rewrite_rs",
+                            "gpt-4o_judge_and_rewrite_rwrs",
                             "gpt-4o_judge_and_rewrite_optimize_test",
                             "gpt-4o_judge_and_rewrite_optimize_mrr_test",
                             "gpt-4o_judge_and_rewrite_optimize_mrr_non_normalize_test",
@@ -219,6 +223,16 @@ def get_args():
                             "original_optimize_test",
                             "2+1_test",
                             "gpt-4o_judge_and_rewrite_optimize_4_test",
+                            "gpt-4o_rar_rw_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs",
+                            "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
+                            "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
+                            "alter_selon_manual_ptkb"
 
                             ],)
 
