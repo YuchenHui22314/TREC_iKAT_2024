@@ -6,8 +6,8 @@ output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2023_test.json"
 demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24_level.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
-#rewrite_model="gpt-3.5-turbo"
-rewrite_model="gpt-4o-2024-08-06"
+rewrite_model="gpt-3.5-turbo"
+#rewrite_model="gpt-4o-2024-08-06"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
 # O -> oracle, Rf -> rel feedback
 #reformulaton_name="raw_llm_rm_PDCReORf"
@@ -21,7 +21,7 @@ rewrite_model="gpt-4o-2024-08-06"
 #reformulation_name="gpt-4o_rar_personalized_cot1"
 #reformulation_name="gpt-4o_rar"
 #reformulation_name="gpt-4o_rar_manual_depersonalized_cot1"
-reformulation_name="gpt-4o_judge_and_rewrite"
+reformulation_name="gpt-3.5_judge_and_rewrite"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2023.txt"
 

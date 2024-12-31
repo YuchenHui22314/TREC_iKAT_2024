@@ -67,6 +67,7 @@ def get_args():
     parser.add_argument("--rewrite_model", type=str, default="gpt-3.5-turbo", choices=[
         "gpt-3.5-turbo", 
         "gpt-3.5-turbo-16k", 
+        "gpt-4-0613",
         "gpt-4o-2024-08-06",
         "mistral-7b",
         "llama3-8b"])
@@ -92,6 +93,8 @@ def get_args():
         "gpt-4o_rar_manual_depersonalized_cot1",         # directly modify the resulting rewrite to remove personalizaiton.
         "personalization_level",
         "gpt-4o_judge_and_rewrite",
+        "gpt-3.5_judge_and_rewrite",
+        "gpt-4_judge_and_rewrite",
         ]
     ) 
     args = parser.parse_args()
@@ -310,6 +313,7 @@ if __name__ == '__main__':
             level = liste[1]
             rewrite = liste[2]
             response = liste[3]
+
 
             turn.add_reformulation(
                 reformulation_name = reformulation_name+"_cot",

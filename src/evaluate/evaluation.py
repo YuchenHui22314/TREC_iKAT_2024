@@ -232,7 +232,9 @@ def get_args():
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rwrs",
                             "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
                             "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
-                            "alter_selon_manual_ptkb"
+                            "alter_selon_manual_ptkb",
+                            "alter_selon_manual_ptkb_rs",
+                            "gpt-3.5_judge_and_rewrite_optimize_4_test",
 
                             ],)
 

@@ -363,9 +363,22 @@ class Turn:
         elif "fuse" in query_type:
             final_query = "ranking list fusion, no query needed"
             warnings.warn(f"################################# ATTENTION!!!!! you should specify a concret fusion type to get correct answer !!!!!!!!!\n#################################")
-        elif query_type == "alter_selon_manual_ptkb":
+        elif "alter_selon_manual_ptkb" in query_type:
+            reformulation = None
             if len(self.ptkb_provenance) == 0:
                 reformulation = self.find_reformulation("gpt-4o_rar_rw") 
+                if reformulation is None:
+                    raise e
+                final_query = reformulation.reformulated_query
+            else:
+                if "rs" in query_type:
+                    final_query = self.query_type_2_query("gpt-4o_judge_and_rewrite_rwrs",0,0)
+                else:
+                    reformulation = self.find_reformulation("gpt-4o_judge_and_rewrite_rw")
+                    if reformulation is None:
+                        raise e
+                    final_query = reformulation.reformulated_query
+            
 
 
             

@@ -508,6 +508,8 @@ def round_robin_fusion(hits_list, topk, random_seed):
 
     return final_hits_dict
 
+def RRF
+
 # Example of how to call the function
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Rank list fusion')
