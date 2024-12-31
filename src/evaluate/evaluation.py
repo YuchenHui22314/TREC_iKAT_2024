@@ -223,6 +223,7 @@ def get_args():
                             "original_optimize_test",
                             "2+1_test",
                             "gpt-4o_judge_and_rewrite_optimize_4_test",
+                            "gpt-3.5_judge_and_rewrite_rw",
                             "gpt-4o_rar_rw_fuse_judge_and_rewrite_rw",
                             "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_rwrs",

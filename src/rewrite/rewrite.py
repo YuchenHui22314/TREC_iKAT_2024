@@ -64,12 +64,14 @@ def get_args():
 
     parser.add_argument("--demo_file", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json")
 
+    parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface")
+
     parser.add_argument("--rewrite_model", type=str, default="gpt-3.5-turbo", choices=[
         "gpt-3.5-turbo", 
         "gpt-3.5-turbo-16k", 
         "gpt-4-0613",
         "gpt-4o-2024-08-06",
-        "mistral-7b",
+        "mistral-8b",
         "llama3-8b"])
 
     parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
@@ -95,6 +97,8 @@ def get_args():
         "gpt-4o_judge_and_rewrite",
         "gpt-3.5_judge_and_rewrite",
         "gpt-4_judge_and_rewrite",
+        "llama3.1_rar",
+        "mistral_rar",
         ]
     ) 
     args = parser.parse_args()
@@ -297,6 +301,35 @@ if __name__ == '__main__':
             load_in_8bit = False,
             load_in_4bit = False,
         )
+    
+    if "mistral" in rewrite_model:
+        rewriter = LM(
+        model_name_or_path="mistralai/Ministral-8B-Instruct-2410",
+        tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
+        padding_side="left",
+        dtype="bf16",
+        device_map= "auto",
+        attn_implementation="flash_attention_2",
+        #use_flash_attention_2=False, (deprecated)
+        access_token=None,
+        cache_dir=args.cache_dir,
+        accelerator = None
+        )
+    
+    if "llama" in rewrite_model:
+        rewriter = LM(
+        model_name_or_path="meta-llama/Llama-3.1-8B-Instruct",
+        tokenizer_name_or_path="meta-llama/Llama-3.1-8B-Instruct",
+        padding_side="left",
+        dtype="bf16",
+        device_map= "auto",
+        attn_implementation="flash_attention_2",
+        access_token=None,
+        cache_dir=args.cache_dir,
+        accelerator = None,
+        load_in_8bit = False,
+        load_in_4bit = False,
+        )
 
     #################################
     ## load topic file and rewrite
@@ -308,8 +341,33 @@ if __name__ == '__main__':
         if "judge_and_rewrite" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
-            response = rewriter.generate_text(prompt)
+
+            # rewrite the prompt
+            if "mistral" in reformulation_name or "llama" in reformulation_name:
+                messages = [
+                    {
+                    "role": "user",
+                    "content": prompt
+                    }
+                ]
+                response = rewriter.hf_llm_generate(
+                    messages,
+                    temperature = 0,
+                    top_p = 0.9,
+                    max_new_tokens = 4096,
+                    do_sample = False,
+                    num_beams = 1,
+                    num_return_sequences = 1
+                )[0]
+            else:
+                response = rewriter.generate_text(prompt)
+            
             liste = prompter.parse_returned_text(response[0])
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
             cot = liste[0]
             level = liste[1]
             rewrite = liste[2]
@@ -530,12 +588,34 @@ if __name__ == '__main__':
 
 
         # we generated just 1 response
-        elif reformulation_name == "rar" or reformulation_name == "gpt-4o_rar":
+        elif (
+                reformulation_name == "rar" or 
+                reformulation_name == "gpt-4o_rar" or
+                reformulation_name == "llama3_rar" or
+                reformulation_name == "mistral2_rar"
+              ):
             # generate prompt for the current turn
             prompt = prompter.build_turn_prompt(context,turn)
 
             # rewrite the prompt
-            responses = rewriter.generate_text(prompt)
+            if "mistral" in reformulation_name or "llama" in reformulation_name:
+                messages = [
+                    {
+                    "role": "user",
+                    "content": prompt
+                    }
+                ]
+                responses = rewriter.hf_llm_generate(
+                    messages,
+                    temperature = 0,
+                    top_p = 0.9,
+                    max_new_tokens = 4096,
+                    do_sample = False,
+                    num_beams = 1,
+                    num_return_sequences = 1
+                )[0]
+            else:
+                responses = rewriter.generate_text(prompt)
 
             rewrite_resposne_cot = prompter.parse_returned_text(responses[0]) 
             if rewrite_resposne_cot == None:
