@@ -24,7 +24,8 @@ rewrite_model="gpt-3.5-turbo"
 #reformulation_name="rar_cot"
 #reformulation_name="gpt-4o_rar"
 #reformulation_name="gpt-4o_rar_non_personalized_cot1"
-reformulation_name="gpt-3.5_judge_and_rewrite"
+#reformulation_name="gpt-3.5_judge_and_rewrite"
+reformulation_name="rar"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
 

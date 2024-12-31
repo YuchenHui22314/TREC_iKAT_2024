@@ -273,6 +273,7 @@ if __name__ == '__main__':
     ###########################
     ## load langauge model
     ###########################
+
     if "gpt" in rewrite_model:
         rewriter = OpenAILM(
         api_key = os.environ['openai_key'],
