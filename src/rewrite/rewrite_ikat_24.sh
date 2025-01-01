@@ -3,12 +3,12 @@
 # Default argument values
 input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
 output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json"
-#demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
+demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/demonstration_using_ikat23.json"
-demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/non_personalized_demonstration_using_ikat23_level.json"
+#demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/non_personalized_demonstration_using_ikat23_level.json"
 #rewrite_model="gpt-3.5-turbo" # gpt-3.5-turbo-0125 "gpt-4o-2024-08-06"
-rewrite_model="gpt-3.5-turbo"
+rewrite_model="llama3-8b"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
 # O -> oracle, Rf -> rel feedback
 #reformulaton_name="raw_llm_rm_PDCReORf"
@@ -25,7 +25,7 @@ rewrite_model="gpt-3.5-turbo"
 #reformulation_name="gpt-4o_rar"
 #reformulation_name="gpt-4o_rar_non_personalized_cot1"
 #reformulation_name="gpt-3.5_judge_and_rewrite"
-reformulation_name="rar"
+reformulation_name="llama3.1_rar"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
 

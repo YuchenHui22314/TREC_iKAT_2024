@@ -34,8 +34,7 @@ iterate:
   #retrieval_query_type: ["raw", "oracle"]
   #retrieval_query_type: ["gpt-4o_judge_and_rewrite_optimize_4_test"]
   topics: ["ikat_24_test", "ikat_23_test"]
-  retrieval_query_type: ["rar_rw", "rar_rwrs"] 
-  #retrieval_query_type: ["gpt-3.5_judge_and_rewrite_optimize_4_test"] 
+  retrieval_query_type: ["gpt-3.5_judge_and_rewrite_optimize_4_test"] 
   retrieval_model: ["splade_v3"] 
 
 fixed:
@@ -95,7 +94,7 @@ fixed:
   ## Fusion
   ###############################################
   #'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-  fusion_type: "none" #'per_query_personalize_level'  
+  fusion_type: 'per_query_personalize_level'  
   #QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_rar_personalized_cot1_rw"]
   QRs_to_rank: ["rar_rw", "rar_rwrs", "gpt-3.5_judge_and_rewrite_rw"]  
   fuse_weights: [0.1, 0.4]  

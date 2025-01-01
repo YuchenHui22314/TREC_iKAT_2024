@@ -218,7 +218,11 @@ if __name__ == '__main__':
             enable_cot=True
         )
 
-    if reformulation_name == "rar" or reformulation_name == "gpt-4o_rar":
+    if (reformulation_name == "rar" or 
+        reformulation_name == "gpt-4o_rar" or
+        reformulation_name == "llama3.1_rar" or
+        reformulation_name == "mistral_rar"
+        ):
         prompter = RewriteAndResponsePromptor(
             demo_file = demo_file, 
             enable_cot = False
@@ -308,7 +312,7 @@ if __name__ == '__main__':
         tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
         padding_side="left",
         dtype="bf16",
-        device_map= "auto",
+        device_map= "cuda:0",
         attn_implementation="flash_attention_2",
         #use_flash_attention_2=False, (deprecated)
         access_token=None,
@@ -322,7 +326,7 @@ if __name__ == '__main__':
         tokenizer_name_or_path="meta-llama/Llama-3.1-8B-Instruct",
         padding_side="left",
         dtype="bf16",
-        device_map= "auto",
+        device_map= "cuda:1",
         attn_implementation="flash_attention_2",
         access_token=None,
         cache_dir=args.cache_dir,
@@ -591,8 +595,8 @@ if __name__ == '__main__':
         elif (
                 reformulation_name == "rar" or 
                 reformulation_name == "gpt-4o_rar" or
-                reformulation_name == "llama3_rar" or
-                reformulation_name == "mistral2_rar"
+                reformulation_name == "llama3.1_rar" or
+                reformulation_name == "mistral_rar"
               ):
             # generate prompt for the current turn
             prompt = prompter.build_turn_prompt(context,turn)
