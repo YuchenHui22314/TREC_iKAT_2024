@@ -369,6 +369,22 @@ class JudgeThenRewritePromptor:
                     rewrite = line[12:].strip()
                 elif line[:13] == "**Response**:":
                     response = line[13:].strip()
+                elif line[:11] == "**Reason:**":
+                    cot = line[11:].strip()
+                elif line[:10] == "**Level:**":
+                    level = line[10:].strip()
+                elif line[:12] == "**Rewrite:**":
+                    rewrite = line[12:].strip()
+                elif line[:13] == "**Response:**":
+                    response = line[13:].strip()
+                elif line[:11] == "### Reason:":
+                    cot = line[11:].strip()
+                elif line[:10] == "### Level:":
+                    level = line[10:].strip()
+                elif line[:12] == "### Rewrite:":
+                    rewrite = line[12:].strip()
+                elif line[:13] == "### Response:":
+                    response = line[13:].strip()
                 
             if level == None or rewrite == None or response == None: 
                 return None 

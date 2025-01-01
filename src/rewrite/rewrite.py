@@ -346,6 +346,10 @@ if __name__ == '__main__':
         context = get_context_by_qid(turn.turn_id,turn_list)
         if "judge_and_rewrite" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
+
+            # run the 2nd times to deal with some bugs.
+            if turn.turn_id not in ["19-1-15"]:
+                continue
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
 
             # rewrite the prompt
