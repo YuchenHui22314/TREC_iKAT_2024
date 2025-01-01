@@ -99,6 +99,8 @@ def get_args():
         "gpt-4_judge_and_rewrite",
         "llama3.1_rar",
         "mistral_rar",
+        "mistral_judge_and_rewrite",
+        "llama3.1_judge_and_rewrite",
         ]
     ) 
     args = parser.parse_args()
