@@ -27,8 +27,7 @@ from search.fuse import (
 
 
 
-def load_ranking_list_from_file(file_path: str, sparse_index_dir_path: str) -> Dict[str, List[PyScoredDoc]]:
-    searcher = LuceneSearcher(sparse_index_dir_path)
+def load_ranking_list_from_file(file_path: str) -> Dict[str, List[PyScoredDoc]]:
     # load the ranking list
     with open(file_path, "r") as f:
         run = pytrec_eval.parse_run(f)
@@ -173,7 +172,7 @@ def search(
     ########################################################
     # if os.path.exists(args.ranking_list_path):
     #     print("found a complete previous run at the begining, loading it...")
-    #     hits = load_ranking_list_from_file(args.ranking_list_path, args.sparse_index_dir_path)
+    #     hits = load_ranking_list_from_file(args.ranking_list_path)
     #     return get_run_object_and_save_ranking_list(hits, args)
         
     ##########################################################################################
@@ -182,7 +181,7 @@ def search(
 
     if args.retrieval_model == "none":
         assert args.given_ranking_list_path != "none", " --given_ranking_list_path should be provided when --run_from_rerank or --run_from_generate is true, because we do not do retrieval/retrieval+reranking in these cases."
-        hits = load_ranking_list_from_file(args.given_ranking_list_path, args.sparse_index_dir_path)
+        hits = load_ranking_list_from_file(args.given_ranking_list_path)
     
     #######################
     # First stage retrieval
@@ -488,8 +487,8 @@ def Retrieval(args):
                     ):
                     print("In Retrieval function, found a previous non-reranking run, loading it...")
                     hits = load_ranking_list_from_file(
-                        os.path.join(ranking_list_dir_path, file),
-                        args.sparse_index_dir_path)
+                        os.path.join(ranking_list_dir_path, file)
+                      )
                     return hits
 
 

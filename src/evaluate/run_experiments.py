@@ -56,7 +56,7 @@ def extend_command(config, command):
 
 if __name__ == "__main__":
     # Load configuration
-    config_file = "fuse_then_eval_config_23.yaml"  
+    config_file = "fuse_then_eval_config_24.yaml"  
     log_file = "/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt"
     
 
@@ -65,6 +65,7 @@ if __name__ == "__main__":
     # Extract parameters and experiment config
     fixed_parameters_dict = config["fixed"]
     to_iterate_parameters_dict = config["iterate"]
+    param_mapping = config["param_mapping"]
 
     initial_command = ["python", "evaluation.py"]
 
@@ -82,45 +83,15 @@ if __name__ == "__main__":
             param_dict = dict(zip(param_keys, combination))
             fixed_parameters_dict_copy = deepcopy(fixed_parameters_dict)
 
-            if param_dict["topics"] == "ikat_24_test":
-                fixed_parameters_dict_copy["input_query_path"] = fixed_parameters_dict_copy["input_query_path"].replace("23", "24")
-                fixed_parameters_dict_copy["qrel_file_path"] = fixed_parameters_dict_copy["qrel_file_path"].replace("23", "24")
-            if param_dict["topics"] == "ikat_23_test":
-                fixed_parameters_dict_copy["input_query_path"] = fixed_parameters_dict_copy["input_query_path"].replace("24", "23")
-                fixed_parameters_dict_copy["qrel_file_path"] = fixed_parameters_dict_copy["qrel_file_path"].replace("24", "23")
-
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rw_fuse_judge_and_rewrite_rw":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rw", "gpt-4o_judge_and_rewrite_rw"]
-                fixed_parameters_dict_copy["fuse_weights"] = [1,0.4]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rw", "gpt-4o_judge_and_rewrite_rwrs"]
-                fixed_parameters_dict_copy["fuse_weights"] = [1,0.1]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rw_fuse_rar_rwrs":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs"]
-                fixed_parameters_dict_copy["fuse_weights"] = [1,0.1]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rw":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rwrs", "gpt-4o_judge_and_rewrite_rw"]
-                fixed_parameters_dict_copy["fuse_weights"] = [0.1,0.4]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rwrs", "gpt-4o_judge_and_rewrite_rwrs"]
-                fixed_parameters_dict_copy["fuse_weights"] = [0.1,0.1]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rw":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_judge_and_rewrite_rw"]
-                fixed_parameters_dict_copy["fuse_weights"] = [1,0.1,0.4]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rwrs":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_judge_and_rewrite_rwrs"]
-                fixed_parameters_dict_copy["fuse_weights"] = [1,0.1,0.1]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rw", "gpt-4o_judge_and_rewrite_rwrs", "gpt-4o_judge_and_rewrite_rw"]
-                fixed_parameters_dict_copy["fuse_weights"] = [1,0.1,0.4]
-            if param_dict["retrieval_query_type"] == "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw":
-                fixed_parameters_dict_copy["QRs_to_rank"] = ["gpt-4o_rar_rwrs", "gpt-4o_judge_and_rewrite_rwrs", "gpt-4o_judge_and_rewrite_rw"]
-                fixed_parameters_dict_copy["fuse_weights"] = [0.1,0.1,0.4]
-            
+            # load param mapping:
+            for param_name, mapping in param_mapping.items():
+                for param_value, associated_param_dict in mapping.items():
+                    if param_dict[param_name] == param_value:
+                        for key, value in associated_param_dict.items():
+                            fixed_parameters_dict_copy[key] = value
 
                 
             base_command = extend_command(fixed_parameters_dict_copy, initial_command)
-            # distinguish ikat 23 and 24
             command = extend_command(param_dict, base_command)
             command.append(f"&>> {log_file}")
             print("running experiment with parameters: ", param_dict)

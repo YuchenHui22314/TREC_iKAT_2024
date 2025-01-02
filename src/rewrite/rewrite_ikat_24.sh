@@ -2,7 +2,8 @@
 
 # Default argument values
 input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
-output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json"
+output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
+#output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/demonstration_using_ikat23.json"

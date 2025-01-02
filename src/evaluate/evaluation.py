@@ -236,6 +236,16 @@ def get_args():
                             "alter_selon_manual_ptkb",
                             "alter_selon_manual_ptkb_rs",
                             "gpt-3.5_judge_and_rewrite_optimize_4_test",
+                            "llama3.1_rar_rw",
+                            "llama3.1_rar_rwrs",
+                            "mistral_rar_rw",
+                            "mistral_rar_rwrs",
+                            "mistral_judge_and_rewrite_rw",
+                            "mistral_judge_and_rewrite_rwrs",
+                            "llama3.1_judge_and_rewrite_rw",
+                            "llama3.1_judge_and_rewrite_rwrs",
+                            "mistral_judge_and_rewrite_optimize_4_test",
+                            "llama3.1_judge_and_rewrite_optimize_4_test"
 
                             ],)
 
