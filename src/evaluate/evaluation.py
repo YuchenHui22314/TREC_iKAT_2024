@@ -297,7 +297,10 @@ if __name__ == "__main__":
     args = get_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
-    print(args)
+    print(json.dumps(vars(args), indent=4))
+    # print current time:
+    print("current time: ", os.popen('date').read())
+    
 
     ###############
     # check args
@@ -312,6 +315,9 @@ if __name__ == "__main__":
     if args.qe_type == "rm3":
         qe = f"_rm3"
     file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
+    print("#######################################")
+    print("the file name stem is: ", file_name_stem)
+    print("#######################################")
 
     ###################################################################
     #  generate folder paths where the evaluation results will be saved

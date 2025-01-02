@@ -43,19 +43,23 @@ iterate:
   #                           "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
   #                           "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw"]
 
-  retrieval_query_type: [
-    "llama3.1_judge_and_rewrite_rw",
-    "llama3.1_judge_and_rewrite_rwrs",
-    "llama3.1_rar_rw",
-    "llama3.1_rar_rwrs",
-    "mistral_rar_rw",
-    "mistral_rar_rwrs",
-    "mistral_judge_and_rewrite_rw",
-    "mistral_judge_and_rewrite_rwrs"
-  ]
+  # retrieval_query_type: [
+  #   "llama3.1_judge_and_rewrite_rw",
+  #   "llama3.1_judge_and_rewrite_rwrs",
+  #   "llama3.1_rar_rw",
+  #   "llama3.1_rar_rwrs",
+  #   "mistral_rar_rw",
+  #   "mistral_rar_rwrs",
+  #   "mistral_judge_and_rewrite_rw",
+  #   "mistral_judge_and_rewrite_rwrs"
+  # ]
 
-  topics: ["ikat_24_test","ikat_23_test" ]
-  retrieval_model: ["BM25", "splade_v3", "ance"] 
+  retrieval_query_type: [
+    "llama3.1_rar_rwrs",
+    "mistral_rar_rwrs"
+  ]
+  topics: ["ikat_23_test"]
+  retrieval_model: ["ance","splade_v3"] 
 
 
 param_mapping:

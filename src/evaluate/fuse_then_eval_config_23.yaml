@@ -45,12 +45,13 @@ iterate:
   #   "llama3.1_rar_rwrs"
   # ]
 
-  topics: ["ikat_23_test","ikat_24_test"]
+  topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [ 
-    "mistral_judge_and_rewrite_optimize_4_test",
-    "llama3.1_judge_and_rewrite_optimize_4_test",
+    "gpt-4o_judge_and_rewrite_optimize_4_test"
     ] 
-  retrieval_model: ["BM25", "ance", "splade_v3"] 
+  reranking_query_type: ["gpt-4o_judge_and_rewrite_rw"]
+  retrieval_model: ["splade_v3"] 
+  reranker: ["monot5_base_10k"]
 
 param_mapping:
 
@@ -155,7 +156,7 @@ fixed:
   ## Fusion
   ###############################################
   #'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-  fusion_type: 'per_query_personalize_level'  
+  fusion_type: 'none'  
   #QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_rar_personalized_cot1_rw"]
   QRs_to_rank: [
     "mistral_rar_rw", 

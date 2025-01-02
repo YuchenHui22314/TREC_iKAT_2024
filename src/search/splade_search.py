@@ -63,6 +63,8 @@ def splade_search(args):
     with torch.no_grad():
         model.eval()
         for batch in tqdm(test_loader, desc="generating query embeddings"):
+            print(batch["input_ids"].shape)
+            print(batch["input_ids"])
             inputs = {}
             inputs["input_ids"] = batch["input_ids"].to(device)
             inputs["attention_mask"] = batch["attention_mask"].to(device)

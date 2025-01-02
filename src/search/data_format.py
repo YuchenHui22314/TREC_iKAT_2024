@@ -994,7 +994,8 @@ class Retrieval_trec(Dataset):
         encoded_query = self.tokenizer(
             query, 
             add_special_tokens = True, 
-            padding = "longest",
+            padding = "max_length",
+            truncation = True,
             return_tensors = "pt",
             max_length = self.max_length)
         
