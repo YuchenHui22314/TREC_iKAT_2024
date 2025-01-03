@@ -348,9 +348,8 @@ if __name__ == '__main__':
             current_turn_ptkb_dict = turn.ptkb
 
             # run the 2nd times to deal with some bugs.
-            if turn.turn_id not in ["4-4"]:
+            if turn.turn_id not in ["19-1-15"]:
                 continue
-            print("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh the current turn id is 4-4")
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
 
             # rewrite the prompt
@@ -373,6 +372,7 @@ if __name__ == '__main__':
             else:
                 response = rewriter.generate_text(prompt)
             
+            print(response)
             liste = prompter.parse_returned_text(response[0])
             if liste == None:
                 print(f"error with turn id {turn.turn_id}")

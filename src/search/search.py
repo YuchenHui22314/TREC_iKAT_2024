@@ -196,7 +196,7 @@ def search(
     #######################
     # fusion
     #######################
-    else:
+    elif not args.fusion_type == "none":
         # first search for all QR to get multiple hits
         hits_list = []
         print(f"searching for all QRs..., the number of QRs is {len(args.fusion_query_lists)}")

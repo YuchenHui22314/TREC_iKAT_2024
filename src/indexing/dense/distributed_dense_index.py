@@ -264,8 +264,8 @@ if __name__ == "__main__":
     set_seed(args)
     #dense_indexing(args)
     merge_blocks_to_large_blocks(
-    input_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance",
-    output_folder = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2",
+    input_folder = "/part/02/Tmp/yuchen/indexes/ance_clueweb22B",
+    output_folder = "/part/02/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2",
     num_block = 116,
     num_rank = 4,
     expected_num_doc_per_block = 10000000

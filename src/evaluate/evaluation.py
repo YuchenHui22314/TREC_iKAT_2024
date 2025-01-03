@@ -11,16 +11,13 @@ from dataclasses import asdict
 import pytrec_eval
 from pyserini.search import get_topics, get_qrels
 
+
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 #sys.path.append('../')
 
 from topics import (
-    Turn, 
-    Result,
-    Reformulation,
     save_turns_to_json, 
-    load_turns_from_json,
-    filter_ikat_23_evaluated_turns,
+    load_turns_from_json
     )
 
     
@@ -245,7 +242,9 @@ def get_args():
                             "llama3.1_judge_and_rewrite_rw",
                             "llama3.1_judge_and_rewrite_rwrs",
                             "mistral_judge_and_rewrite_optimize_4_test",
-                            "llama3.1_judge_and_rewrite_optimize_4_test"
+                            "llama3.1_judge_and_rewrite_optimize_4_test",
+                            "2024_submission",
+                            "rerun_submission_from_rklist"
 
                             ],)
 
@@ -265,6 +264,7 @@ def get_args():
                             "rar_personalized_cot1_rw",
                             "gpt-4o_rar_personalized_cot1_rw",
                             'gpt-4o_rar_non_personalized_cot1_rw',
+                            'gpt-4o_judge_and_rewrite_rw'
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
@@ -397,6 +397,8 @@ if __name__ == "__main__":
             {
                 turn.turn_id: turn.get_personalization_level(args.level_type) for turn in turn_list
             }
+        
+        exit(0)
 
         hits, run = search(
             args
@@ -470,6 +472,14 @@ if __name__ == "__main__":
 
         if args.save_results_to_object:
 
+            # first re-read the turns from the json file, because 
+            # it may subject to change during the search component.
+            turn_list = load_turns_from_json(
+                input_topic_path=args.input_query_path,
+                range_start=0,
+                range_end=-1
+                )
+
             for qid, result_dict in query_metrics_dic.items():
 
                 if args.run_rag:
@@ -477,6 +487,7 @@ if __name__ == "__main__":
                 else:
                     response = "rag_not_run, no response."
 
+                
                 for turn in turn_list:
                     if str(turn.turn_id) == qid:
                         turn.add_result(
