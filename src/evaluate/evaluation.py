@@ -1,15 +1,10 @@
-import pickle
 import sys
 import logging
 import argparse
 import os
-import numpy as np
 import json
-from typing import Mapping, Tuple, List, Optional, Union, Any, Dict
-from tqdm import tqdm
-from dataclasses import asdict
-import pytrec_eval
-from pyserini.search import get_topics, get_qrels
+
+import wandb
 
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
@@ -141,6 +136,7 @@ def get_args():
 
 
     # after evaluation
+    parser.add_argument("--save_to_wandb", action="store_true", help="if we will save the results to wandb.")
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.50,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.50,recall.100,recall.1000")
 
@@ -322,6 +318,20 @@ if __name__ == "__main__":
     print("#######################################")
     print("the file name stem is: ", file_name_stem)
     print("#######################################")
+
+    #### WANDB initialization ####
+    topic_name_map = {  
+        "ikat_23_test": "TREC_iKAT_2023",
+        "ikat_24_test": "TREC_iKAT_2024"  
+    }
+    project_name = topic_name_map[args.topics] 
+
+    if args.save_to_wandb:
+        wandb.init(
+            project=project_name, 
+            name=file_name_stem
+            )
+        
 
     ###################################################################
     #  generate folder paths where the evaluation results will be saved
@@ -557,6 +567,10 @@ if __name__ == "__main__":
             with open(metric_file_path, "a") as f:
                 f.write(file_name_stem + f"-[{averaged_metrics[metric_name]}]\n")
 
+        if args.save_to_wandb:
+            wandb.config.update(vars(args))
+            wandb.run.summary.update(averaged_metrics)
+            wandb.run.summary["formatted_metrics"] = "    " + formatted_metrics
 
     print("done.")
         

@@ -162,6 +162,7 @@ cython_debug/
 #.idea/
 
 # specific folders/files
+src/evaluate/wandb/*
 **/test.py
 /TREC_iKAT_2023_Getting_Started.ipynb
 /.vscode
