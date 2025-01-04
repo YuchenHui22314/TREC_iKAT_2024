@@ -348,7 +348,7 @@ if __name__ == '__main__':
             current_turn_ptkb_dict = turn.ptkb
 
             # run the 2nd times to deal with some bugs.
-            if turn.turn_id not in ["19-1-15"]:
+            if turn.turn_id not in ["21-1-10"]:
                 continue
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
 
@@ -383,6 +383,12 @@ if __name__ == '__main__':
             level = liste[1]
             rewrite = liste[2]
             response = liste[3]
+
+            print(f"cot: {cot}")
+            print(f"level: {level}")
+            print(f"rewrite: {rewrite}")
+            print(f"response: {response}")
+            
 
 
             turn.add_reformulation(

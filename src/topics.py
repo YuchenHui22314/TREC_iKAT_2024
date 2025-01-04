@@ -191,17 +191,9 @@ class Turn:
         '''
         Get the personalization level of the current turn
         '''
-        level = None
-        try:
-            reformulation_name = f"{level_type}_lv"
-            level = self.find_reformulation(reformulation_name).reformulated_query[0]
-        except:
-            print(f"Personalization level {level_type} error in turn {self.turn_id}")
-
-        try:
-            assert level in ["a", "b", "c", "d"], f"Personalization level {level} not supported for turn {self.turn_id}"
-        except:
-            pass
+        reformulation_name = f"{level_type}_lv"
+        level = self.find_reformulation(reformulation_name).reformulated_query[0]
+        assert level in ["a", "b", "c", "d"], f"Personalization level {level} not supported for turn {self.turn_id}"
 
 
         return level

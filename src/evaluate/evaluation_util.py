@@ -203,7 +203,7 @@ def print_formatted_latex_metrics(metrics_dict, metrics_list):
         result.append(f"{value:.1f}")
     
     # Print the result separated by tab
-    print(" & ".join(result))
+    return " & ".join(result)
 
 
 def generate_and_save_ikat_submission(

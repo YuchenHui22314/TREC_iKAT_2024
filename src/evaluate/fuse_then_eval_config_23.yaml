@@ -45,15 +45,24 @@ iterate:
   #   "llama3.1_rar_rwrs"
   # ]
 
-  topics: ["ikat_23_test"]
+  # topics: ["ikat_23_test","ikat_24_test"]
+  # retrieval_query_type: [ 
+  #   mistral_judge_and_rewrite_optimize_4_test,
+  #   llama3.1_judge_and_rewrite_optimize_4_test,
+  #   gpt-3.5_judge_and_rewrite_optimize_4_test,
+  #   gpt-4o_judge_and_rewrite_optimize_4_test
+  #   ] 
+  # retrieval_model: ["splade_v3"] 
+  # reranker: [none]
+  # reranking_query_type: ["none"]
+  
+  topics: ["ikat_23_test","ikat_24_test"]
   retrieval_query_type: [ 
-    mistral_judge_and_rewrite_optimize_4_test,
-    llama3.1_judge_and_rewrite_optimize_4_test
+    oracle
     ] 
   retrieval_model: ["splade_v3"] 
-  reranker: [none]
-  reranking_query_type: ["none"]
-  
+  reranker: ["monot5_base_10k"]
+  reranking_query_type: ["oracle"]
 
 param_mapping:
 
@@ -117,6 +126,9 @@ param_mapping:
     gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs:
       QRs_to_rank: [gpt-4o_rar_rwrs, gpt-4o_judge_and_rewrite_rwrs]
       fuse_weights: [0.1, 0.1]
+    gpt-4o_judge_and_rewrite_rw_fuse_rwrs:
+      QRs_to_rank: [gpt-4o_judge_and_rewrite_rw, gpt-4o_judge_and_rewrite_rwrs]
+      fuse_weights: [0.4, 0.1]
     gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rw:
       QRs_to_rank: [gpt-4o_rar_rw, gpt-4o_rar_rwrs, gpt-4o_judge_and_rewrite_rw]
       fuse_weights: [1, 0.1, 0.4]
@@ -188,7 +200,7 @@ fixed:
   ## Fusion
   ###############################################
   #'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-  fusion_type: 'none'  
+  fusion_type: 'linear_combination'  
   #QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_rar_personalized_cot1_rw"]
   QRs_to_rank: [
     "mistral_rar_rw", 
@@ -197,7 +209,7 @@ fixed:
     ]  
   fuse_weights: [0.1, 0.4]  
   # can be "none", "max", "min-max"
-  fusion_normalization: "min-max"  
+  fusion_normalization: "none"  
   # can be 'per_query_personalize_level', "gpt-4o_judge_and_rewrite","gpt-3.5_judge_and_rewrite"
   level_type: "gpt-3.5_judge_and_rewrite"  
   per_query_weight_max_value: 1.2  
@@ -235,6 +247,7 @@ fixed:
   ## Metrics
   ###############################################
   metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"  
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
   given_ranking_list_path: "/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw]-S2[gpt-4o_rar_personalized_cot1_rw]-g[gpt-4o_rar_personalized_cot1_rw]-[none]-[monot5_base_10k_4_1_none]-[s2_top50].txt"  
 
   ###############################################

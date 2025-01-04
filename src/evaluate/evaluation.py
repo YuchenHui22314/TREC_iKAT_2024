@@ -30,7 +30,8 @@ from evaluation_util import (
     get_query_list,
     evaluate,
     generate_and_save_ikat_submission,
-    extract_filename
+    extract_filename,
+    print_formatted_latex_metrics
 )
 
 
@@ -143,6 +144,8 @@ def get_args():
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.50,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.50,recall.100,recall.1000")
 
+    parser.add_argument("--metrics_to_print", type=str, nargs='+', default=["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"])
+
     parser.add_argument("--save_results_to_object",  action="store_true", help="if we will save eval results (metrics + response) to turn/topic object.")
 
     parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
@@ -226,6 +229,7 @@ def get_args():
                             "gpt-4o_rar_rw_fuse_rar_rwrs",
                             "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rw",
                             "gpt-4o_rar_rwrs_fuse_judge_and_rewrite_rwrs",
+                            "gpt-4o_judge_and_rewrite_rw_fuse_rwrs",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rw",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_judge_and_rewrite_rwrs",
                             "gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs_fuse_judge_and_rewrite_rw",
@@ -398,8 +402,6 @@ if __name__ == "__main__":
                 turn.turn_id: turn.get_personalization_level(args.level_type) for turn in turn_list
             }
         
-        exit(0)
-
         hits, run = search(
             args
             )
@@ -511,8 +513,27 @@ if __name__ == "__main__":
         print("saving results...")
 
 
-        # save metrics  
+        # save formatted metrics
+        formatted_metrics = print_formatted_latex_metrics(
+            averaged_metrics,
+            args.metrics_to_print
+        )
+
+        print("Print this line to your latex table:")
+        print("-------------------------------------")
+        print("    ", formatted_metrics)
+        print("-------------------------------------")
+        
+
         with open(metrics_path, "w") as f:
+            f.write("Print this line to your latex table:\n")
+            f.write("-------------------------------------\n")
+            f.write("    " + formatted_metrics + "\n")
+            f.write("-------------------------------------\n")
+
+        # save metrics  
+        with open(metrics_path, "a") as f:
+            f.write("\n")
             json.dump(averaged_metrics, f, indent=4)
 
         # save also the args values in the same file

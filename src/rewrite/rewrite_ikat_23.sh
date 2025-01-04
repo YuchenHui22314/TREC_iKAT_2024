@@ -9,8 +9,8 @@ demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_u
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
 # "mistral-8b",
 # "llama3-8b"
-#rewrite_model="llama3-8b"
-rewrite_model="mistral-8b"
+rewrite_model="llama3-8b"
+#rewrite_model="mistral-8b"
 #rewrite_model="gpt-4o-2024-08-06"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
 # O -> oracle, Rf -> rel feedback
@@ -26,7 +26,7 @@ rewrite_model="mistral-8b"
 #reformulation_name="gpt-4o_rar"
 #reformulation_name="gpt-4o_rar_manual_depersonalized_cot1"
 #reformulation_name="llama3.1_rar"
-reformulation_name="mistral_judge_and_rewrite"
+reformulation_name="llama3.1_judge_and_rewrite"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2023.txt"
 
