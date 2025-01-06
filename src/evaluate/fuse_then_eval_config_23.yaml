@@ -63,15 +63,25 @@ iterate:
   # retrieval_model: ["splade_v3"] 
   # reranker: ["monot5_base_10k"]
   # reranking_query_type: ["oracle"]
+  # fusion_type: ['none']
 
-  topics: ["ikat_23_test", "ikat_24_test"]
+  # topics: ["ikat_24_test"]
+  # retrieval_query_type: [ 
+  #   "round_robin_3_lists",
+  #   "gpt-4o_rar_rw+gpt-4o_rar_rwrs+gpt-4o_judge_and_rewrite_rw",
+  #   "RRF_3_lists"
+  #   ] 
+  # retrieval_model: ["splade_v3"]
+  # reranker: ["none"]
+  # reranking_query_type: ["none"]
+
+  topics: ["ikat_24_test", "ikat_24_test"]
   retrieval_query_type: [ 
-    oracle
+    gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize
     ] 
-  retrieval_model: ["splade_v3"] 
+  retrieval_model: ["splade_v3"]
   reranker: ["none"]
   reranking_query_type: ["none"]
-
 param_mapping:
 
   reranker:
@@ -93,6 +103,45 @@ param_mapping:
       qrel_file_path: "../../data/qrels/ikat_23_qrel.txt"
 
   retrieval_query_type:
+
+    gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "none"
+      optimize_level_weights: "group" 
+
+    gpt-4o_judge_and_rewrite_optimize_4_test:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
+
+    RRF_3_lists:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      fusion_type: 'RRF'
+
+    round_robin_3_lists:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      fusion_type: 'round_robin'
+
     2024_submission:
       QRs_to_rank: [
         gpt-4o_rar_rw, 
@@ -208,7 +257,7 @@ fixed:
   ## Fusion
   ###############################################
   #'none' 'round_robin', 'lienar_combination' 'linear_weighted_score' 'per_query_personalize_level'
-  fusion_type: 'linear_combination'  
+  fusion_type: 'none'  
   #QRs_to_rank: ["gpt-4o_rar_rw", "gpt-4o_rar_rwrs", "gpt-4o_rar_personalized_cot1_rw"]
   QRs_to_rank: [
     "mistral_rar_rw", 

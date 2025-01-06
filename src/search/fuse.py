@@ -4,6 +4,7 @@ from typing import Callable, List
 from itertools import product
 import time
 import random
+from copy import deepcopy
 
 import pandas as pd
 from rich.progress import track
@@ -471,6 +472,45 @@ def per_query_linear_combination(hits_list, qid_weights_dict, top_k):
             final_hits_dict[qid].append(PyScoredDoc(doc, fused_docid_score_dict[doc]))
 
     return final_hits_dict
+
+
+def RRF(hits_list, topk, k=60):
+    """
+    Perform Rank Rank Fusion (RRF) on a list of hits objects.
+
+    Args:
+        hits_list: List of pyserini hits objects. Each element inside must can .docid and .score
+        topk: Number of hits to retrieve for each query. Default is 1000.
+        k: Constant used in RRF score calculation. Default is 60.
+    Retruns:
+        The fused ranking list.
+    """
+    final_hits_dict = defaultdict(dict)
+    qids = hits_list[0].keys()
+
+    for qid in qids:
+        doc_scores = defaultdict(float)
+        for hits in hits_list:
+            for rank, doc in enumerate(hits[qid]):
+                doc_scores[doc.docid] += 1 / (k + rank + 1)  # +1 to adjust rank to start from 0
+
+        # Sort documents by their RRF scores in descending order
+        sorted_docs = sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)
+
+        # Convert sorted documents to pyserini's Hits format
+        final_hits_dict[qid] = []
+        for docid, score in sorted_docs[:topk]:
+            # Create dummy hits object. We don't have access to the original score or text
+            hit = type('', (), {})() 
+            hit.docid = docid
+            hit.score = score
+            #hit.text = "" # or any dummy value for text. Pyserini may need this attribute for some functions.
+            final_hits_dict[qid].append(hit)
+
+
+    return final_hits_dict
+    
+
 
 
 def round_robin_fusion(hits_list, topk, random_seed):
