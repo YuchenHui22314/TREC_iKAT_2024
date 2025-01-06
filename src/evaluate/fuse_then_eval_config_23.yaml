@@ -75,9 +75,17 @@ iterate:
   # reranker: ["none"]
   # reranking_query_type: ["none"]
 
-  topics: ["ikat_24_test", "ikat_24_test"]
+  # "gpt-4o_rar_manual_depersonalized_cot1_rw"
+  # "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw"
+
+  topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [ 
-    gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize
+    # wo_explicit_level
+    # wo_finegrianed,
+    # gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize,
+    # gpt-4o_rar_manual_depersonalized_cot1_rw
+    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4,
+    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw
     ] 
   retrieval_model: ["splade_v3"]
   reranker: ["none"]
@@ -103,6 +111,48 @@ param_mapping:
       qrel_file_path: "../../data/qrels/ikat_23_qrel.txt"
 
   retrieval_query_type:
+
+    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_rar_manual_depersonalized_cot1_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "none"
+      optimize_level_weights: "group" 
+
+    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_rar_manual_depersonalized_cot1_rw
+        ]
+
+      fusion_type: 'linear_weighted_score'
+      fuse_weights: [0.1, 0.4]
+      retrieval_model: "BM25"
+
+    wo_explicit_level:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      optimize_level_weights: "no_level" 
+      fusion_normalization: "min-max"
+
+    wo_finegrianed:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      fusion_type: 'linear_combination'
+      fusion_normalization: "min-max"
+      fuse_weights: [1,1,1]
 
     gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize:
       QRs_to_rank: [

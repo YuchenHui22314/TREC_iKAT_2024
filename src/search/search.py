@@ -277,7 +277,7 @@ def search(
                 with open(args.qrel_file_path, 'r') as f_qrel:
                     qrel = pytrec_eval.parse_qrel(f_qrel)
 
-                best_weights, report_pd = optimize_fusion_weights_n_metrics(
+                best_weights, report_pd, best_score_dict = optimize_fusion_weights_n_metrics(
                     hits_list, 
                     qrel, 
                     args.target_metrics.split(","), 
@@ -285,6 +285,7 @@ def search(
                     )
 
                 qid_weights_dict = {qid: list(best_weights) for qid in args.qid_list_string}
+                args.best_weighs = best_weights
                 
 
             elif args.optimize_level_weights == "2+1":
@@ -294,7 +295,8 @@ def search(
                 first_2_list = hits_list[:2]
                 
                 # first fuse the first 2 lists and get the best weights
-                stage_1_best_weights, report_pd_1 = optimize_fusion_weights_n_metrics(
+                stage_1_best_weights, report_pd_1, best_score_dict = \
+                    optimize_fusion_weights_n_metrics(
                     first_2_list, 
                     qrel, 
                     args.target_metrics.split(","), 
@@ -321,7 +323,9 @@ def search(
                     print(f"level {level} has {len(qids)} queries.")
                     
                 # get a "hits_list" for each level
-                level_hits_list_dict = defaultdict(lambda: [defaultdict(list) for _ in range(len(hits_list))])
+                level_hits_list_dict = defaultdict(
+                    lambda: [defaultdict(list) for _ in range(len(hits_list))]
+                    )
                 for i, hits in enumerate(hits_list): 
                     for qid, doc_list in hits.items():  
                         for level, qids in level_qid_dict.items():

@@ -249,6 +249,9 @@ def get_args():
                             "RRF_3_lists",
                             "gpt-4o_rar_rw+gpt-4o_rar_rwrs+gpt-4o_judge_and_rewrite_rw",
                             "gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize",
+                            "wo_explicit_level",
+                            "wo_finegrianed",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
