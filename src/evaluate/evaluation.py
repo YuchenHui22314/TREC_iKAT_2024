@@ -252,6 +252,9 @@ def get_args():
                             "wo_explicit_level",
                             "wo_finegrianed",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4",
+                            "gpt-4o_judge_and_rewrite_depers_rw",
+                            "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_depers_jar_optimize_4",
+                            
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 

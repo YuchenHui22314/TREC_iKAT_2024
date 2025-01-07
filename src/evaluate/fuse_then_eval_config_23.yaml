@@ -78,18 +78,29 @@ iterate:
   # "gpt-4o_rar_manual_depersonalized_cot1_rw"
   # "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw"
 
-  topics: ["ikat_23_test", "ikat_24_test"]
-  retrieval_query_type: [ 
-    # wo_explicit_level
-    # wo_finegrianed,
-    # gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize,
-    # gpt-4o_rar_manual_depersonalized_cot1_rw
-    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4,
-    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw
-    ] 
-  retrieval_model: ["splade_v3"]
-  reranker: ["none"]
-  reranking_query_type: ["none"]
+  # topics: ["ikat_24_test"]
+  # retrieval_query_type: [ 
+  #   # wo_explicit_level
+  #   # wo_finegrianed,
+  #   # gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize,
+  #   # gpt-4o_rar_manual_depersonalized_cot1_rw
+  #   # gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4,
+  #   # gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw,
+  #   gpt-4o_judge_and_rewrite_depers_rw,
+  #   gpt-4o_rar_rw_fuse_rar_rwrs_fuse_depers_jar_optimize_4
+  #   ] 
+  # retrieval_model: ["BM25", "splade_v3"]
+  # reranker: ["none"]
+  # reranking_query_type: ["none"]
+
+  topics: ["ikat_23_test","ikat_24_test"]
+  retrieval_query_type: ["gpt-4o_judge_and_rewrite_optimize_4_test"]
+  retrieval_model: ["BM25", "ance", "splade_v3"]
+  reranker: ["monot5_base_10k", "rankgpt"]
+  reranking_query_type: ["gpt-4o_judge_and_rewrite_rw"]
+
+
+
 param_mapping:
 
   reranker:
@@ -112,6 +123,17 @@ param_mapping:
 
   retrieval_query_type:
 
+    gpt-4o_rar_rw_fuse_rar_rwrs_fuse_depers_jar_optimize_4:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_depers_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
+
     gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4:
       QRs_to_rank: [
         gpt-4o_rar_rw, 
@@ -120,7 +142,7 @@ param_mapping:
         ]
       fusion_type: 'per_query_personalize_level'
       level_type: "gpt-4o_judge_and_rewrite"
-      fusion_normalization: "none"
+      fusion_normalization: "min-max"
       optimize_level_weights: "group" 
 
     gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw:
@@ -160,6 +182,8 @@ param_mapping:
         gpt-4o_rar_rwrs, 
         gpt-4o_judge_and_rewrite_rw
         ]
+      # while runing reranking with existing 1st stage retrieval,
+      # should set the fusion type to "none"
       fusion_type: 'per_query_personalize_level'
       level_type: "gpt-4o_judge_and_rewrite"
       fusion_normalization: "none"
@@ -171,7 +195,9 @@ param_mapping:
         gpt-4o_rar_rwrs, 
         gpt-4o_judge_and_rewrite_rw
         ]
-      fusion_type: 'per_query_personalize_level'
+      # while runing reranking with existing 1st stage retrieval,
+      # should set the fusion type to "none"
+      fusion_type: 'none'
       level_type: "gpt-4o_judge_and_rewrite"
       fusion_normalization: "min-max"
       optimize_level_weights: "group" 

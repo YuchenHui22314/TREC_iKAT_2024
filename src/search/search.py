@@ -187,6 +187,8 @@ def search(
     #######################
     # First stage retrieval
     #######################
+    
+    assert (not args.retrieval_model == "none") or ( not args.fusion_type == "none"), "retrieval model and fusion can not be none at the same time." 
 
     # No fusion
     if args.fusion_type == "none" and not args.retrieval_model == "none":
