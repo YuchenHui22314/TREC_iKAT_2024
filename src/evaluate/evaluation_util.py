@@ -62,6 +62,9 @@ def get_query_list(args):
     args.QRs_to_rank: List[str]
     args.fuse_weights: List[float]
     args.fusion_query_lists: List[List[str]]
+    args.personalization_group: str
+    args.qid_personalized_level_dict: Dict[str, str]
+    args.level_type: str
 
     Returns:
     retrieval_query_list: List[str]
@@ -86,15 +89,23 @@ def get_query_list(args):
             evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
         elif args.topics == "ikat_24_test":
             evaluated_turn_list = filter_ikat_24_evaluated_turns(turn_list)
+        
+        # if we want to filter according to personalization level
+        if (
+            args.fusion_type == 'per_query_personalize_level' or
+            args.personalization_group != "all" 
+        ):
+            print("get personalized level for each query....")
+            args.qid_personalized_level_dict = \
+            {
+                turn.turn_id: turn.get_personalization_level(args.level_type) for turn in evaluated_turn_list
+            }
+
+            evaluated_turn_list = [turn for turn in evaluated_turn_list if args.qid_personalized_level_dict[turn.turn_id] == args.personalization_group] 
 
         qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
 
-
-        # load query according to query type.
-        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-    
+        qid_list_string = [qid for qid in qid_list_string if args.qid_personalized_level_dict[qid] == args.personalization_group]
 
         if args.fusion_type != "none":
             fusion_query_lists = []
@@ -102,6 +113,14 @@ def get_query_list(args):
                 fusion_query_lists.append([turn.query_type_2_query(QR_name, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list])
         else:
             fusion_query_lists = None
+
+        # load query according to query type.
+        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+    
+
+    
 
 
     assert len(retrieval_query_list) != 0, "No queries found, args.topics may be wrong"
@@ -156,6 +175,9 @@ def evaluate(
     if run is None:
         with open(ranking_list_path, 'r') as f_run:
             run = pytrec_eval.parse_run(f_run)
+
+    # filter qrel according to run
+    qrel = {qid: qrel[qid] for qid in run.keys()}
 
     #  evaluate
     print("trec_eval evaluating...")

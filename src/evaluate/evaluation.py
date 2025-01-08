@@ -53,6 +53,10 @@ def get_args():
     parser.add_argument("--retrieval_model", type=str, default="BM25",
                         choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama"])
     parser.add_argument("--retrieval_top_k", type=int, default="1000")
+    parser.add_argument("--personalization_group", type=str, default="a", 
+                        choices=["a","b","c","all"]
+                        )
+
     
     # splade
     parser.add_argument("--splade_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
@@ -323,7 +327,18 @@ if __name__ == "__main__":
     qe = ""
     if args.qe_type == "rm3":
         qe = f"_rm3"
-    file_name_stem = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
+
+    personalization_group = args.personalization_group
+    if personalization_group == "all":
+        personalization_group = ""
+    else:
+        personalization_group = f"_{personalization_group}"
+    
+    file_name_stem = f"S1[{args.retrieval_query_type}{personalization_group}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
+
+    file_name_stem_without_group = f"S1[{args.retrieval_query_type}]-S2[{args.reranking_query_type}]-g[{args.generation_query_type}]-[{args.retrieval_model}{qe}]-[{args.reranker}_{args.window_size}_{args.step}_{args.rerank_quant}]-[s2_top{args.rerank_top_k}]"
+
+
     print("#######################################")
     print("the file name stem is: ", file_name_stem)
     print("#######################################")
@@ -386,6 +401,7 @@ if __name__ == "__main__":
 
     print(f"loading quries")
 
+
     # get query lsit for retreival, reranking, generation, and fusion, as well as qid list.
     # the reason to get turn list is to add per-query search results. 
     (
@@ -404,6 +420,7 @@ if __name__ == "__main__":
         ##########################
         args.ranking_list_path = ranking_list_path
         args.file_name_stem = file_name_stem
+        args.file_name_stem_without_group = file_name_stem_without_group
 
         args.retrieval_query_list = retrieval_query_list
         args.reranking_query_list = reranking_query_list
@@ -414,12 +431,6 @@ if __name__ == "__main__":
         #### Personalization Specific ####
         ##################################
 
-        if args.fusion_type == 'per_query_personalize_level':
-            print("get personalized level for each query....")
-            args.qid_personalized_level_dict = \
-            {
-                turn.turn_id: turn.get_personalization_level(args.level_type) for turn in turn_list
-            }
         
         hits, run = search(
             args
@@ -434,7 +445,7 @@ if __name__ == "__main__":
             del args.qid_personalized_level_dict
 
         ##########################
-        # response generation TODO
+        # response generation 
         ##########################
 
         response_dict = generate_responses(
@@ -473,6 +484,7 @@ if __name__ == "__main__":
         ####################################
         # TODO: evaluate generation quality 
         ####################################
+
         # process metrics 
         metrics_list = args.metrics.split(",")
         metrics_list_key_form = [metric.replace(".", "_") for metric in metrics_list]

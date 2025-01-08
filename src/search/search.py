@@ -90,7 +90,7 @@ def search(
     ) ->  Tuple[Dict[str, List[PyScoredDoc]], Dict[str, Dict[str, float]]]:
 
     """
-    Perform search and retrieval using different models and rerankers.
+    Perform search using different Retrieval models and rerankers.
 
     Args:
         args (Any): Additional arguments.
@@ -106,6 +106,7 @@ def search(
         - args.qid_list_string: List[str]: List of query IDs.
         - args.run_name: str
         - args.file_name_stem: str e.g. S1[raw]-S2[none]-g[raw]-[BM25]-[none_4_1_none]-[s2_top50] 
+        - args.file_name_stem_without_group: str e.g. S1[raw]-S2[none]-g[raw]-[BM25]-[none_4_1_none]-[s2_top50] 
         - args.ranking_list_path: str
         - args.save_ranking_list: bool
         - args.given_ranking_list_path: str
@@ -175,6 +176,15 @@ def search(
         print("found a complete previous run at the begining, loading it...")
         hits = load_ranking_list_from_file(args.ranking_list_path)
         return get_run_object_and_save_ranking_list(hits, args)
+    
+    if args.personalization_group in ["a", "b", "c"]:
+
+        if os.path.exists(args.ranking_list_path_without_group):
+            print("found a complete previous run (no group split) at the begining, loading it...")
+            hits = load_ranking_list_from_file(args.ranking_list_path_without_group)
+            hits = {qid: doc_list for qid, doc_list in hits.items() if qid in args.qid_list_string}
+
+            return get_run_object_and_save_ranking_list(hits, args)
         
     ##########################################################################################
     # we have the possibility to load a custom ranking list in stead of first stage retrieval 
@@ -199,6 +209,7 @@ def search(
     #######################
     # fusion
     #######################
+
     elif not args.fusion_type == "none":
         # first search for all QR to get multiple hits
         hits_list = []
@@ -448,6 +459,7 @@ def Retrieval(args):
         - args.retrieval_query_list: List[str]
         - args.qid_list_string: List[str]
         - args.retrieval_model: str
+        - args.personalization_group: str
         ##### for loading previous runs #####
         - args.ranking_list_path: str (optional)
         - args.QR_name: str (optional)
