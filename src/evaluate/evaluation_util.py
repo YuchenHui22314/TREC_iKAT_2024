@@ -90,6 +90,8 @@ def get_query_list(args):
         elif args.topics == "ikat_24_test":
             evaluated_turn_list = filter_ikat_24_evaluated_turns(turn_list)
         
+        qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
+
         # if we want to filter according to personalization level
         if (
             args.fusion_type == 'per_query_personalize_level' or
@@ -103,9 +105,7 @@ def get_query_list(args):
 
             evaluated_turn_list = [turn for turn in evaluated_turn_list if args.qid_personalized_level_dict[turn.turn_id] == args.personalization_group] 
 
-        qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
-
-        qid_list_string = [qid for qid in qid_list_string if args.qid_personalized_level_dict[qid] == args.personalization_group]
+            qid_list_string = [qid for qid in qid_list_string if args.qid_personalized_level_dict[qid] == args.personalization_group]
 
         if args.fusion_type != "none":
             fusion_query_lists = []

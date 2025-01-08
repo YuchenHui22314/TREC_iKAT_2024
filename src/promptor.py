@@ -174,6 +174,58 @@ class PersonalizedResponseGenPromptor:
         else:
             return text[10:]
     
+class MQ4CSPrompter:
+    def __init__(
+        self, 
+        ) -> None:
+        
+        # head_instruction
+        self.instruction = "# Instruction: I will give you a conversation between a user and a system. Imagine you want to find the answer to the last user question by searching on Google. You should generate the search queries that you need to search on Google. Please don't generate more than 2 queries and write each query on one line."
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn):
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("# Background Knowledge:")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}: {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = " ".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = [ptkb_instruction + "\n" + "# Context:"]
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"user: {turn.current_utterance}\nsystem: {turn.current_response}")
+        
+        # current turn
+        this_dialog.append("# User Question: " + current_turn.current_utterance)
+        this_dialog = "\n".join(this_dialog)  
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        this_prompt.append(this_dialog)
+        this_prompt.append("# Generated queries:")
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        text = text.strip()
+        try:
+            splits = text.split('\n')
+            splits = [split.strip() for split in splits]
+            return splits
+        except Exception as e:
+            print(e)
+            return None    
+
 class JudgeThenRewritePromptor:
     def __init__(
         self, 
