@@ -37,7 +37,8 @@ from promptor import (
     RARNonPersonalizedCoTPromptor,
     JudgePersonalizeLevelPromptor, 
     JudgeThenRewritePromptor,
-    MQ4CSPrompter
+    MQ4CSPrompter,
+    MQ4CSRWPrompter
 )
 
 from topics import (
@@ -215,8 +216,8 @@ if __name__ == '__main__':
     if "MQ4CS_mq" in reformulation_name:
         prompter = MQ4CSPrompter()
 
-    # if "MQ4CS_persq" in reformulation_name:
-    #     prompter = MQ4CSPersQPrompter()
+    if "MQ4CS_persq" in reformulation_name:
+        prompter = MQ4CSRWPrompter()
 
     if "judge_and_rewrite" in reformulation_name:
         prompter =  JudgeThenRewritePromptor(
@@ -353,6 +354,32 @@ if __name__ == '__main__':
     turn_list = load_turns_from_json(input_query_path)
     for index, turn in tqdm(enumerate(turn_list), total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
+        if "MQ4CS_persq" in reformulation_name:
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            response = rewriter.generate_text(prompt)
+            query = prompter.parse_returned_text(response[0])
+            
+            if query == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response[0])
+                continue
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rw",
+                reformulated_query = query,
+                ptkb_provenance = []
+            )
+
+            try:
+                print("#########################")
+                print("this is turn: ", turn.turn_id)
+                print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
+                print(f"MQ4CS Pers query: {query}")
+            except e:
+                print(f"print error with turn id {turn.turn_id}")
+                continue
+
 
         if "MQ4CS_mq" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
@@ -393,8 +420,7 @@ if __name__ == '__main__':
                 print(f"print error with turn id {turn.turn_id}")
                 continue
 
-        # if "MQ4CS_persq" in reformulation_name:
-        #     prompter = MQ4CSPersQPrompter()
+        
 
         if "judge_and_rewrite" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb

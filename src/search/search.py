@@ -23,7 +23,9 @@ from search.fuse import (
     linear_weighted_score_fusion,
     per_query_linear_combination,
     calculate_3_weights_from_2_consecutive_weights,
-    RRF
+    RRF,
+    concat
+    
 )
 
 
@@ -274,6 +276,11 @@ def search(
             hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
 
         # fusion 4 RRF
+        
+        if args.fusion_type == "concat":
+            print("fusing ranking lists with concat")
+            hits = concat(hits_list)
+
         if args.fusion_type == "RRF":
             print("fusing ranking lists with RRF")
             hits = RRF(hits_list, args.retrieval_top_k)

@@ -258,6 +258,8 @@ def get_args():
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_manual_depersonalized_cot1_rw_optimize_4",
                             "gpt-4o_judge_and_rewrite_depers_rw",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_depers_jar_optimize_4",
+                            "gpt-4o_MQ4CS_mq_1",
+                            "gpt-4o_MQ4CS_mq_2"
                             
                             ],)
 

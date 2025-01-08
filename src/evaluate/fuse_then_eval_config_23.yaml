@@ -94,11 +94,12 @@ iterate:
   # reranking_query_type: ["none"]
 
   topics: ["ikat_23_test", "ikat_24_test"]
-  retrieval_query_type: ["gpt-4o_judge_and_rewrite_optimize_4_test"]
+  retrieval_query_type: ["gpt-4o_MQ4CS_mq_1", "gpt-4o_MQ4CS_mq_2"]
   retrieval_model: ["BM25", "ance", "splade_v3"]
-  reranker: ["rankllama"]
-  reranking_query_type: ["gpt-4o_judge_and_rewrite_rw"]
+  reranker: ["none"]
+  reranking_query_type: ["none"]
   personalization_group: ["all"]
+  fusion_type: ["none"]
 
 
 
