@@ -36,7 +36,8 @@ from promptor import (
     RARPersonalizedCoTPromptor,
     RARNonPersonalizedCoTPromptor,
     JudgePersonalizeLevelPromptor, 
-    JudgeThenRewritePromptor
+    JudgeThenRewritePromptor,
+    MQ4CSPrompter
 )
 
 from topics import (
@@ -101,6 +102,8 @@ def get_args():
         "mistral_rar",
         "mistral_judge_and_rewrite",
         "llama3.1_judge_and_rewrite",
+        "gpt-4o_MQ4CS_mq",
+        "gpt-4o_MQ4CS_persq"
         ]
     ) 
     args = parser.parse_args()
@@ -208,6 +211,12 @@ if __name__ == '__main__':
     ###########################
     ## load prompter
     ###########################
+
+    if "MQ4CS_mq" in reformulation_name:
+        prompter = MQ4CSPrompter()
+
+    # if "MQ4CS_persq" in reformulation_name:
+    #     prompter = MQ4CSPersQPrompter()
 
     if "judge_and_rewrite" in reformulation_name:
         prompter =  JudgeThenRewritePromptor(
@@ -344,6 +353,49 @@ if __name__ == '__main__':
     turn_list = load_turns_from_json(input_query_path)
     for index, turn in tqdm(enumerate(turn_list), total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
+
+        if "MQ4CS_mq" in reformulation_name:
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
+            if len(liste) != 2:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
+            query_1 = liste[0]
+            query_2 = liste[1]
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_1",
+                reformulated_query = query_1,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_2",
+                reformulated_query = query_2,
+                ptkb_provenance = []
+            )
+
+            try:
+                print("#########################")
+                print("this is turn: ", turn.turn_id)
+                print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
+                print(f"query_1: {query_1}")
+                print(f"query_2: {query_2}")
+            except e:
+                print(f"print error with turn id {turn.turn_id}")
+                continue
+
+        # if "MQ4CS_persq" in reformulation_name:
+        #     prompter = MQ4CSPersQPrompter()
+
         if "judge_and_rewrite" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
 

@@ -93,7 +93,7 @@ def get_args():
     #### Fusion ####
     ###################
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', "RRF", 'gpt-4o_judge_and_rewrite'])
+                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', "RRF", 'gpt-4o_judge_and_rewrite',"concat"])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
     parser.add_argument('--fuse_weights', type=float, nargs='+', default = [1,0.1,0.4], help='weights for linear weighted score fusion')
     parser.add_argument("--fusion_normalization", type=str, default="none",

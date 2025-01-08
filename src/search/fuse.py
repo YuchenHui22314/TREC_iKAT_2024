@@ -474,6 +474,23 @@ def per_query_linear_combination(hits_list, qid_weights_dict, top_k):
     return final_hits_dict
 
 
+def concat(hits_list):
+    final_hits_dict = defaultdict(list)
+
+    qids = hits_list[0].keys()
+    for hits in hits_list:
+        qids_1 = hits.keys()
+        assert  len(qids) == len(qids_1), "The number of queries in the two hits objects are different"
+
+    for qid in qids:
+        for hits in hits_list:
+            final_hits_dict[qid] += hits[qid]
+        print(len(final_hits_dict[qid]))
+    
+    return final_hits_dict
+    
+
+
 def RRF(hits_list, topk, k=60):
     """
     Perform Rank Rank Fusion (RRF) on a list of hits objects.
