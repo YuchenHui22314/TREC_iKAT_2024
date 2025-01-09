@@ -500,7 +500,12 @@ class JudgeThenRewritePromptor:
             rewrite = None
             response = None
 
+            responses = []
+            Found_response = False
             for line in splits:
+                if Found_response:
+                    responses.append(line)
+                    continue
                 if line[:7] == "Reason:":
                     cot = line[7:].strip()
                 elif line[:6] == "Level:":
@@ -509,6 +514,9 @@ class JudgeThenRewritePromptor:
                     rewrite = line[8:].strip()
                 elif line[:9] == "Response:":
                     response = line[9:].strip()
+                    Found_response = True
+                    responses.append(response)
+                    continue
                 elif line[:11] == "**Reason**:":
                     cot = line[11:].strip()
                 elif line[:10] == "**Level**:":
@@ -517,6 +525,9 @@ class JudgeThenRewritePromptor:
                     rewrite = line[12:].strip()
                 elif line[:13] == "**Response**:":
                     response = line[13:].strip()
+                    Found_response = True
+                    responses.append(response)
+                    continue
                 elif line[:11] == "**Reason:**":
                     cot = line[11:].strip()
                 elif line[:10] == "**Level:**":
@@ -525,6 +536,9 @@ class JudgeThenRewritePromptor:
                     rewrite = line[12:].strip()
                 elif line[:13] == "**Response:**":
                     response = line[13:].strip()
+                    Found_response = True
+                    responses.append(response)
+                    continue
                 elif line[:11] == "### Reason:":
                     cot = line[11:].strip()
                 elif line[:10] == "### Level:":
@@ -533,8 +547,13 @@ class JudgeThenRewritePromptor:
                     rewrite = line[12:].strip()
                 elif line[:13] == "### Response:":
                     response = line[13:].strip()
+                    Found_response = True
+                    responses.append(response)
+                    continue
                 
-            if level == None or rewrite == None or response == None: 
+            response = "\n".join(responses)
+
+            if level == None or rewrite == None or response == None or response == "": 
                 return None 
             if self.enable_cot and cot == None:
                 return None

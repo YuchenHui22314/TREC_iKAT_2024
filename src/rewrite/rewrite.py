@@ -104,7 +104,9 @@ def get_args():
         "mistral_judge_and_rewrite",
         "llama3.1_judge_and_rewrite",
         "gpt-4o_MQ4CS_mq",
-        "gpt-4o_MQ4CS_persq"
+        "gpt-4o_MQ4CS_persq",
+        "gpt-4o_jtr_wo_cot",
+        "gpt-4o_jtr_wo_in_context"
         ]
     ) 
     args = parser.parse_args()
@@ -222,8 +224,21 @@ if __name__ == '__main__':
     if "judge_and_rewrite" in reformulation_name:
         prompter =  JudgeThenRewritePromptor(
             enable_cot=True,
+            enable_demo=True,
             demo_file = demo_file 
         )
+    if "jtr_wo_cot" in reformulation_name:
+        prompter =  JudgeThenRewritePromptor(
+            enable_cot=False,
+            enable_demo=True,
+            demo_file = demo_file
+            )
+    if "jtr_wo_in_context" in reformulation_name:
+        prompter =  JudgeThenRewritePromptor(
+            enable_cot=True,
+            enable_demo=False,
+            demo_file = demo_file
+            )
         
     if "personalization_level" in reformulation_name:
         prompter = JudgePersonalizeLevelPromptor(
@@ -354,6 +369,87 @@ if __name__ == '__main__':
     turn_list = load_turns_from_json(input_query_path)
     for index, turn in tqdm(enumerate(turn_list), total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
+
+        if "jtr_wo_cot" in reformulation_name:
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
+            cot = liste[0]
+            level = liste[1]
+            rewrite = liste[2]
+            response = liste[3]
+
+            print(f"cot: {cot}")
+            print(f"level: {level}")
+            print(f"rewrite: {rewrite}")
+            print(f"response: {response}")
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_lv",
+                reformulated_query = level,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rw",
+                reformulated_query = rewrite,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rs",
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+
+        if "jtr_wo_in_context" in reformulation_name:
+
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+            liste = prompter.parse_returned_text(response[0])
+
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
+            cot = liste[0]
+            level = liste[1]
+            rewrite = liste[2]
+            response = liste[3]
+
+            print(f"cot: {cot}")
+            print(f"level: {level}")
+            print(f"rewrite: {rewrite}")
+            print(f"response: {response}")
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_cot",
+                reformulated_query = cot,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_lv",
+                reformulated_query = level,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rw",
+                reformulated_query = rewrite,
+                ptkb_provenance = []
+            )
+            turn.add_reformulation(
+                reformulation_name = reformulation_name+"_rs",
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+
         if "MQ4CS_persq" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
