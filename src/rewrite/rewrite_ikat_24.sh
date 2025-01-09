@@ -32,7 +32,8 @@ rewrite_model="gpt-4o-2024-08-06"
 #reformulation_name="llama3.1_judge_and_rewrite"
 #reformulation_name="gpt-4o_MQ4CS_mq"
 #reformulation_name="gpt-4o_MQ4CS_persq"
-reformulation_name="gpt-4o_jtr_wo_cot"
+#reformulation_name="gpt-4o_jtr_wo_cot"
+reformulation_name="gpt-4o_jtr_wo_in_context"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
 

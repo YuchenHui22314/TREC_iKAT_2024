@@ -102,15 +102,25 @@ iterate:
   # fusion_type: ["none"]
 
 
-  machine: ["octal30"]
+#   machine: ["octal30"]
+#   topics: ["ikat_23_test", "ikat_24_test"]
+#   retrieval_query_type: [
+#     #"MQ4CS_low_resource",
+#     ours_low_resource_rerank2000,
+#     ours_low_resource_rerank1000,
+# ]
+#   retrieval_model: ["BM25"]
+#   reranker: ["monot5_base_10k"]
+
+  machine: ["octal31"]
   topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [
     #"MQ4CS_low_resource",
-    "ours_low_resource"
+    ours_low_resource_rerank2000,
+    ours_low_resource_rerank1000,
 ]
   retrieval_model: ["BM25"]
   reranker: ["monot5_base_10k"]
-
 
 param_mapping:
 
@@ -162,6 +172,21 @@ param_mapping:
       personalization_group: "all"
       retrieval_top_k: 1000
       rerank_top_k: 50
+      reranking_query_type: gpt-4o_judge_and_rewrite_rw
+
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
+
+    ours_low_resource_rerank2000:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      personalization_group: "all"
+      retrieval_top_k: 2000
+      rerank_top_k: 2000
 
       reranking_query_type: gpt-4o_judge_and_rewrite_rw
 
@@ -170,6 +195,21 @@ param_mapping:
       fusion_normalization: "min-max"
       optimize_level_weights: "group" 
 
+    ours_low_resource_rerank1000:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      personalization_group: "all"
+      retrieval_top_k: 1000
+      rerank_top_k: 1000
+
+      reranking_query_type: gpt-4o_judge_and_rewrite_rw
+
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
 
     gpt-4o_rar_rw_fuse_rar_rwrs_fuse_depers_jar_optimize_4:
       QRs_to_rank: [
@@ -203,6 +243,28 @@ param_mapping:
       fusion_type: 'linear_weighted_score'
       fuse_weights: [0.1, 0.4]
       retrieval_model: "BM25"
+
+    wo_cot:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_jtr_wo_in_context_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_jtr_wo_in_context" 
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
+
+    wo_in_context:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_jtr_wo_cot_rw
+        ]
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_jtr_wo_cot" 
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
 
     wo_explicit_level:
       QRs_to_rank: [

@@ -263,7 +263,11 @@ def get_args():
                             "gpt-4o_MQ4CS_mq_2",
                             "MQ4CS_low_resource",
                             "ours_low_resource",
-                            "gpt-4o_MQ4CS_persq_rw"
+                            "ours_low_resource_rerank2000",
+                            "ours_low_resource_rerank1000",
+                            "gpt-4o_MQ4CS_persq_rw",
+                            "gpt-4o_jtr_wo_in_context_rw",
+                            "gpt-4o_jtr_wo_cot_rw"
                             
                             ],)
 
