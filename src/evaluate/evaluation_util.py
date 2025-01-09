@@ -103,9 +103,10 @@ def get_query_list(args):
                 turn.turn_id: turn.get_personalization_level(args.level_type) for turn in evaluated_turn_list
             }
 
-            evaluated_turn_list = [turn for turn in evaluated_turn_list if args.qid_personalized_level_dict[turn.turn_id] == args.personalization_group] 
+            if args.personalization_group != "all":
+                evaluated_turn_list = [turn for turn in evaluated_turn_list if args.qid_personalized_level_dict[turn.turn_id] == args.personalization_group] 
 
-            qid_list_string = [qid for qid in qid_list_string if args.qid_personalized_level_dict[qid] == args.personalization_group]
+                qid_list_string = [qid for qid in qid_list_string if args.qid_personalized_level_dict[qid] == args.personalization_group]
 
         if args.fusion_type != "none":
             fusion_query_lists = []
@@ -119,9 +120,6 @@ def get_query_list(args):
         reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
         generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
     
-
-    
-
 
     assert len(retrieval_query_list) != 0, "No queries found, args.topics may be wrong"
     assert len(retrieval_query_list) == len(qid_list_string), "Number of queries and qid_list_string not match"

@@ -45,6 +45,7 @@ def get_args():
     parser.add_argument("--output_dir_path", type=str, default="../../results")
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--machine", type=str, default="octal31",help="which lab machien to use. Optional. No effect on the program.")
 
     ###################
     #### retrieval ####
@@ -259,7 +260,10 @@ def get_args():
                             "gpt-4o_judge_and_rewrite_depers_rw",
                             "gpt-4o_rar_rw_fuse_rar_rwrs_fuse_depers_jar_optimize_4",
                             "gpt-4o_MQ4CS_mq_1",
-                            "gpt-4o_MQ4CS_mq_2"
+                            "gpt-4o_MQ4CS_mq_2",
+                            "MQ4CS_low_resource",
+                            "ours_low_resource",
+                            "gpt-4o_MQ4CS_persq_rw"
                             
                             ],)
 
@@ -279,7 +283,8 @@ def get_args():
                             "rar_personalized_cot1_rw",
                             "gpt-4o_rar_personalized_cot1_rw",
                             'gpt-4o_rar_non_personalized_cot1_rw',
-                            'gpt-4o_judge_and_rewrite_rw'
+                            'gpt-4o_judge_and_rewrite_rw',
+                            "gpt-4o_MQ4CS_persq_rw"
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 

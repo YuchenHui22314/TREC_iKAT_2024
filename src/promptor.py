@@ -278,15 +278,81 @@ class JudgeThenRewritePromptor:
     def __init__(
         self, 
         enable_cot=True,
+        enable_demo=True,
         demo_file=None,
         ) -> None:
         
         self.enable_cot = enable_cot
-        self.one_shot_cot = True
+        self.enable_demo = enable_demo
+        if enable_cot:
+            self.one_shot_cot = True
+        else:
+            self.one_shot_cot = False
+
         self.demo = self.get_demo(demo_file, cot_format="cot_seperate")
 
+        self.query_level_examples =\
+        {
+            "level a": {
+                "description": "The query is self-contained and does not need personalization",
+                "Example 1": {
+                    "Query": "Can you explain the origins of Chinese white Wine ?",
+                    "Profile": "User does not drink alcohol.",
+                    "Reason": "This question is about history, so the user's preferences aren't relevant."
+                },
+                "Example 2": {
+                    "Query": "What is the capital of France?",
+                    "Profile": "User is a Canadian citizen.",
+                    "Reason": "This question is general knowledge and does not require personalization."
+                }
+            },
+            "level b": {
+                "description": "The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers.",
+                "Example 1": {
+                    "Query": "Can you recommend some books for me?",
+                    "Profile": "User is a technology fan and a history lover.",
+                    "Reason": "Recommending books on technology and history can be a great bonus, but suggesting other quality reads is also helpful."
+                },
+                "Example 2": {
+                    "Query": "Compare badminton and swimming.",
+                    "Profile": "User is on a diet.",
+                    "Reason": "Dieting may affect the user's choice of sports, but the comparison can be made without this information."
+                }
+            },
+            "level c": {
+                "description": "The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.",
+                "Example 1": {
+                    "Query": "What's a suitable recipe for a family dinner?",
+                    "Profile": "User's child is allergic to peanuts, and the family has a strong dislike for spicy food.",
+                    "Reason": "Avoiding peanuts and spice ensures the recipe meets the family's dietary needs. Otherwise, searched recipe might be unsuitable."
+                },
+                "Example 2": {
+                    "Query": "How can I apply for a Canadian Study Permit?",
+                    "Profile": "User is a Chinese Citizen living in Beijing.",
+                    "Reason": "Specific application process or restrictions for Beijing Chinese citizens may exist."
+                },
+                "Example 3": {
+                    "Query": "What is my highest tolerable heart rate?",
+                    "Profile": "User is 23 years old.",
+                    "Reason": "Highest tolerable heart rate = 220 - age. Without the user profile we cannot calculate the heart rate."
+                },
+                "Example 4": {
+                    "Query": "Can you recommend some good restaurants near me?",
+                    "Profile": "The user is in Paris and plans to visit the Eiffel Tower today.",
+                    "Reason": "Without the user's location, we cannot find any restaurants near the user."
+                }
+            }
+        }
+
+        query_level_example_text = self.get_personalization_level_example()
+
+        if self.enable_demo:
+            few_shot = "\n\tThe style of the reasoning should be similar to those given in the following examples.\n\t(4) " 
+        else:
+            few_shot = "\n\t(4) "
+
         if self.enable_cot:
-            cot_1 = "\n\t(3) Provide your reasoning process in terms of \n\t\t(i). Why you think the level you chose is appropriate.\n\t\t(ii). how did you adopt de-contextualizaiton (and personalization). \n\tThe style of the reasoning should be similar to those given in the following examples.\n\t(4) "
+            cot_1 = f"\n\t(3) Provide your reasoning process in terms of \n\t\t(i). Why you think the level you chose is appropriate.\n\t\t(ii). how did you adopt de-contextualizaiton (and personalization). {few_shot}"
             cot_2 = "Please also provide your reasoning that justifies the level you choose as well as the way you rewrite the user query. "
             cot_3 = "Reason: $Reason\n"
         else:
@@ -295,58 +361,38 @@ class JudgeThenRewritePromptor:
             cot_3 = ""
 
         # head_instruction
-        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The user's last query in the dialog for information seeking.\n\t(3) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) After analyzing the last query and the user profile, decide the extent to which the query needs to be personalized using information from the profile to yield relevant web search results. Please choose from the following levels:\n\t\ta. The query is self-contained and does not need personalization\n\t\tb. The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers. \n\t\tc. The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.\n\t(2) Help the assistant rewrite the user's question such that:\n\t\t(i). The rewritten question can fully express the user's information needs without the need of dialog context. \n\t\t(ii). If you choose level b or c, please add personalized elements to the question based on the user's profile that can help the search. If you choose level a, DO NOT incorporate information from the user's profile to the rewritten query.\n\t\t(iii). The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.{cot_1}Provide an informative response to your rewritten question."
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The user's last query in the dialog for information seeking.\n\t(3) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks are as follows:\n\t(1) After analyzing the last query and the user profile, decide the extent to which the query needs to be personalized using information from the profile to yield relevant web search results. Please choose from the following levels:\n\t\ta. The query is self-contained and does not need personalization.\n\t\tb. The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers. \n\t\tc. The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.\n\t(2) Help the assistant rewrite the user's question such that:\n\t\t(i). The rewritten question can fully express the user's information needs without the need of dialog context. \n\t\t(ii). If you choose level b or c, please add personalized elements to the question based on the user's profile that can help the search. If you choose level a, DO NOT incorporate information from the user's profile to the rewritten query.\n\t\t(iii). The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.{cot_1}Provide an informative response to your rewritten question."
 
-        self.instruction += "\n\nNow, I will give you several sample cases of choosing a personalization level for a query.\n\n"
+        if self.enable_demo:
+            self.instruction += "\n\nNow, I will give you several sample cases of choosing a personalization level for a query.\n\n"
 
-        self.instruction +=\
-    '''    Level a: The query is self-contained and does not need personalization.
-      Example 1:
-        Query: "Can you explain the origins of Chinese white Wine ?"
-        Profile: User does not drink alcohol.
-        Reason: This question is about history, so the user's preferences aren't relevant.
-      Example 2:
-        Query: "What is the capital of France?"
-        Profile: User is a Canadian citizen.
-        Reason: This question is general knowledge and does not require personalization.
+            self.instruction += query_level_example_text
 
-    Level b: The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers.
-      Example 1: 
-        Query: "Can you recommend some books for me?"
-        Profile: User is a technology fan and a history lover.
-        Reason: Recommending books on technology and history can be a great bonus, but suggesting other quality reads is also helpful.
-      Example 2:
-        Query: "Compare badminton and swimming."
-        Profile: User is in a diet. 
-        Reason: Dieting may affect the user's choice of sports, but the comparison can be made without this information.
-    
-    Level c: The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.
-      Example 1:
-        Query: "What's a suitable recipe for a family dinner?"
-        Profile: User's child is allergic to peanuts, and the family has a strong dislike for spicy food.
-        Reason: Avoiding peanuts and spice ensures the recipe meets the family's dietary needs. Otherwise, searched recipe might be unsuitable.
-      Example 2:
-        Query: "How can I apply for a Canadian Study Permit?"
-        Profile: User is a Chinese Citizen living in Beijing.
-        Reason: Specific application process or restrictions for Beijing Chinese citizens may exist. A 
-      Example 3:
-        Query: "What is my highest tolerable heart rate?"
-        Profile: User is 23 years old.
-        Reason:  highest tolerable heart rate = 220 - age. Without the user profile we cannot calculate the heart rate.
-      Example 4:
-        Query: "Can you recommend some good restaurants near me?"
-        Profile: The user is in Paris and plan to visit the Eiffel Tower today.
-        Reason: Without the user's location, we cannot find any restaurants near the user. 
-    '''
+            self.instruction += "\n\nNow, I will give you several example multi-turn dialogs with their user profiles, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant. "
 
-        if self.enable_cot:
-            self.instruction += "\n\nNow, I will give you several example multi-turn dialogs with their user profiles, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant. The reasoning explaining the de-contextualizaiton and personalization consideration while rewriting the question is also provided before the rewrite part."
+            if self.enable_cot:
+                self.instruction += "The reasoning explaining the de-contextualizaiton and personalization consideration while rewriting the question is also provided before the rewrite part."
 
-        self.tail_instruction = f"Now, please decide the personalization necessity level of the **Last Question**, rewrite it, and provide an informative response, takeing the **Dialog Context** as well as the **User Profile** into consideration. {cot_2}The output format should always be:\n\n{cot_3}Level: $Level (choose from a/b/c)\nRewrite: $Rewrite\nResponse: $Response\n\nGo ahead!"
+        self.tail_instruction = f"Now, please decide the personalization necessity level of the **Last Question**, rewrite it, and provide an informative response, taking the **Dialog Context** as well as the **User Profile** into consideration. {cot_2}The output format should always be:\n\n{cot_3}Level: $Level (choose from a/b/c)\nRewrite: $Rewrite\nResponse: $Response\n\nGo ahead!"
 
         self.stop_tokens = None
                             
     
+    def get_personalization_level_example(self):
+        text = ""
+        data = self.query_level_examples
+        for level, content in data.items():
+            text += f"{level.capitalize()}: {content['description']}\n"
+            for example, details in content.items():
+                if example.startswith("Example"):
+                    text += f"  {example}:\n"
+                    text += f"    Query: \"{details['Query']}\"\n"
+                    text += f"    Profile: {details['Profile']}\n"
+                    if self.enable_cot:
+                        text += f"    Reason: {details['Reason']}\n"
+            text += "\n"
+        return text 
+
     def get_demo(self, demo_file, cot_format):
         try:
             with open(demo_file, "r") as f:
@@ -388,7 +434,6 @@ class JudgeThenRewritePromptor:
                         turn_text = f"Question {i+1}: {question}\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {response}"
 
                 else:
-                    rewrite = turn['manual_rewrite']
                     turn_text = f"Question {i+1}: {question}\nRewrite {i+1}: {rewrite}\nResponse {i+1}: {response}"
 
                 dialog.append(turn_text)
@@ -432,8 +477,11 @@ class JudgeThenRewritePromptor:
         # combine to form the prompt
         this_prompt = []
         this_prompt.append(self.instruction)
-        this_prompt.append(self.demo)
-        this_prompt.append("# Now, the examples are over. Let's move to the dialog and the user profile you have to consider.")
+        if self.enable_demo:
+            this_prompt.append(self.demo)
+            this_prompt.append("# Now, the examples are over. Let's move to the dialog and the user profile you have to consider.")
+        else:
+            this_prompt.append("Now, let's move to the dialog and the user profile you have to consider.")
         this_prompt.append(ptkb_instruction)
         this_prompt.append(this_dialog)
         this_prompt.append(self.tail_instruction)

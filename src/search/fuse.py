@@ -477,15 +477,18 @@ def per_query_linear_combination(hits_list, qid_weights_dict, top_k):
 def concat(hits_list):
     final_hits_dict = defaultdict(list)
 
-    qids = hits_list[0].keys()
+    qids = list(hits_list[0].keys())
     for hits in hits_list:
         qids_1 = hits.keys()
         assert  len(qids) == len(qids_1), "The number of queries in the two hits objects are different"
 
-    for qid in qids:
         for hits in hits_list:
-            final_hits_dict[qid] += hits[qid]
-        print(len(final_hits_dict[qid]))
+            for qid, doc_list in hits.items():
+                for doc in doc_list:
+                    if doc.docid not in [d.docid for d in final_hits_dict[qid]]:
+                        final_hits_dict[qid].append(doc)
+        
+        print([len(final_hits_dict[qid]) for qid in qids])
     
     return final_hits_dict
     

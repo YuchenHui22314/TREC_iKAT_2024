@@ -427,7 +427,6 @@ def rerank(hits, args):
 
         print("reranking")
         for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
-
             reranking_query = reranking_query_dic[qid]
             reranked_scores = rerank_rankllama(
                 reranking_query,
@@ -481,9 +480,12 @@ def rerank(hits, args):
 
             reranking_query = reranking_query_dic[qid]
 
+            new_hits = hit[0:args.rerank_top_k]
+            doc_contents = [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in new_hits]
+
             reranked_scores = rerank_t5_DP(
                 reranking_query,
-                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
+                doc_contents,
                 tokenizer,
                 model,
                 decoder_stard_id,

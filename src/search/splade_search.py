@@ -50,6 +50,7 @@ def splade_search(args):
         qid_list_string = args.qid_list_string,
         max_length = 256,
         )
+
     test_loader = DataLoader(
         test_dataset, 
         batch_size = args.query_encoder_batch_size, 
