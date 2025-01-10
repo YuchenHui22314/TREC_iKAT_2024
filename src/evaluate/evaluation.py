@@ -267,8 +267,14 @@ def get_args():
                             "ours_low_resource_rerank1000",
                             "gpt-4o_MQ4CS_persq_rw",
                             "gpt-4o_jtr_wo_in_context_rw",
-                            "gpt-4o_jtr_wo_cot_rw"
-                            
+                            "gpt-4o_jtr_wo_cot_rw",
+                            "wo_cot",
+                            "wo_in_context",
+                            "ours_low_resource_100",
+                            "gpt-4o_MQ4CS_mq_3",
+                            "gpt-4o_MQ4CS_mq_3_1",
+                            "gpt-4o_MQ4CS_mq_3_2",
+                            "gpt-4o_MQ4CS_mq_3_3",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 

@@ -106,7 +106,8 @@ def get_args():
         "gpt-4o_MQ4CS_mq",
         "gpt-4o_MQ4CS_persq",
         "gpt-4o_jtr_wo_cot",
-        "gpt-4o_jtr_wo_in_context"
+        "gpt-4o_jtr_wo_in_context",
+        "gpt-4o_MQ4CS_mq_3",
         ]
     ) 
     args = parser.parse_args()
@@ -216,7 +217,13 @@ if __name__ == '__main__':
     ###########################
 
     if "MQ4CS_mq" in reformulation_name:
-        prompter = MQ4CSPrompter()
+        splits = reformulation_name.split("_")
+        number = splits[-1]
+        if number.isdigit():
+            number = int(number)
+            prompter = MQ4CSPrompter(phi = number)
+        else:
+            prompter = MQ4CSPrompter(phi = 2)
 
     if "MQ4CS_persq" in reformulation_name:
         prompter = MQ4CSRWPrompter()
@@ -479,44 +486,50 @@ if __name__ == '__main__':
 
 
         if "MQ4CS_mq" in reformulation_name:
+            if not turn.turn_id in ["11-2-2","17-1-10","13-4"]:
+                continue
+
+            splits = reformulation_name.split("_")
+            number = splits[-1]
+            if number.isdigit():
+                number = int(number)
+            else:
+                number = 2
+
             current_turn_ptkb_dict = turn.ptkb
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
             response = rewriter.generate_text(prompt)
             liste = prompter.parse_returned_text(response[0])
+
             if liste == None:
                 print(f"error with turn id {turn.turn_id}")
                 print(response)
                 continue
 
-            if len(liste) != 2:
-                print(f"error with turn id {turn.turn_id}")
-                print(response)
-                continue
+            if len(liste) < number:
+                # append " " to the end of the list
+                for i in range(number - len(liste)):
+                    liste.append(" ")
 
-            query_1 = liste[0]
-            query_2 = liste[1]
 
-            turn.add_reformulation(
-                reformulation_name = reformulation_name+"_1",
-                reformulated_query = query_1,
-                ptkb_provenance = []
-            )
-            turn.add_reformulation(
-                reformulation_name = reformulation_name+"_2",
-                reformulated_query = query_2,
-                ptkb_provenance = []
-            )
+            for i in range(len(liste)):
+                query = liste[i]
+                turn.add_reformulation(
+                    reformulation_name = reformulation_name+f"_{i+1}",
+                    reformulated_query = query,
+                    ptkb_provenance = []
+                )
 
             try:
                 print("#########################")
                 print("this is turn: ", turn.turn_id)
                 print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
-                print(f"query_1: {query_1}")
-                print(f"query_2: {query_2}")
+                for i in range(len(liste)):
+                    print(f"MQ4CS query_{i+1}: {liste[i]}")
             except e:
                 print(f"print error with turn id {turn.turn_id}")
                 continue
-
+           
         
 
         if "judge_and_rewrite" in reformulation_name:

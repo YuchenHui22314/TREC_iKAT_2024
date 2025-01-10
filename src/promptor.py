@@ -177,10 +177,12 @@ class PersonalizedResponseGenPromptor:
 class MQ4CSPrompter:
     def __init__(
         self, 
+        phi=2
         ) -> None:
         
         # head_instruction
-        self.instruction = "# Instruction: I will give you a conversation between a user and a system. Imagine you want to find the answer to the last user question by searching on Google. You should generate the search queries that you need to search on Google. Please don't generate more than 2 queries and write each query on one line."
+        self.instruction = f"# Instruction: I will give you a conversation between a user and a system. Imagine you want to find the answer to the last user question by searching on Google. You should generate the search queries that you need to search on Google. Please don't generate more than {phi} queries and write each query on one line."
+
     
     
     def build_turn_prompt(self, context, ptkb_dict, current_turn):
@@ -224,6 +226,7 @@ class MQ4CSPrompter:
             return splits
         except Exception as e:
             print(e)
+
 class MQ4CSRWPrompter:
     def __init__(
         self, 

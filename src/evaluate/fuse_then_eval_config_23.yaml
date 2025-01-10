@@ -101,29 +101,56 @@ iterate:
   # personalization_group: ["all"]
   # fusion_type: ["none"]
 
-
 #   machine: ["octal30"]
 #   topics: ["ikat_23_test", "ikat_24_test"]
 #   retrieval_query_type: [
-#     #"MQ4CS_low_resource",
+#     "MQ4CS_low_resource",
+#     ours_low_resource,
+#     ours_low_resource_100,
 #     ours_low_resource_rerank2000,
 #     ours_low_resource_rerank1000,
 # ]
-#   retrieval_model: ["BM25"]
+#   retrieval_model: ["ance"]
 #   reranker: ["monot5_base_10k"]
+
+  # machine: ["octal31"]
+  # topics: ["ikat_23_test", "ikat_24_test"]
+  # retrieval_query_type: [
+  #   gpt-4o_jtr_wo_in_context_rw,
+  #   gpt-4o_jtr_wo_cot_rw,
+  #   wo_in_context,
+  #   wo_cot
+  # ]
+  # retrieval_model: ["BM25","splade_v3"]
+  # reranker: ["none"]
+  # reranking_query_type: ["none"]
+
+  # machine: ["octal31"]
+  # topics: ["ikat_24_test"]
+  # retrieval_query_type: [
+  #   wo_finegrianed,
+  #   wo_explicit_level,
+  #   gpt-4o_judge_and_rewrite_optimize_4_test_no_normalize
+  # ]
+  # retrieval_model: ["BM25"]
+  # reranker: ["none"]
+  # reranking_query_type: ["none"]
 
   machine: ["octal31"]
   topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [
-    #"MQ4CS_low_resource",
-    ours_low_resource_rerank2000,
-    ours_low_resource_rerank1000,
+    "gpt-4o_MQ4CS_mq_3_1",
+    "gpt-4o_MQ4CS_mq_3_2",
+    "gpt-4o_MQ4CS_mq_3_3",
+    "gpt-4o_MQ4CS_persq_rw"
 ]
-  retrieval_model: ["BM25"]
-  reranker: ["monot5_base_10k"]
+  retrieval_model: ["BM25","splade_v3","ance"]
+  reranker: ["none"]
+  reranking_query_type: ["none"]
+  fusion_type: ["none"]
+
 
 param_mapping:
-
   machine:
     octal31:
       sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"  # Use local disk index for fastest access
@@ -172,6 +199,21 @@ param_mapping:
       personalization_group: "all"
       retrieval_top_k: 1000
       rerank_top_k: 50
+      reranking_query_type: gpt-4o_judge_and_rewrite_rw
+
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "min-max"
+      optimize_level_weights: "group" 
+
+    ours_low_resource_100:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      personalization_group: "all"
+      retrieval_top_k: 1000
+      rerank_top_k: 100
       reranking_query_type: gpt-4o_judge_and_rewrite_rw
 
       fusion_type: 'per_query_personalize_level'
@@ -248,10 +290,10 @@ param_mapping:
       QRs_to_rank: [
         gpt-4o_rar_rw, 
         gpt-4o_rar_rwrs, 
-        gpt-4o_jtr_wo_in_context_rw
+        gpt-4o_jtr_wo_cot_rw
         ]
+      level_type: "gpt-4o_jtr_wo_cot" 
       fusion_type: 'per_query_personalize_level'
-      level_type: "gpt-4o_jtr_wo_in_context" 
       fusion_normalization: "min-max"
       optimize_level_weights: "group" 
 
@@ -259,10 +301,10 @@ param_mapping:
       QRs_to_rank: [
         gpt-4o_rar_rw, 
         gpt-4o_rar_rwrs, 
-        gpt-4o_jtr_wo_cot_rw
+        gpt-4o_jtr_wo_in_context_rw
         ]
+      level_type: "gpt-4o_jtr_wo_in_context" 
       fusion_type: 'per_query_personalize_level'
-      level_type: "gpt-4o_jtr_wo_cot" 
       fusion_normalization: "min-max"
       optimize_level_weights: "group" 
 
