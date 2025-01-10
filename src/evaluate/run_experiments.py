@@ -86,7 +86,7 @@ if __name__ == "__main__":
             # load param mapping:
             for param_name, mapping in param_mapping.items():
                 for param_value, associated_param_dict in mapping.items():
-                    if param_dict[param_name] == param_value:
+                    if (param_name in param_dict) and (param_dict[param_name] == param_value):
                         for key, value in associated_param_dict.items():
                             fixed_parameters_dict_copy[key] = value
 

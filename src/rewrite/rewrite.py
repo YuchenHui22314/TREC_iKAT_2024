@@ -519,6 +519,7 @@ if __name__ == '__main__':
                     reformulated_query = query,
                     ptkb_provenance = []
                 )
+                print(i)
 
             try:
                 print("#########################")

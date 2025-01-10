@@ -362,7 +362,7 @@ class Turn:
                 final_query = " ".join(reformulation_list)
         elif "fuse" in query_type:
             final_query = "ranking list fusion, no query needed"
-            warnings.warn(f"################################# ATTENTION!!!!! you should specify a concret fusion type to get correct answer !!!!!!!!!\n#################################")
+            #warnings.warn(f"################################# ATTENTION!!!!! you should specify a concret fusion type to get correct answer !!!!!!!!!\n#################################")
         elif "alter_selon_manual_ptkb" in query_type:
             reformulation = None
             if len(self.ptkb_provenance) == 0:
