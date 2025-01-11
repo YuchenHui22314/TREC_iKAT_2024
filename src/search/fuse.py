@@ -483,7 +483,7 @@ def concat(hits_list):
     for hits in hits_list:
         qids_1 = hits.keys()
         print("the length of qid_1 is: ", len(qids_1))
-        print(set(qids) - set(qids_1)k)
+        print(set(qids) - set(qids_1))
         assert  len(qids) == len(qids_1), "The number of queries in the two hits objects are different"
 
         for hits in hits_list:

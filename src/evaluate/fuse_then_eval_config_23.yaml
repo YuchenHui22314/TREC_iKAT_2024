@@ -148,10 +148,13 @@ iterate:
 # ]
 
   machine: ["octal31"]
-  retrieval_model: ["BM25","splade_v3"]
+  retrieval_model: ["BM25"]
   topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [
-    "gpt-4o_MQ4CS_persq_rw"
+    #"gpt-4o_MQ4CS_persq_rw"
+    "MQ4CS_low_resource_3_RRF",
+    "MQ4CS_low_resource_3_Round_Robin",
+    "MQ4CS_low_resource_3_grid_search"
 ]
 
 param_mapping:
@@ -195,6 +198,34 @@ param_mapping:
       reranking_query_type: "gpt-4o_MQ4CS_persq_rw"
       fusion_type: 'concat'
       reranker: "monot5_base_10k"
+
+    MQ4CS_low_resource_3_Round_Robin:
+      QRs_to_rank: [
+        gpt-4o_MQ4CS_mq_3_1, 
+        gpt-4o_MQ4CS_mq_3_2,
+        gpt-4o_MQ4CS_mq_3_3
+        ]
+      personalization_group: "all"
+      fusion_type: 'round_robin'
+
+    MQ4CS_low_resource_3_RRF:
+      QRs_to_rank: [
+        gpt-4o_MQ4CS_mq_3_1, 
+        gpt-4o_MQ4CS_mq_3_2,
+        gpt-4o_MQ4CS_mq_3_3
+        ]
+      personalization_group: "all"
+      fusion_type: 'RRF'
+
+    MQ4CS_low_resource_3_grid_search:
+      QRs_to_rank: [
+        gpt-4o_MQ4CS_mq_3_1, 
+        gpt-4o_MQ4CS_mq_3_2,
+        gpt-4o_MQ4CS_mq_3_3
+        ]
+      personalization_group: "all"
+      fusion_type: 'per_query_personalize_level'
+      optimize_level_weights: "no_level" 
 
     MQ4CS_low_resource_3:
       QRs_to_rank: [

@@ -38,7 +38,8 @@ from promptor import (
     JudgePersonalizeLevelPromptor, 
     JudgeThenRewritePromptor,
     MQ4CSPrompter,
-    MQ4CSRWPrompter
+    MQ4CSRWPrompter,
+    GtR_RS
 )
 
 from topics import (
@@ -108,6 +109,7 @@ def get_args():
         "gpt-4o_jtr_wo_cot",
         "gpt-4o_jtr_wo_in_context",
         "gpt-4o_MQ4CS_mq_3",
+        "gpt-4o_GtR_rs"
         ]
     ) 
     args = parser.parse_args()
@@ -216,6 +218,8 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
+    if "GtR_rs" in reformulation_name:
+        prompter = GtR_RS() 
     if "MQ4CS_mq" in reformulation_name:
         splits = reformulation_name.split("_")
         number = splits[-1]
@@ -374,8 +378,75 @@ if __name__ == '__main__':
     #################################
 
     turn_list = load_turns_from_json(input_query_path)
+
     for index, turn in tqdm(enumerate(turn_list), total=len(turn_list), desc="Rewriting"):
         context = get_context_by_qid(turn.turn_id,turn_list)
+
+        if "GtR_rs" in reformulation_name:
+            context = get_context_by_qid(turn.turn_id,turn_list)
+            current_turn_ptkb_dict = turn.ptkb
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+
+            response = rewriter.generate_text(prompt)[0]
+
+            if type(response) != type("yuchen"):
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+            else:
+                print(f"response: {response}")
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name,
+                reformulated_query = response,
+                ptkb_provenance = []
+            )
+
+        if "GtR_mq" in reformulation_name:
+
+            splits = reformulation_name.split("_")
+            number = splits[-1]
+            if number.isdigit():
+                number = int(number)
+            else:
+                number = 2
+
+            current_turn_ptkb_dict = turn.ptkb
+            response = turn.find_reformulation(reformulation_name.replace(reformulation_name[-4:],"rs")).reformulated_query
+            prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn,response)
+            response = rewriter.generate_text(prompt)
+            liste = prompter.parse_returned_text(response[0])
+
+            if liste == None:
+                print(f"error with turn id {turn.turn_id}")
+                print(response)
+                continue
+
+            if len(liste) < number:
+                # append " " to the end of the list
+                for i in range(number - len(liste)):
+                    liste.append(" ")
+
+
+            for i in range(len(liste)):
+                query = liste[i]
+                turn.add_reformulation(
+                    reformulation_name = reformulation_name+f"_{i+1}",
+                    reformulated_query = query,
+                    ptkb_provenance = []
+                )
+
+            break
+            try:
+                print("#########################")
+                print("this is turn: ", turn.turn_id)
+                print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
+                for i in range(len(liste)):
+                    print(f"MQ4CS query_{i+1}: {liste[i]}")
+            except e:
+                print(f"print error with turn id {turn.turn_id}")
+                continue
+                
 
         if "jtr_wo_cot" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
@@ -519,7 +590,6 @@ if __name__ == '__main__':
                     reformulated_query = query,
                     ptkb_provenance = []
                 )
-                print(i)
 
             try:
                 print("#########################")

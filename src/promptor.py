@@ -174,6 +174,88 @@ class PersonalizedResponseGenPromptor:
         else:
             return text[10:]
     
+class GtR_RW:
+    def __init__(
+        self, 
+        phi=2
+        ) -> None:
+        
+        # head_instruction
+        self.instruction = f"# Can you generate the unique queries that can be used for retrieving your previous answer to the user? (Please write each query in one line and don't generate more than {phi} queries)\n\n# Generated queries:"
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn, answer):
+        ############ First concat the GtR Rs instruction
+        gtr_rs_prompter = GtR_RS()
+        gtr_rs_instruction = gtr_rs_prompter.build_turn_prompt(context, ptkb_dict, current_turn)
+
+        
+        this_prompt = gtr_rs_instruction +" "+ answer + "\n\n" + self.instruction
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        try:
+            splits = text.split('\n')
+            splits = [split.strip() for split in splits]
+            return splits
+        except Exception as e:
+            print(e)
+
+class GtR_RS:
+    def __init__(
+        self, 
+        phi=2
+        ) -> None:
+        
+        # head_instruction
+        self.instruction = f"# Instruction: I will give you a conversation between a user and a system. Also, I will give you some background information about the user. You should answer the last question of the user. Please remember that your answer to the last question of the user shouldn't be more than 200 words."
+
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn):
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("# Background Knowledge:")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}: {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = " ".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = [ptkb_instruction + "\n" + "# Context:"]
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"user: {turn.current_utterance}\nsystem: {turn.current_response}")
+        
+        # current turn
+        this_dialog.append("# User Question: " + current_turn.current_utterance)
+        this_dialog.append("# Response:")
+        this_dialog = "\n".join(this_dialog)  
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        this_prompt.append(this_dialog)
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        text = text.strip()
+        return text
+        try:
+            splits = text.split('\n')
+            splits = [split.strip() for split in splits]
+            return splits
+        except Exception as e:
+            print(e)
 class MQ4CSPrompter:
     def __init__(
         self, 
