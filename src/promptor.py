@@ -199,6 +199,20 @@ class GtR_RW:
         try:
             splits = text.split('\n')
             splits = [split.strip() for split in splits]
+            for i in range(len(splits)):
+                # several case to process:
+                # 1. query beginning with 1. 2. 3. 4. 5. 6. 7. 8. 9. 10.
+                # 2. query bigining with "- "
+                # 3. query be wrapped in a pair of quotes
+                splits[i] = splits[i].strip()
+                if splits[i][1] == ".":
+                    splits[i] = splits[i][3:]
+                elif splits[i][0] == "-":
+                    splits[i] = splits[i][2:]
+                elif splits[i][0] == '"':
+                    splits[i] = splits[i][1:-1]
+                elif splits[i][0] == "'":
+                    splits[i] = splits[i][1:-1]
             return splits
         except Exception as e:
             print(e)

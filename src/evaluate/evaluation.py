@@ -278,7 +278,15 @@ def get_args():
                             "MQ4CS_low_resource_3",
                             "MQ4CS_low_resource_3_RRF",
                             "MQ4CS_low_resource_3_Round_Robin",
-                            "MQ4CS_low_resource_3_grid_search"
+                            "MQ4CS_low_resource_3_grid_search",
+                            "gpt-4o_GtR_mq_3_1",
+                            "gpt-4o_GtR_mq_3_2",
+                            "gpt-4o_GtR_mq_3_3",
+                            "gpt-4o_GtR_low_resource_3_Round_Robin",
+                            "gpt-4o_GtR_low_resource_3_RRF",
+                            "gpt-4o_GtR_low_resource_3",
+                            "gpt-4_MQ4CS_persq_rw"
+
                             
                             ],)
 

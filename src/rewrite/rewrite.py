@@ -39,7 +39,8 @@ from promptor import (
     JudgeThenRewritePromptor,
     MQ4CSPrompter,
     MQ4CSRWPrompter,
-    GtR_RS
+    GtR_RS,
+    GtR_RW
 )
 
 from topics import (
@@ -109,7 +110,9 @@ def get_args():
         "gpt-4o_jtr_wo_cot",
         "gpt-4o_jtr_wo_in_context",
         "gpt-4o_MQ4CS_mq_3",
-        "gpt-4o_GtR_rs"
+        "gpt-4o_GtR_rs",
+        "gpt-4o_GtR_mq_3",
+        "gpt-4_MQ4CS_persq",
         ]
     ) 
     args = parser.parse_args()
@@ -218,6 +221,16 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
+
+    if "GtR_mq" in reformulation_name:
+        splits = reformulation_name.split("_")
+        number = splits[-1]
+        if number.isdigit():
+            number = int(number)
+            prompter = GtR_RW(phi = number)
+        else:
+            prompter = GtR_RW(phi = 2)
+    
     if "GtR_rs" in reformulation_name:
         prompter = GtR_RS() 
     if "MQ4CS_mq" in reformulation_name:
@@ -425,8 +438,7 @@ if __name__ == '__main__':
             if len(liste) < number:
                 # append " " to the end of the list
                 for i in range(number - len(liste)):
-                    liste.append(" ")
-
+                    liste.append("GG")
 
             for i in range(len(liste)):
                 query = liste[i]
@@ -436,7 +448,6 @@ if __name__ == '__main__':
                     ptkb_provenance = []
                 )
 
-            break
             try:
                 print("#########################")
                 print("this is turn: ", turn.turn_id)

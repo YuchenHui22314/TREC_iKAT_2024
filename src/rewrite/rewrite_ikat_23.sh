@@ -11,7 +11,8 @@ demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_u
 # "llama3-8b"
 #rewrite_model="llama3-8b"
 #rewrite_model="mistral-8b"
-rewrite_model="gpt-4o-2024-08-06"
+#rewrite_model="gpt-4o-2024-08-06"
+rewrite_model="gpt-4-0613"
 # P -> personalize, D -> demo, C -> cot, Re -> rel explain
 # O -> oracle, Rf -> rel feedback
 #reformulaton_name="raw_llm_rm_PDCReORf"
@@ -32,7 +33,9 @@ rewrite_model="gpt-4o-2024-08-06"
 #reformulation_name="gpt-4o_jtr_wo_cot"
 #reformulation_name="gpt-4o_jtr_wo_in_context"
 #reformulation_name="gpt-4o_MQ4CS_mq_3"
-reformulation_name="gpt-4o_GtR_rs"
+#reformulation_name="gpt-4o_GtR_rs"
+#reformulation_name="gpt-4o_GtR_mq_3"
+reformulation_name="gpt-4_MQ4CS_persq"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2023.txt"
 

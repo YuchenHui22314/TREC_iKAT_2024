@@ -553,7 +553,7 @@ def round_robin_fusion(hits_list, topk, random_seed):
     final_hits_dict = defaultdict(list)
     qids = hits_list[0].keys()
     for qid in qids:
-        for rank in range(topk):
+        for rank in range(min(topk, min([len(hits[qid]) for hits in hits_list]))):
             candidate_docs = [hits[qid][rank] for hits in hits_list]
             # shuffle the candidate docs randomly
             random.seed(random_seed)
