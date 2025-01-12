@@ -101,9 +101,10 @@ def get_args():
                         choices=['none','max','min-max'])
     parser.add_argument("--level_type", type=str, default="none", help="how did we get the personalized level")
     parser.add_argument("--per_query_weight_max_value", type=float, default=0.75)
-    parser.add_argument("--optimize_level_weights", type=str, default="false", choices=["false", "group", "2+1", "no_level"])
+    parser.add_argument("--optimize_level_weights", type=str, default="false", choices=["false", "group", "2+1", "no_level","retrieval_score"])
     parser.add_argument("--target_metrics", type=str, default="ndcg@3,mrr", help="Please see https://amenra.github.io/ranx/ for possible metrics." )
     parser.add_argument("--optimize_step", type=float, default=0.1, help="" )
+    parser.add_argument("--top_docs", type=int, default=100, help="" )
 
 
     ###################
@@ -285,7 +286,9 @@ def get_args():
                             "gpt-4o_GtR_low_resource_3_Round_Robin",
                             "gpt-4o_GtR_low_resource_3_RRF",
                             "gpt-4o_GtR_low_resource_3",
-                            "gpt-4_MQ4CS_persq_rw"
+                            "gpt-4_MQ4CS_persq_rw",
+                            "gpt-4o_GtR_low_resource_3_grid_search",
+                            "gpt-4o_judge_and_rewrite_optimize_retrieval_score"
 
                             
                             ],)

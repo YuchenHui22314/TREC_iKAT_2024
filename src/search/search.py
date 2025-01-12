@@ -19,6 +19,7 @@ from search.fuse import (
     normalize_scores,
     optimize_fusion_weights,
     optimize_fusion_weights_n_metrics,
+    optimize_fusion_weights_retrieval_score,
     round_robin_fusion,
     linear_weighted_score_fusion,
     per_query_linear_combination,
@@ -127,6 +128,7 @@ def search(
         - args.qrel_file_path: str (non-necessary if args.optimize_level_weights is "false")
         - args.target_metrics: str split by ","s.(non-necessary if args.optimize_level_weights is "false")
         - args.optimize_step: float (non-necessary if args.optimize_level_weights is "false")
+        - args.top_docs
     # Retrieval
         - args.retrieval_model: str
         - args.retrieval_top_k: int, the number of topk passages to return
@@ -382,6 +384,51 @@ def search(
                 args.level_weights_dict = level_weights_dict 
                 args.level_best_metrics_dict = level_best_metrics_dict
             
+            elif args.optimize_level_weights == "retrieval_score":
+                # load qrel, to be used for metric calculation
+                with open(args.qrel_file_path, 'r') as f_qrel:
+                    qrel = pytrec_eval.parse_qrel(f_qrel)
+                
+                # get a inverse map of level to qid
+                level_qid_dict = defaultdict(list)
+                for qid, level in args.qid_personalized_level_dict.items():
+                    level_qid_dict[level].append(qid)
+                
+                for level, qids in level_qid_dict.items():
+                    print(f"level {level} has {len(qids)} queries.")
+                    
+                # get a "hits_list" for each level
+                level_hits_list_dict = defaultdict(lambda: [defaultdict(list) for _ in range(len(hits_list))])
+                for i, hits in enumerate(hits_list): 
+                    for qid, doc_list in hits.items():  
+                        for level, qids in level_qid_dict.items():
+                            if qid in qids:  
+                                level_hits_list_dict[level][i][qid] = doc_list
+
+                # for each personalization level, get the best weight
+                level_weights_dict = {}
+                level_best_metrics_dict = {}
+
+                for level, sub_hits_list in level_hits_list_dict.items():
+                    print(f"optimizing weights for level {level}...")
+                    weights, report, best_score_dict = optimize_fusion_weights_retrieval_score(
+                        sub_hits_list, 
+                        qrel,
+                        args.target_metrics.split(","), 
+                        args.optimize_step,
+                        args.top_docs
+                        )
+                    level_weights_dict[level] = weights
+                    level_best_metrics_dict[level] = best_score_dict
+                
+                # record it in args.
+                args.level_weights_dict = level_weights_dict
+                args.level_best_metrics_dict = level_best_metrics_dict
+                print(level_weights_dict)
+                # get weights for each query.
+                for qid, level in args.qid_personalized_level_dict.items():
+                    qid_weights_dict[qid] = level_weights_dict[level]
+
 
 
             elif args.optimize_level_weights == "group":

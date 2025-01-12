@@ -11,6 +11,7 @@ from rich.progress import track
 import numpy as np
 from progressbar import *
 from tqdm import tqdm
+from p_tqdm import p_map
 
 from search.utils import PyScoredDoc
 
@@ -104,8 +105,58 @@ def customize_optimize(
             best_score = score_sum
             best_weights = weights
             best_score_dict = metric_dic
+        # transform to pandas dataframe, first column is the weights, the rest are the metrics
 
+    pandas_optimization_report = defaultdict(list)
+    for weights, metrics in optimization_report.items():
+        pandas_optimization_report["weights"].append(weights)
+        for metric, score in metrics.items():
+            pandas_optimization_report[metric].append(score)
     
+        
+    df = pd.DataFrame(pandas_optimization_report)
+    print("the best weights are: ", best_weights)
+    print("the best scores are: ", best_score_dict)
+
+    return best_weights, df, best_score_dict
+
+def customize_optimize_retrieval_score(
+    qrels: Qrels,
+    runs: List[dict],
+    metrics: List[str],
+    step: float = 0.1,
+    description: str = "Optimizing weights",
+    top_docs: int = 100
+):
+    weights = get_possible_weights(step)
+    trials = get_trial_configs(weights, len(runs))
+
+    best_score = 0.0
+    best_score_dict = {}
+    best_weights = []
+    optimization_report = {}
+    best_hits = []
+
+    for weights in tqdm(trials, desc=description, total=len(trials)):
+        print(type(weights))
+        print(weights)
+        qid_weights_dict = {qid: weights for qid in runs[0].keys()} 
+        final_hits = per_query_linear_combination(runs, qid_weights_dict, 1000)
+        score_sum = sum([doc.score for qid, docs in final_hits.items() for doc in docs[0:top_docs]])
+        if score_sum > best_score:
+            best_score = score_sum
+            best_weights = weights
+            best_hits = final_hits
+        
+    best_run = {qid: {doc.docid: doc.score for doc in docs}  for qid, docs in best_hits.items()}
+
+    metric_dic = {}
+    for metric in metrics:
+        score = evaluate(qrels, best_run, metric, save_results_in_run=False)
+        metric_dic[metric] = score
+    optimization_report[str(weights)] = metric_dic
+    best_score_dict = {metric_dic}
+
     # print the optimization report
      
     # transform to pandas dataframe, first column is the weights, the rest are the metrics
@@ -121,6 +172,33 @@ def customize_optimize(
     print("the best scores are: ", best_score_dict)
 
     return best_weights, df, best_score_dict
+
+def optimize_fusion_weights_retrieval_score(
+    hits_list,
+    qrels,
+    target_metrics,
+    step,
+    top_docs
+    ):
+
+    qrels = {qid: qrel for qid, qrel in qrels.items() if qid in hits_list[0]}
+    qrels = Qrels(qrels)
+
+    # optimize weights
+    weights, report_pd, best_score_dict =  \
+        customize_optimize_retrieval_score(
+        qrels=qrels,
+        runs=hits_list,
+        metrics=target_metrics,
+        step = step,
+        top_docs = top_docs
+    )
+    print("################## Optimization Report ##################")
+    # set show items to infinite
+    pd.set_option('display.max_rows', None)
+    print(report_pd)
+
+    return weights, report_pd, best_score_dict
 
 def optimize_fusion_weights_n_metrics(
     hits_list,

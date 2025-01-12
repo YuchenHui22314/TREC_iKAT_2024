@@ -159,14 +159,14 @@ iterate:
 
   machine: ["octal31"]
   retrieval_model: ["BM25"]
-  topics: ["ikat_23_test", "ikat_24_test"]
+  topics: ["ikat_24_test"]
   retrieval_query_type: [
     # "gpt-4o_GtR_mq_3_1",
     # "gpt-4o_GtR_mq_3_2",
     # "gpt-4o_GtR_mq_3_3",
     # "gpt-4o_GtR_low_resource_3_Round_Robin",
     # "gpt-4o_GtR_low_resource_3_RRF",
-    "gpt-4_MQ4CS_persq_rw"
+    gpt-4o_judge_and_rewrite_optimize_retrieval_score
     #"gpt-4o_GtR_low_resource_3"
 ]
 
@@ -212,6 +212,19 @@ param_mapping:
       fusion_type: 'concat'
       reranker: "monot5_base_10k"
 
+    gpt-4o_judge_and_rewrite_optimize_retrieval_score:
+      QRs_to_rank: [
+        gpt-4o_rar_rw, 
+        gpt-4o_rar_rwrs, 
+        gpt-4o_judge_and_rewrite_rw
+        ]
+      # while runing reranking with existing 1st stage retrieval,
+      # should set the fusion type to "none"
+      fusion_type: 'per_query_personalize_level'
+      level_type: "gpt-4o_judge_and_rewrite"
+      fusion_normalization: "min-max"
+      optimize_level_weights: "retrieval_score" 
+
     gpt-4o_GtR_low_resource_3_Round_Robin:
       QRs_to_rank: [
         "gpt-4o_GtR_mq_3_1",
@@ -220,6 +233,16 @@ param_mapping:
         ]
       personalization_group: "all"
       fusion_type: 'round_robin'
+
+    gpt-4o_GtR_low_resource_3_grid_search:
+      QRs_to_rank: [
+        "gpt-4o_GtR_mq_3_1",
+        "gpt-4o_GtR_mq_3_2",
+        "gpt-4o_GtR_mq_3_3",
+        ]
+      personalization_group: "all"
+      fusion_type: 'per_query_personalize_level'
+      optimize_level_weights: "no_level" 
 
     gpt-4o_GtR_low_resource_3_RRF:
       QRs_to_rank: [
