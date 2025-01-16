@@ -113,6 +113,9 @@ def get_args():
         "gpt-4o_GtR_rs",
         "gpt-4o_GtR_mq_3",
         "gpt-4_MQ4CS_persq",
+        "gpt-3.5_MQ4CS_persq",
+        "llama3.1_MQ4CS_persq",
+        "mistral_MQ4CS_persq"
         ]
     ) 
     args = parser.parse_args()
@@ -543,6 +546,29 @@ if __name__ == '__main__':
         if "MQ4CS_persq" in reformulation_name:
             current_turn_ptkb_dict = turn.ptkb
             prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+            
+            # rewrite the prompt
+            if "mistral" in reformulation_name or "llama" in reformulation_name:
+                messages = [
+                    {
+                    "role": "user",
+                    "content": prompt
+                    }
+                ]
+                response = rewriter.hf_llm_generate(
+                    messages,
+                    temperature = 0,
+                    top_p = 0.9,
+                    max_new_tokens = 4096,
+                    do_sample = False,
+                    num_beams = 1,
+                    num_return_sequences = 1
+                )[0]
+            else:
+                response = rewriter.generate_text(prompt)
+            
+            print(response)
+            liste = prompter.parse_returned_text(response[0])
             response = rewriter.generate_text(prompt)
             query = prompter.parse_returned_text(response[0])
             

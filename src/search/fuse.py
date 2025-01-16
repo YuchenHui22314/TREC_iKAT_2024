@@ -137,6 +137,11 @@ def customize_optimize_retrieval_score(
     optimization_report = {}
     best_hits = []
 
+    # temp = []
+    # for run in runs:
+    #     temp.append({qid: run[qid] for qid in qrels.keys() if qid in ['15-3', '5-15', '11-9', '11-11', '7-3']})
+    
+    #runs = temp
     for weights in tqdm(trials, desc=description, total=len(trials)):
         print(type(weights))
         print(weights)
@@ -155,7 +160,7 @@ def customize_optimize_retrieval_score(
         score = evaluate(qrels, best_run, metric, save_results_in_run=False)
         metric_dic[metric] = score
     optimization_report[str(weights)] = metric_dic
-    best_score_dict = {metric_dic}
+    best_score_dict = metric_dic
 
     # print the optimization report
      
@@ -182,6 +187,7 @@ def optimize_fusion_weights_retrieval_score(
     ):
 
     qrels = {qid: qrel for qid, qrel in qrels.items() if qid in hits_list[0]}
+    # qrels = {qid: qrels[qid] for qid in qrels.keys() if qid in ['15-3', '5-15', '11-9', '11-11', '7-3']}
     qrels = Qrels(qrels)
 
     # optimize weights

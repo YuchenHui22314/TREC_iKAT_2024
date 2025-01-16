@@ -223,7 +223,7 @@ param_mapping:
       fusion_type: 'per_query_personalize_level'
       level_type: "gpt-4o_judge_and_rewrite"
       fusion_normalization: "min-max"
-      optimize_level_weights: "retrieval_score" 
+      optimize_level_weights: "retrieval_score"
 
     gpt-4o_GtR_low_resource_3_Round_Robin:
       QRs_to_rank: [
