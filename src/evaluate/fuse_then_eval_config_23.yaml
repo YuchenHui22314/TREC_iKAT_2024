@@ -157,17 +157,20 @@ iterate:
 #     "MQ4CS_low_resource_3_grid_search"
 # ]
 
-  machine: ["octal31"]
-  retrieval_model: ["BM25"]
-  topics: ["ikat_24_test"]
+  machine: ["octal30"]
+  retrieval_model: ["splade_v3"]
+  topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [
     # "gpt-4o_GtR_mq_3_1",
     # "gpt-4o_GtR_mq_3_2",
     # "gpt-4o_GtR_mq_3_3",
     # "gpt-4o_GtR_low_resource_3_Round_Robin",
     # "gpt-4o_GtR_low_resource_3_RRF",
-    gpt-4o_judge_and_rewrite_optimize_retrieval_score
+    # gpt-4o_judge_and_rewrite_optimize_retrieval_score
     #"gpt-4o_GtR_low_resource_3"
+    "gpt-3.5_MQ4CS_persq",
+    "llama3.1_MQ4CS_persq",
+    "mistral_MQ4CS_persq"
 ]
 
 param_mapping:

@@ -288,7 +288,10 @@ def get_args():
                             "gpt-4o_GtR_low_resource_3",
                             "gpt-4_MQ4CS_persq_rw",
                             "gpt-4o_GtR_low_resource_3_grid_search",
-                            "gpt-4o_judge_and_rewrite_optimize_retrieval_score"
+                            "gpt-4o_judge_and_rewrite_optimize_retrieval_score",
+                            "gpt-3.5_MQ4CS_persq",
+                            "llama3.1_MQ4CS_persq",
+                            "mistral_MQ4CS_persq"
 
                             
                             ],)

@@ -380,7 +380,7 @@ if __name__ == '__main__':
         tokenizer_name_or_path="meta-llama/Llama-3.1-8B-Instruct",
         padding_side="left",
         dtype="bf16",
-        device_map= "cuda:1",
+        device_map= "cuda:3",
         attn_implementation="flash_attention_2",
         access_token=None,
         cache_dir=args.cache_dir,
@@ -567,9 +567,6 @@ if __name__ == '__main__':
             else:
                 response = rewriter.generate_text(prompt)
             
-            print(response)
-            liste = prompter.parse_returned_text(response[0])
-            response = rewriter.generate_text(prompt)
             query = prompter.parse_returned_text(response[0])
             
             if query == None:
