@@ -1,4 +1,3 @@
-import re
 import json
 
 def check_length(prompt, max_length):

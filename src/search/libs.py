@@ -2,7 +2,6 @@ from collections import defaultdict
 import os
 import h5py
 import json
-import time
 import numba
 import array
 import pickle
@@ -13,7 +12,7 @@ from p_tqdm import p_map
 import torch
 from torch.utils.data import IterableDataset
 
-from search.utils import tensor_to_list, PyScoredDoc
+from .utils import tensor_to_list, PyScoredDoc
 
 def load_key(key,file_name):
     try:

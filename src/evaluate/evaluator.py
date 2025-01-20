@@ -1,8 +1,5 @@
-import collections
-import logging
 import regex as re
 import string
-import numpy as np
 from collections import Counter
 
 def normalize_answer(s):

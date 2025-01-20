@@ -168,9 +168,9 @@ iterate:
     # "gpt-4o_GtR_low_resource_3_RRF",
     # gpt-4o_judge_and_rewrite_optimize_retrieval_score
     #"gpt-4o_GtR_low_resource_3"
-    "gpt-3.5_MQ4CS_persq",
-    "llama3.1_MQ4CS_persq",
-    "mistral_MQ4CS_persq"
+    "gpt-3.5_MQ4CS_persq_rw",
+    "llama3.1_MQ4CS_persq_rw",
+    "mistral_MQ4CS_persq_rw"
 ]
 
 param_mapping:

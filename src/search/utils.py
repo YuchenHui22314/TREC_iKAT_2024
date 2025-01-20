@@ -2,33 +2,19 @@ import os
 import pickle
 import json
 import random
+import shutil
 import numpy as np
 
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset, TensorDataset, IterableDataset
-from transformers import AdamW
+from torch.utils.data import IterableDataset
 import torch.nn.functional as F
-
-import sys
-
-sys.path += ['../']
-# import pandas as pd
-# from sklearn.metrics import roc_curve, auc
-import gzip
-import copy
 import torch
 import torch.distributed as dist
-from tqdm import tqdm, trange
-from os import listdir
-from os.path import isfile, join
+from transformers import AdamW
 
 torch.multiprocessing.set_sharing_strategy('file_system')
-from multiprocessing import Process
-import re
-import shutil
-from typing import List, Set, Dict, Tuple, Callable, Iterable, Any
 
 class PyScoredDoc:
     def __init__(self, docid: str, score: float):

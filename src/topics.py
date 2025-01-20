@@ -1,13 +1,12 @@
 import json
 import warnings
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Any
 from dataclasses import dataclass, field, asdict 
 import math
 
-from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
 
-from constants import (
+from .constants import (
     IKAT_23_EVALUATED_TURNS,
     IKAT_24_EVALUATED_TURNS
 )

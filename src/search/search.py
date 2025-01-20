@@ -1,5 +1,4 @@
 from functools import reduce
-import sys
 import re
 import os
 from collections import defaultdict
@@ -10,12 +9,11 @@ from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
 import pytrec_eval
 
-sys.path.append('..')
-from search.rerank import rerank
-from search.dense_search import dense_search
-from search.splade_search import splade_search
-from search.utils import PyScoredDoc
-from search.fuse import (
+from .rerank import rerank
+from .dense_search import dense_search
+from .splade_search import splade_search
+from .utils import PyScoredDoc
+from .fuse import (
     normalize_scores,
     optimize_fusion_weights,
     optimize_fusion_weights_n_metrics,
@@ -26,7 +24,6 @@ from search.fuse import (
     calculate_3_weights_from_2_consecutive_weights,
     RRF,
     concat
-    
 )
 
 

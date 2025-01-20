@@ -1,13 +1,8 @@
 '''
 Rewrite all queries in input_query_path 
 '''
-import pickle
-import sys
 import os
-import numpy as np
-import json
 import argparse
-import re
 import tkinter as tk
 from tkinter import simpledialog
 from tqdm import tqdm
@@ -26,9 +21,7 @@ def is_english_word(word):
     return base_form in words.words()
 
 
-sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
-#sys.path.append('../')
-from promptor import (
+from ..promptor import (
     RewriteAndResponsePromptor,
     PersonalizedCIRQueryExpansionPromptor,
     SummarizePTKBPromptor,
@@ -43,18 +36,13 @@ from promptor import (
     GtR_RW
 )
 
-from topics import (
-    Turn, 
-    load_turns_from_ikat_topic_files, 
+from ..topics import (
     save_turns_to_json, 
     load_turns_from_json,
-    Result,
-    Reformulation,
     get_context_by_qid,
-    get_turn_by_qid
 )
 
-from llm import (
+from ..llm import (
     LM,
     OpenAILM
 )
@@ -132,7 +120,7 @@ def get_llm_rm_expansion_terms(
 ):
 
     if llm_model == None:
-        cache_dir = "/data/rech/huiyuche/huggingface"
+        cache_dir = args.cache_dir
         llm_model = LM(
             model_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
             tokenizer_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
@@ -354,7 +342,7 @@ if __name__ == '__main__':
             device_map= "auto",
             attn_implementation="flash_attention_2",
             access_token=None,
-            cache_dir="/data/rech/huiyuche/huggingface",
+            cache_dir=args.cache_dir,
             accelerator = None,
             load_in_8bit = False,
             load_in_4bit = False,

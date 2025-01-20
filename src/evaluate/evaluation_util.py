@@ -1,34 +1,18 @@
-import pickle
-import sys
-import logging
 import os
 import numpy as np
 import json
-from typing import Mapping, Tuple, List, Optional, Union, Any, Dict
-from tqdm import tqdm
-from dataclasses import asdict
-import random
-import pickle
-
-from pyserini.search import get_topics, get_qrels
+from typing import List, Any, Dict
 import pytrec_eval
 
-sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
-#sys.path.append('../')
-
-
-from topics import (
+from ..topics import (
     Turn, 
-    Result,
-    Reformulation,
-    save_turns_to_json, 
     load_turns_from_json,
     filter_ikat_23_evaluated_turns,
     filter_ikat_24_evaluated_turns,
     get_turn_by_qid
     )
 
-from constants import IKAT_AUTOMATIC_RUN_TEMPLATE_DICT
+from ..constants import IKAT_AUTOMATIC_RUN_TEMPLATE_DICT
 
 
 

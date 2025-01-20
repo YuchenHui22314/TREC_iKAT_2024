@@ -1,28 +1,24 @@
 import argparse
 from collections import defaultdict
-from typing import Callable, List
+from typing import  List
 from itertools import product
 import time
 import random
-from copy import deepcopy
 
 import pandas as pd
-from rich.progress import track
 import numpy as np
 from progressbar import *
 from tqdm import tqdm
-from p_tqdm import p_map
-
-from search.utils import PyScoredDoc
-
 from ranx import (
-    fuse, 
     optimize_fusion,
     Qrels,
     Run
     )
 from ranx.meta import evaluate
 from ranx.fusion import fusion_switch
+
+from .utils import PyScoredDoc
+
 
 def get_possible_weights(step):
     round_digits = str(step)[::-1].find(".")

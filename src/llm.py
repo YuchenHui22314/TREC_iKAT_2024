@@ -1,15 +1,8 @@
-import os
-import re
 import torch
-import copy
 import time
-import random
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.nn import DataParallel
-from tqdm import tqdm
 from sklearn.preprocessing import normalize
 
 from pyserini.encode import DocumentEncoder, QueryEncoder
@@ -28,18 +21,11 @@ from transformers import (
 )
 
 
-from torch.utils.data import DataLoader
 from accelerate import Accelerator
-from typing import Mapping, Tuple, List, Optional, Union, Any
+from typing import Tuple, List, Optional, Any
 from peft import PeftModel, PeftConfig
-
-from collections import defaultdict
-from dataclasses import dataclass, asdict
-
 logger = logging.get_logger(__name__)
 
-# Specify the custom cache directory
-cache_dir = "/data/rech/huiyuche/huggingface"
 
 class OpenAILM():
     def __init__(self, 
@@ -124,13 +110,13 @@ class LM(nn.Module):
         self,
         model_name_or_path,
         tokenizer_name_or_path,
+        cache_dir,
         padding_side="left",
         dtype="bf16",
         device_map=None,
         attn_implementation="flash_attention_2",
         #use_flash_attention_2=False, (deprecated)
         access_token=None,
-        cache_dir=cache_dir,
         accelerator: Accelerator = None,
         load_in_8bit = False,
         load_in_4bit = False,

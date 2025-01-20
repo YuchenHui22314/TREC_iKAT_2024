@@ -1,19 +1,10 @@
-import sys
-
-sys.path += ['../']
 import torch
 from torch import nn
-import numpy as np
-from transformers import (RobertaConfig, RobertaModel,
-                          RobertaForSequenceClassification, RobertaTokenizer,
-                          T5Tokenizer, T5Model, T5ForConditionalGeneration, T5Config, T5EncoderModel,
-                          GPT2Config, GPT2Model, GPT2Tokenizer, GPT2LMHeadModel,
-                          BertModel, BertTokenizer, BertConfig, BertForSequenceClassification, BertForTokenClassification,
-                          DPRQuestionEncoderTokenizer, DPRContextEncoderTokenizer,
-                          DPRContextEncoder, DPRQuestionEncoder)
-
-import torch.nn.functional as F
-import time
+from transformers import (
+    RobertaConfig, 
+    RobertaForSequenceClassification, 
+    RobertaTokenizer
+                          )
 
 
 # ANCE model
@@ -91,7 +82,6 @@ def load_model(model_type, model_path):
 #############################################################
 #############################################################
 #############################################################
-from operator import length_hint
 from abc import ABC
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM, AutoModel

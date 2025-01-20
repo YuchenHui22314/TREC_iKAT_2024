@@ -1,4 +1,5 @@
 from multiprocessing import Manager
+import json
 import os
 
 from tqdm import tqdm
@@ -11,24 +12,17 @@ import torch.nn as nn
 from peft import PeftModel, PeftConfig
 from typing import List, Tuple, Any, Dict
 import numpy as np
-import json
 from transformers import (
     AutoModelForSequenceClassification, 
     AutoTokenizer,
     T5ForConditionalGeneration,
     PreTrainedTokenizer,
-    AutoModel
     )
 
 from pyserini.search.lucene import LuceneSearcher
 
-import sys
-sys.path.append('..')
-from llm import monoT5
-from search.rank_gpt import run_retriever, sliding_windows
-
-
-cache_dir = "/data/rech/huiyuche/huggingface"
+from ..llm import monoT5
+from .rank_gpt import  sliding_windows
 
 def get_model(
     peft_model_name, 

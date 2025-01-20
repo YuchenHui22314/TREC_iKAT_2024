@@ -1,4 +1,3 @@
-import sys
 import logging
 import argparse
 import os
@@ -6,26 +5,20 @@ import json
 
 import wandb
 
-
-sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
-#sys.path.append('../')
-
-from topics import (
+from ..topics import (
     save_turns_to_json, 
     load_turns_from_json
     )
-
     
-from search.search import search    
-from response_generation import (
+from ..search import search    
+from ..response_generation import (
     generate_responses
     ) 
 
-from evaluation_util import (
+from .evaluation_util import (
     get_query_list,
     evaluate,
     generate_and_save_ikat_submission,
-    extract_filename,
     print_formatted_latex_metrics
 )
 
@@ -289,9 +282,9 @@ def get_args():
                             "gpt-4_MQ4CS_persq_rw",
                             "gpt-4o_GtR_low_resource_3_grid_search",
                             "gpt-4o_judge_and_rewrite_optimize_retrieval_score",
-                            "gpt-3.5_MQ4CS_persq",
-                            "llama3.1_MQ4CS_persq",
-                            "mistral_MQ4CS_persq"
+                            "gpt-3.5_MQ4CS_persq_rw",
+                            "llama3.1_MQ4CS_persq_rw",
+                            "mistral_MQ4CS_persq_rw"
 
                             
                             ],)

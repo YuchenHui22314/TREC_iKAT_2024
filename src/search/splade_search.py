@@ -1,21 +1,13 @@
-import os
-import sys
-sys.path.append('..')
-sys.path.append('.')
-import time
-import argparse
-import numpy as np
 from tqdm import tqdm
 
 import torch
 from torch.utils.data import DataLoader
 from transformers import  AutoTokenizer
 
-from search.utils import set_seed 
-
-from search.libs import SparseRetrieval
-from search.models import Splade
-from search.data_format import Retrieval_trec
+from .utils import set_seed 
+from .libs import SparseRetrieval
+from .models import Splade
+from .data_format import Retrieval_trec
 
 def splade_search(args):
     '''

@@ -1,9 +1,4 @@
-import csv
-import argparse
-import os
-from os import path
 from os.path import join as oj
-import json
 from tqdm import tqdm, trange
 from torch.utils.data import DataLoader
 import faiss
@@ -12,14 +7,12 @@ import copy
 import pickle
 import torch
 import numpy as np
-import pytrec_eval
-from transformers import RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer
+from transformers import RobertaConfig, RobertaTokenizer
 
-import sys
-sys.path.append('../')
-from search.models import ANCE
-from search.utils import check_dir_exist_or_build, pstore, pload, set_seed, get_optimizer
-from search.data_format import padding_seq_to_same_length, Retrieval_qrecc, Retrieval_topiocqa, Search_q_Retrieval, Retrieval_trec
+from .models import ANCE
+from .utils import  set_seed
+from .data_format import  Retrieval_trec
+
 
 
 

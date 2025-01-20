@@ -1,21 +1,11 @@
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-import pandas as pd
-import argparse
 import torch
-from torch.utils.data import DataLoader, Dataset, TensorDataset, IterableDataset
+from torch.utils.data import Dataset
 import json
 from tqdm import tqdm, trange
 import random
-from itertools import combinations
-from torch.nn.utils.rnn import pad_sequence
-import numpy as np
-
-import sys
-sys.path.append('../')
-from search.models import load_model
-from search.utils import check_dir_exist_or_build, pstore, pload, split_and_padding_neighbor, set_seed, load_collection
 
 def padding_seq_to_same_length(input_ids, max_pad_length, pad_token = 0):
     padding_length = max_pad_length - len(input_ids)

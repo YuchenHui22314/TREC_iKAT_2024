@@ -1,20 +1,7 @@
-
-from transformers import (
-    AutoTokenizer,
-    PreTrainedTokenizer
-    )
-
-from llm import monoT5
-from peft import PeftModel, PeftConfig
-from typing import List, Tuple, Any, Dict
-import numpy as np
-import json
+from typing import List, Any, Dict
 from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
-
-import sys
 import os
-sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
 
 from topics import (
     Turn,
@@ -23,11 +10,10 @@ from topics import (
     get_context_by_qid,
 )
 
-from promptor import (
+from .promptor import (
     PersonalizedResponseGenPromptor
 )
-from llm import (
-    LM,
+from .llm import (
     OpenAILM
 )
 

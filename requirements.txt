@@ -1,0 +1,19 @@
+pyserini==0.23.0
+accelerate
+bitsandbytes
+flash-attn --no-build-isolation
+peft
+tqdm
+ipykernel
+p_tqdm
+pytrec_eval
+dataclasses
+nltk
+pyjnius
+progressbar
+wandb
+transformers
+numba 
+p-tqdm  
+ranx
+trec-car-tools
