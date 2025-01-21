@@ -81,6 +81,8 @@ You should modify the batch size according to your GPU memory.
 
 ## ✍ Query Rewrite
 
+
+
 ## 🚀 Running the evaluation Pipeline
 Before running the pipeline, please make sure you have built the indexes as mentioned above. Then you will have to download the official TREC iKAT topics and relevance judgement (qrel files):
 | Dataset | Topics | Qrels |
