@@ -177,6 +177,7 @@ src/evaluate/wandb/*
 /results/test
 /alignir_env
 *.txt
+!ikat_23_qrel.txt
 !requirements.txt
 **/test.py
 **/*.out
@@ -184,5 +185,4 @@ src/evaluate/wandb/*
 #**/test.ipynb 
 /src/__pycache__
 /logs
-/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/toy_qrel.txt
 /test
