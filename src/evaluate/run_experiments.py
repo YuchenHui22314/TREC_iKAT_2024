@@ -57,7 +57,7 @@ def extend_command(config, command):
 if __name__ == "__main__":
     # Load configuration
     config_file = "eval_pipeline_config.yaml"  
-    log_file = "/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt"
+    log_file = "../../logs/evaluation_log_2023.txt"
     
 
     config = load_config(config_file)

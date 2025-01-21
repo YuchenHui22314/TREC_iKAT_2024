@@ -173,10 +173,10 @@ def search(
     # First, try to load the ranking list from the file name
     # If found, no need to search nor rerank.
     ########################################################
-    if os.path.exists(args.ranking_list_path):
-        print("found a complete previous run at the begining, loading it...")
-        hits = load_ranking_list_from_file(args.ranking_list_path)
-        return get_run_object_and_save_ranking_list(hits, args)
+    # if os.path.exists(args.ranking_list_path):
+    #     print("found a complete previous run at the begining, loading it...")
+    #     hits = load_ranking_list_from_file(args.ranking_list_path)
+    #     return get_run_object_and_save_ranking_list(hits, args)
     
     if args.personalization_group in ["a", "b", "c"]:
 

@@ -6,16 +6,26 @@
 ##########################################################
 ##########################################################
 
+
+
+###############################################################
+##### First zone: Combinations of experiments to run
+###############################################################
 iterate:
-  machine: ["octal30"]
+  # modify this to your own machine name after adding
+  # the machine_name <==> indexes_paths mapping in the second zone
+  machine: ["octal30"] 
   topics: ["ikat_23_test", "ikat_24_test"]
-  retrieval_model: ["BM25", "ance", "splade_v3"]
+  retrieval_model: ["BM25"]
   retrieval_query_type: [
     ours_low_resource_100"
 ]
-  reranker : ["monot5_base_10k","rankllama"]
+  reranker : ["monot5_base_10k"]
 
 
+###############################################################
+##### Second zone: define some fixed relationships between the parameters
+###############################################################
 param_mapping:
   machine:
     octal31:
@@ -391,7 +401,13 @@ param_mapping:
       fuse_weights: [0.1, 0.1, 0.4] 
     
 
+
+###############################################################
+##### Third zone: All other parameters that should remaining unchanged for all the exmperiments defined in the first zone.
+###############################################################
+
 fixed:
+
   ###############################################
   ## General
   ###############################################

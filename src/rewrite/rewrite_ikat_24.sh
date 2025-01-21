@@ -8,7 +8,7 @@ demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/non_personalize
 rewrite_model="llama3-8b"
 reformulation_name="llama3.1_MQ4CS_persq"
 
-LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
+LOG_FILE="../../logs/rewrite_log_2024.txt"
 
 # Run the program with the specified arguments
 python3 rewrite.py \
