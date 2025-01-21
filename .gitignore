@@ -182,7 +182,6 @@ src/evaluate/wandb/*
 **/*.out
 **/*.log
 #**/test.ipynb 
-#yijingjile
 /src/__pycache__
 /logs
 /data/rech/huiyuche/TREC_iKAT_2024/data/qrels/toy_qrel.txt
