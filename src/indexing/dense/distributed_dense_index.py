@@ -262,13 +262,14 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     set_seed(args)
-    #dense_indexing(args)
+    dense_indexing(args)
+    # fuse block content from from 4 GPUs to 1 block. You can also modify the expected_num_doc_per_block to a bigger block size
     merge_blocks_to_large_blocks(
-    input_folder = "/part/02/Tmp/yuchen/indexes/ance_clueweb22B",
-    output_folder = "/part/02/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2",
-    num_block = 116,
-    num_rank = 4,
-    expected_num_doc_per_block = 10000000
+    input_folder = args.output_index_dir_path,
+    output_folder = args.output_index_dir_path,
+    num_block = 116000000/args.num_docs_per_block, # 116M: the total number of docs in the clueweb22b collection
+    num_rank = args.n_gpu,
+    expected_num_doc_per_block = args.num_docs_per_block
     )
 
 # python  -m torch.distributed.launch --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt

@@ -579,9 +579,6 @@ if __name__ == '__main__':
 
 
         if "MQ4CS_mq" in reformulation_name:
-            if not turn.turn_id in ["11-2-2","17-1-10","13-4"]:
-                continue
-
             splits = reformulation_name.split("_")
             number = splits[-1]
             if number.isdigit():
