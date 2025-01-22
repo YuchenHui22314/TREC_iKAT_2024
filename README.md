@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/figures/overview.jpg" alt="Overview of the PPCIR Framework" width="100%"/>
+  <img src="./figures/overview.jpg" alt="Overview of the PPCIR Framework" width="100%"/>
 </p>
 
 # 🤖PPCIR: Precise Personalized Conversational IR via Fine-Grained Fusion 
@@ -51,7 +51,7 @@ First, download the collection as mentioned above. We should then transform the 
 
 ```bash
 cd /src/indexing/dense
-python distributed_dense_index.py \
+torchrun --nproc_per_node 4 distributed_dense_index.py \
   --local-rank -1 \
   --n_gpu 4 \
   --model_type ance \   
@@ -157,7 +157,7 @@ Once the topics have been processed, we are ready for getting query reformulatio
 cd ./src/rewrite
 ./rewrite_ikat_23.sh # or ./rewrite_ikat_24.sh
 ```
-to rewrite queries for TREC iKAT 2023 or 2024 respectively. The program will first read the `json` file for storing `Turn` objects to memory, then put the rewritten queries to each `Turn` object then retranscripted them back to a `json` file. You should carefully review the code to understand the rewriting process and determine which  `reformulation_name` and `rewrite_model` to specify in the script. Here is a brief summary of available reformulation names:
+to rewrite queries for TREC iKAT 2023 or 2024 respectively. The program will first read the `json` file for loading `Turn` objects to memory, then put the rewritten queries to each `Turn` object then retranscripted them back to a `json` file. You should carefully review the code to understand the rewriting process and determine which  `reformulation_name` and `rewrite_model` to specify in the script. Here is a brief summary of available reformulation names:
 - `gpt-4o_judge_and_rewrite`: The personalized reformulation method used in the paper, which first dynimically decide the persaonlization need for each query then rewrite and response accordingly.
 - `gpt-4o_rar`: The non-personalized query reformulation method used in the paper. Will get a de-contextualized query and pseudo-response.
 - ... and so on. Please review the code for more details.
@@ -227,7 +227,7 @@ fixed:
 Now we will explain all the parameters that you can specify in the yaml file. Please refer to the annotated code in `/src/evaluate/evaluation.py` for further details. The behavior of the file  `evaluation.py` is as follows:
 1. get all information about this run and generate an identifiable name for this run, e.g. name = "S1[raw]-S2[none]-g[raw]-[BM25]-[monot5_base_10k_4_1_none]-[s2_top50]", this means use BM25 to search with raw utterance, then use monot5_base_10k to rerank with raw utterance on top50 docs, then use raw utterance to generate response. 4_1_ refers to rankGPT window size and step size, and since we do not use rankGPT here, that is not relevant.
 2. initialize a wandb run if `save_to_wandb` is true
-3. if `run_rag` = false, try to load the ranking list from output_dir_path/collection/topics/ranking/name.txt, if not found, raise an error 
+3. if `run_rag` = false, try to load the ranking list from `output_dir_path`/`collection`/`topics`/ranking/name.txt, if not found, raise an error 
 4. if `run_rag` = true, continue with search:
 5. search: if `retrieval_model` = "none", load the ranking list from `given_ranking_list_path`, if not found, raise an error 
 5. search: if `fusion_type` is not "none", do retrieval + fusion, using `QRs_to_rank`

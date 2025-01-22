@@ -218,10 +218,10 @@ def get_args():
     parser.add_argument('--n_gpu', type=int, default=4, help='The number of used GPU.')
 
     parser.add_argument("--model_type", type=str, default="ance")
-    parser.add_argument("--collection_path", type=str, default="/part/01/Tmp/yuchen/cluweb22B_ikat_v2.tsv")
-    parser.add_argument("--pretrained_doc_encoder_path", type=str, default="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234")
+    parser.add_argument("--collection_path", type=str, default="embedding_path")
+    parser.add_argument("--pretrained_doc_encoder_path", type=str, default="path")
     
-    parser.add_argument("--output_index_dir_path", type=str, default="/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance")
+    parser.add_argument("--output_index_dir_path", type=str, default="index_path")
     parser.add_argument("--force_emptying_dir", action="store_true", default=True)
 
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
@@ -272,7 +272,3 @@ if __name__ == "__main__":
     expected_num_doc_per_block = args.num_docs_per_block
     )
 
-# python  -m torch.distributed.launch --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
-# torchrun --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
-# For merge
-# python -m torch.distributed.launch --nproc_per_node 1 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt

@@ -4,7 +4,7 @@
 cache_dir=""        # where you store the hugingface models
 input_query_path="../../data/topics/ikat24/ikat_2024_test.json"
 output_query_path="../../data/topics/ikat24/ikat_2024_test.json"
-demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/non_personalized_demonstration_using_ikat23_level.json"
+demo_file="../../data/topics/ikat23/non_personalized_demonstration_using_ikat23_level.json"
 rewrite_model="llama3-8b"
 reformulation_name="llama3.1_MQ4CS_persq"
 

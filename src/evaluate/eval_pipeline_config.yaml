@@ -436,13 +436,13 @@ fixed:
   query_encoder_batch_size: 200  # Batch size for query encoding
 
   ############# Splade ############
-  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"  # Splade query encoder path
+  splade_query_encoder_path: "your splade path"  # Splade query encoder path
   splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"  # Splade index path
 
   ############# Dense  ############
   use_pyserini_dense_search: false
-  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"  
-  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"  
+  dense_query_encoder_path: "your dense path"  # Dense query encoder path
+  dense_index_dir_path: "your dense index path"  # Dense index path
   faiss_n_gpu: 4  # Number of GPUs for FAISS
   use_gpu_for_faiss: true
   embed_dim: 768  # Embedding dimension
@@ -491,7 +491,7 @@ fixed:
   # none, rankllama, rankgpt, monot5_base, monot5_base_10k, monot5_large, monot5_large_10k, monot5_3b, monot5_3b_10k,
   reranker: "none"  
   rerank_top_k: 50  
-  cache_dir: "/data/rech/huiyuche/huggingface"  
+  cache_dir: "huggingface_cache"  
   # on octal31: 67 for monot5_base, 10 for rankllama, 50 for monot5_large, 10 for t5_3b
   rerank_batch_size: 67  
   rerank_quant: "none"   # can be "none" ,"8b", "4b"
@@ -512,7 +512,7 @@ fixed:
   save_to_wandb: true
   metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"  
   metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
-  given_ranking_list_path: "/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw]-S2[gpt-4o_rar_personalized_cot1_rw]-g[gpt-4o_rar_personalized_cot1_rw]-[none]-[monot5_base_10k_4_1_none]-[s2_top50].txt"  
+  given_ranking_list_path: "../../results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw]-S2[gpt-4o_rar_personalized_cot1_rw]-g[gpt-4o_rar_personalized_cot1_rw]-[none]-[monot5_base_10k_4_1_none]-[s2_top50].txt"  
 
   ###############################################
   ## iKAT Project Specific

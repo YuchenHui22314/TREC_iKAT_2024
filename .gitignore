@@ -179,6 +179,7 @@ src/evaluate/wandb/*
 *.txt
 !ikat_23_qrel.txt
 !requirements.txt
+!judge_and_rewrite_prompt_example.txt
 **/test.py
 **/*.out
 **/*.log

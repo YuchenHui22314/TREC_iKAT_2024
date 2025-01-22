@@ -1,11 +1,9 @@
 import csv
 from tqdm import tqdm
 
-# INPUT_FILE = "/data/rech/huiyuche/test_multi_tab.tsv"
-# OUTPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/collections/ikat_23/test.tsv"
-INPUT_FILE = "/part/01/Tmp/yuchen/cast23_collection.tsv"
-OUTPUT_FILE = "/part/01/Tmp/yuchen/cluweb22B_ikat_v2.tsv"
-LOG_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/logs/preprocessing_log.txt" 
+INPUT_FILE = ""
+OUTPUT_FILE = ""
+LOG_FILE = "" 
 
 
 def main(input_file, output_file):

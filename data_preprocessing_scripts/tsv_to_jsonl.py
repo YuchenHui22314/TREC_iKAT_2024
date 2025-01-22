@@ -5,11 +5,9 @@ from argparse import ArgumentParser
 
 from tqdm import tqdm
 
-# INPUT_FILE = "/data/rech/huiyuche/test_multi_tab.tsv"
-# OUTPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/collections/ikat_23/test.jsonl"
-INPUT_FILE = "/data/rech/huiyuche/cast23_collection.tsv"
-OUTPUT_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/collections/ikat_23/cluweb22B_ikat_v2.jsonl"
-LOG_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/logs/preprocessing_log.txt" 
+INPUT_FILE = ""
+OUTPUT_FILE = ""
+LOG_FILE = "" 
 
 
 def main(input_file, output_file):
