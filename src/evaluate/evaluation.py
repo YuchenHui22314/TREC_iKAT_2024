@@ -54,12 +54,12 @@ def get_args():
     
     # splade
     parser.add_argument("--splade_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
-    parser.add_argument("--splade_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
+    parser.add_argument("--splade_index_dir_path", type=str, default="your path")
 
     # dense & splade
     parser.add_argument("--use_pyserini_dense_search", action="store_true", help="if we will use pyserini dense search or our own dense search implementation.")
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
-    parser.add_argument("--dense_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
+    parser.add_argument("--dense_index_dir_path", type=str, default="your path")
     parser.add_argument("--query_gpu_id", type=int, default=1)
     parser.add_argument("--query_encoder_batch_size", type=int, default=200)
 
@@ -71,7 +71,7 @@ def get_args():
     parser.add_argument("--passage_block_num", type=int, default=116)
 
     # BM25 parameters
-    parser.add_argument("--sparse_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
+    parser.add_argument("--sparse_index_dir_path", type=str, default="your path")
     parser.add_argument("--bm25_k1", type=float, default="0.9") # 0.82
     parser.add_argument("--bm25_b", type=float, default="0.4") # 0.68
 
@@ -110,7 +110,7 @@ def get_args():
                         ])
     parser.add_argument("--rerank_top_k", type=int, default="50")
     # hugging_face cache_dir
-    parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
+    parser.add_argument("--cache_dir", type=str, default="your cache path", help="cache directory for huggingface models")
 
     # on octal31: 67 for monot5_base, 10 for rankllama 
     # on octal40: TBD
