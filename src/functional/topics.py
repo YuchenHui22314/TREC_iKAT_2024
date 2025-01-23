@@ -21,11 +21,11 @@ class Result:
     retrieval_model: str = None  # e.g. "ANCE"
     reranker: str = None  # e.g. "rankllama"
     generation_model: str = None  # e.g. "gpt-4o"
-    retrieval_query_type: str = None # e.g. what is UdeM?
-    reranking_query_type: str = None # e.g. what is UdeM? Specifically, what is the history of UdeM?
-    generation_query_type: str = None # e.g. please provide me with information about UdeM
+    retrieval_query_type: str = None # e.g. what is xxxx?
+    reranking_query_type: str = None # e.g. what is xxxx? Specifically, what is the history of xxxx?
+    generation_query_type: str = None # e.g. please provide me with information about xxxx
     metrics: Dict[str, float] = None  # e.g. {"ndcg": 0.5, "map": 0.6}
-    response: str = None  # e.g. "UdeM is a university in Montreal, Quebec, Canada."
+    response: str = None  # e.g. "xxxx is a university in xxxx, xxxx, xxxx."
 
     def __eq__(self, another_instance: any) -> bool:
         if isinstance(another_instance, Result):
