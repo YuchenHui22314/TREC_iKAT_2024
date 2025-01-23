@@ -81,11 +81,8 @@ You should modify the batch size according to your GPU memory.
 
 ## 📝 Download TREC iKAT topics and relevance judgement
 
-The next step is downloading the official TREC iKAT topics and relevance judgement (qrel files), then proceding to preprocess them. The following table provides the download links for both iKAT 2023 and 2024 datasets.
-| Dataset | Topics | Qrels |
-| --- | --- | --- |
-| TREC iKAT 2023 | [topics](https://github.com/irlabamsterdam/iKAT/tree/main/2023/data) | [qrels](https://trec.nist.gov/data/ikat2023.htmlhttps://www.trecikat.com/data/2023/qrels) |
-| TREC iKAT 2024 | [topics](https://www.trecikat.com/data/#topics-for-ikat-year-2-2024) | Not yet available for non-participants |
+The next step is downloading the official TREC iKAT topics and relevance judgement (qrel files) from the [iKAT track official website](https://github.com/irlabamsterdam/iKAT/tree/main) and [TREC website](https://trec.nist.gov/data/ikat2023.html),  then proceeding to preprocess them. 
+
 ### Topics file preprocessing 
 In our pipeline, we use the `Turn` object as the internal representation of each conversation turn (see `/src/topics.py`), so the preprocessing step involves reading the official iKAT topic file, flattening all the conversations to turn level, then converting each turn to a `Turn` object. Specifically, suppose that the downloaded topic file is stored at `./data/topics/2023_ikat_test_topics.json` (also apply for iKAT 24), then use the following code to preprocess trec topics. This would generate all `Trun` objects and transcript them to a `json` file. Note that the resulting `ikat_2023_test.json` file will be used as the input for the evaluation pipeline.
 ```python
