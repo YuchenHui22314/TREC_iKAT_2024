@@ -1,7 +1,4 @@
-<p align="center">
-  <img src="./figures/overview.jpg" alt="Overview of the PPCIR Framework" width="100%"/>
-</p>
-
+![Overview of the PPCIR Framwork](./figures/overview.jpg)
 # 🤖PPCIR: Precise Personalized Conversational IR via Fine-Grained Fusion 
 <p>
 <a href="https://github.com/DaoD/INTERS/blob/main/LICENSE">
@@ -13,6 +10,7 @@ This is the repository for the paper "Precise Personalized Conversational Inform
 - Our solid codebase for a personalized conversational RAG pipeline, with flexible choices of various retrievers, rerankers, as well as response generators.
 - Detailed hands-on guidance of index building, enveronment setting for dense, spasre and splade retrieval, as well as necessary data preprocessing for TREC iKAT 2023 & 2024 datasets.
 - All the prompts, few-shot examples, and manually curated Chain-of-Thought reasoning used in the paper. They could all be found in the `/src/rewrite` folder.
+- Some 
 
 Let us get started!
 
