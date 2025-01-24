@@ -1,16 +1,16 @@
-![Overview of the PPCIR Framwork](./figures/overview.jpg)
-# 🤖PPCIR: Precise Personalized Conversational IR via Fine-Grained Fusion 
+![Overview of the APCIR Framwork](./figures/overview.jpg)
+# 🤖APCIR: Adaptive Personalized Conversational IR via Fine-Grained Fusion 
 <p>
 <a href="https://github.com/DaoD/INTERS/blob/main/LICENSE">
 <img src="https://img.shields.io/badge/MIT-License-blue" alt="license">
 </a>
 </p> 
-This is the repository for the paper "Precise Personalized Conversational Information Retrieval via Fine-Grained Fusion" submitted to SIGIR 2025. To falilitate follow-up research on Personalized Conversational IR, we release the following resources:
+This is the repository for the paper "Adaptive Personalized Conversational Information Retrieval via Fine-Grained Fusion" submitted to SIGIR 2025. To falilitate follow-up research on Personalized Conversational IR, we release the following resources:
 
 - Our solid codebase for a personalized conversational RAG pipeline, with flexible choices of various retrievers, rerankers, as well as response generators.
 - Detailed hands-on guidance of index building, enveronment setting for dense, spasre and splade retrieval, as well as necessary data preprocessing for TREC iKAT 2023 & 2024 datasets.
-- All the prompts, few-shot examples, and manually curated Chain-of-Thought reasoning used in the paper. They could all be found in the `/src/rewrite` folder.
-- Some 
+- All the [prompts](./src/rewrite/judge_and_rewrite_prompt_example.txt), few-shot examples, and manually curated Chain-of-Thought reasoning used in the paper. They could all be found in the `/src/rewrite` folder.
+- Examples of query reformulations and pseudo responses. 
 
 Let us get started!
 
