@@ -1,0 +1,37 @@
+Level a: The query is self-contained and does not need personalization.
+    Example 1:
+    Query: "Can you explain the origins of Chinese white Wine ?"
+    Profile: User does not drink alcohol.
+    Reason: This question is about history, so the user's preferences aren't relevant.
+    Example 2:
+    Query: "What is the capital of France?"
+    Profile: User is a Canadian citizen.
+    Reason: This question is general knowledge and does not require personalization.
+
+Level b: The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers.
+    Example 1: 
+    Query: "Can you recommend some books for me?"
+    Profile: User is a technology fan and a history lover.
+    Reason: Recommending books on technology and history can be a great bonus, but suggesting other quality reads is also helpful.
+    Example 2:
+    Query: "Compare badminton and swimming."
+    Profile: User is in a diet. 
+    Reason: Dieting may affect the user's choice of sports, but the comparison can be made without this information.
+
+Level c: The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.
+    Example 1:
+    Query: "What's a suitable recipe for a family dinner?"
+    Profile: User's child is allergic to peanuts, and the family has a strong dislike for spicy food.
+    Reason: Avoiding peanuts and spice ensures the recipe meets the family's dietary needs. Otherwise, searched recipe might be unsuitable.
+    Example 2:
+    Query: "How can I apply for a Canadian Study Permit?"
+    Profile: User is a Chinese Citizen living in Beijing.
+    Reason: Specific application process or restrictions for Beijing Chinese citizens may exist. A 
+    Example 3:
+    Query: "What is my highest tolerable heart rate?"
+    Profile: User is 23 years old.
+    Reason:  highest tolerable heart rate = 220 - age. Without the user profile we cannot calculate the heart rate.
+    Example 4:
+    Query: "Can you recommend some good restaurants near me?"
+    Profile: The user is in Paris and plan to visit the Eiffel Tower today.
+    Reason: Without the user's location, we cannot find any restaurants near the user. 

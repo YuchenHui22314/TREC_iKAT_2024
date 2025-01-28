@@ -180,6 +180,8 @@ src/evaluate/wandb/*
 !ikat_23_qrel.txt
 !requirements.txt
 !judge_and_rewrite_prompt_example.txt
+!query_reformulations_examples.txt
+!personalization_level_examples.txt
 **/test.py
 **/*.out
 **/*.log

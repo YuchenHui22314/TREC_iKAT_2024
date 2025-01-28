@@ -9,7 +9,7 @@ This is the repository for the paper "Adaptive Personalized Conversational Infor
 
 - Our solid codebase for a personalized conversational RAG pipeline, with flexible choices of various retrievers, rerankers, as well as response generators.
 - Detailed hands-on guidance of index building, enveronment setting for dense, spasre and splade retrieval, as well as necessary data preprocessing for TREC iKAT 2023 & 2024 datasets.
-- All our [prompts](./src/rewrite/judge_and_rewrite_prompt_example.txt), [few-shot examples](./src/rewrite/personalization_level_examples.txt) for personalization level judgement, and manually curated [Chain-of-Thought reasoning](./src/rewrite/demonstration_using_ikat24_level.json) for query reformulation, as well as some [examples](./src/rewrite/query_reformulations_examples.txt) of query reformulation for each personalization level. 
+- All our [prompts](./src/rewrite/judge_and_rewrite_prompt_example.txt), [few-shot examples](./src/rewrite/personalization_level_examples.txt) for personalization level judgement, and manually curated [Chain-of-Thought reasoning](./src/rewrite/demonstration_using_ikat24_level.json) for query reformulation, as well as some [examples](./src/rewrite/query_reformulations_examples.txt) of query reformulation & pseudo-responses for each personalization level. 
 
 Let us get started!
 
