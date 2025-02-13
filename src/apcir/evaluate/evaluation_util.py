@@ -4,7 +4,7 @@ import json
 from typing import List, Any, Dict
 import pytrec_eval
 
-from ..topics import (
+from apcir.functional.topics import (
     Turn, 
     load_turns_from_json,
     filter_ikat_23_evaluated_turns,
@@ -12,7 +12,7 @@ from ..topics import (
     get_turn_by_qid
     )
 
-from ..constants import IKAT_AUTOMATIC_RUN_TEMPLATE_DICT
+from apcir.functional.constants import IKAT_AUTOMATIC_RUN_TEMPLATE_DICT
 
 
 

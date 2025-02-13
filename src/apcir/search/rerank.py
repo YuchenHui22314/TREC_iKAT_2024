@@ -21,7 +21,7 @@ from transformers import (
 
 from pyserini.search.lucene import LuceneSearcher
 
-from ..llm import monoT5
+from apcir.functional.llm import monoT5
 from .rank_gpt import  sliding_windows
 
 def get_model(

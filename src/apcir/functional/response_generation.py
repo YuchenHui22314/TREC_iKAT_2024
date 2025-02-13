@@ -3,7 +3,7 @@ from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
 import os
 
-from topics import (
+from .topics import (
     Turn,
     load_document_by_id,
     get_turn_by_qid,

@@ -187,3 +187,4 @@ src/evaluate/wandb/*
 /logs
 /data/rech/huiyuche/TREC_iKAT_2024/data/qrels/toy_qrel.txt
 /test
+**/wandb/*

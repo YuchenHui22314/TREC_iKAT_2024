@@ -21,7 +21,7 @@ def is_english_word(word):
     return base_form in words.words()
 
 
-from ..promptor import (
+from apcir.functional.promptor import (
     RewriteAndResponsePromptor,
     PersonalizedCIRQueryExpansionPromptor,
     SummarizePTKBPromptor,
@@ -36,13 +36,13 @@ from ..promptor import (
     GtR_RW
 )
 
-from ..topics import (
+from apcir.functional.topics import (
     save_turns_to_json, 
     load_turns_from_json,
     get_context_by_qid,
 )
 
-from ..llm import (
+from apcir.functional.llm import (
     LM,
     OpenAILM
 )

@@ -56,8 +56,8 @@ def extend_command(config, command):
 
 if __name__ == "__main__":
     # Load configuration
-    config_file = "fuse_then_eval_config_23.yaml"  
-    log_file = "/data/rech/huiyuche/TREC_iKAT_2024/logs/evaluation_log_2023.txt"
+    config_file = "./apcir/evaluate/fuse_then_eval_config_23.yaml"  
+    log_file = "../logs/evaluation_log_2023.txt"
     
 
     config = load_config(config_file)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     to_iterate_parameters_dict = config["iterate"]
     param_mapping = config["param_mapping"]
 
-    initial_command = ["python", "evaluation.py"]
+    initial_command = ["python", "-m" "apcir.evaluate.evaluation"]
 
     # iterate over all parameter combinations (use itertools.product)
     # Generate all parameter combinations (Cartesian product)

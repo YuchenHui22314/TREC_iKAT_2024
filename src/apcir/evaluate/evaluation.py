@@ -5,13 +5,13 @@ import json
 
 import wandb
 
-from ..topics import (
+from apcir.functional.topics import (
     save_turns_to_json, 
     load_turns_from_json
     )
     
-from ..search import search    
-from ..response_generation import (
+from apcir.search.search import search    
+from apcir.functional.response_generation import (
     generate_responses
     ) 
 

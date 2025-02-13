@@ -157,8 +157,9 @@ iterate:
 #     "MQ4CS_low_resource_3_grid_search"
 # ]
 
-  machine: ["octal30"]
-  retrieval_model: ["splade_v3"]
+  machine: ["octal31"]
+  retrieval_model: ["BM25"]
+  reranker: ["monot5_base_10k"]
   topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [
     # "gpt-4o_GtR_mq_3_1",
@@ -168,10 +169,12 @@ iterate:
     # "gpt-4o_GtR_low_resource_3_RRF",
     # gpt-4o_judge_and_rewrite_optimize_retrieval_score
     #"gpt-4o_GtR_low_resource_3"
-    "gpt-3.5_MQ4CS_persq_rw",
-    "llama3.1_MQ4CS_persq_rw",
-    "mistral_MQ4CS_persq_rw"
+    # "gpt-3.5_MQ4CS_persq_rw",
+    # "llama3.1_MQ4CS_persq_rw",
+    # "mistral_MQ4CS_persq_rw"
+    "raw"
 ]
+  reranking_query_type: ["oracle"]
 
 param_mapping:
   machine:
@@ -196,11 +199,11 @@ param_mapping:
 
   topics:
     ikat_24_test:
-      input_query_path: "../../data/topics/ikat24/ikat_2024_test.json"
-      qrel_file_path: "../../data/qrels/ikat_24_qrel.txt"
+      input_query_path: "../data/topics/ikat24/ikat_2024_test.json"
+      qrel_file_path: "../data/qrels/ikat_24_qrel.txt"
     ikat_23_test:
-      input_query_path: "../../data/topics/ikat23/ikat_2023_test.json"
-      qrel_file_path: "../../data/qrels/ikat_23_qrel.txt"
+      input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
+      qrel_file_path: "../data/qrels/ikat_23_qrel.txt"
 
   retrieval_query_type:
     MQ4CS_low_resource:
@@ -553,13 +556,13 @@ fixed:
   ###############################################
   collection: "ClueWeb_ikat"  # Dataset collection
   topics: "ikat_23_test"  # Test topics
-  input_query_path: "../../data/topics/ikat23/ikat_2023_test.json"  # Path to input query file
+  input_query_path: "../data/topics/ikat23/ikat_2023_test.json"  # Path to input query file
 
   # use /part/02 for octal30, /part/01 for octal31
   # index_dir_path="/part/02/Tmp/yuchen/clueweb22b_ikat23_fengran_sparse_index_2/" # Please use local disk index to achieve the fastest access
   sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"  # Use local disk index for fastest access
-  output_dir_path: "../../results"  # Path to save results
-  qrel_file_path: "../../data/qrels/ikat_23_qrel.txt"  # Qrel file path
+  output_dir_path: "../results"  # Path to save results
+  qrel_file_path: "../data/qrels/ikat_23_qrel.txt"  # Qrel file path
   seed: 42  # Random seed for reproducibility
 
   save_results_to_object: true
