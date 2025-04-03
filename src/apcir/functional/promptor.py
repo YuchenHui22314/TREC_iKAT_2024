@@ -1,4 +1,5 @@
 import json
+import re
 
 def check_length(prompt, max_length):
     n = len(prompt.split(' '))
@@ -6,6 +7,150 @@ def check_length(prompt, max_length):
         return False
     return True
 
+def remove_leading_number(sentence):
+    return re.sub(r'^\d+\.\s*', '', sentence)
+
+class Fengran_10GRF_Prompter:
+    def __init__(
+        self, 
+        phi=10,
+        ) -> None:
+        
+        self.phi = phi 
+
+        # head_instruction
+        self.instruction = f"# You will be given an information seeking dialogue between an user and an assistant. Your task: For the user's last question, please provide {phi} different informative responses to answer it."
+
+    
+    
+    def build_turn_prompt(self, turn):
+        this_prompt = [self.instruction]
+        
+        # current turn
+
+        # previous turn context
+        this_dialog = ["# Here is the dialogue:\n"]
+        context = turn["ctx_utts_text"]
+        if len(context) == 0:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            assert len(context) % 2 == 0, "context length should be even"
+
+            # for every 2 elements in context, they are a pair of user and system turn
+            for i in range(0, len(context), 2):
+                current_utterance = context[i]
+                current_response = context[i+1]
+                this_dialog.append(f"user: {current_utterance}\nsystem: {current_response}")
+        
+        # current turn
+
+        this_dialog.append("# User's last question: " + turn["cur_utt_text"])
+        this_dialog = "\n".join(this_dialog)  
+
+        this_prompt.append(this_dialog)
+         
+        this_prompt.append(f"# Now give me the {self.phi} **different** **informative** responses that answers the users' last question. The format should be:\nresponse1\nresponse2\nresponse3\n....\nresponse{self.phi}\n\n. Go ahead!")
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+
+        try:
+            splits = text.split('\n')
+            result_list = []
+
+            for i in range(len(splits)):
+                if splits[i].startswith("#"):
+                    splits[i] = splits[i][1:]
+                if splits[i].startswith("-"):
+                    splits[i] = splits[i][1:]
+                if splits[i] == "\n":
+                    continue
+                if len(splits[i]) < 10:
+                    continue
+                if ":" in splits[i]:
+                    continue
+                
+                result_list.append(remove_leading_number(splits[i]).strip())
+
+            return result_list
+
+        except Exception as e:
+            print(e)
+class Fengran_10QR_Prompter:
+    def __init__(
+        self, 
+        phi=10,
+        enable_context = False
+        ) -> None:
+        
+        self.enable_context = enable_context
+        self.phi = phi 
+        # head_instruction
+
+        context_1 = " and the conversation context of the question in an information seeking dialogue" if self.enable_context else "" 
+
+        self.instruction = f"# You will be given a user question{context_1}. please provide {phi} equivalent questions, such that each of the {phi} questions has the same meaning but is in a different form. Write each query on one line."
+
+    
+    
+    def build_turn_prompt(self, turn):
+        
+        this_prompt = [self.instruction]
+        
+
+        # previous turn context
+        this_dialog = ["# Here is the dialogue:\n"]
+        context = turn["ctx_utts_text"]
+
+        if len(context) == 0:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            assert len(context) % 2 == 0, "context length should be even"
+
+            # for every 2 elements in context, they are a pair of user and system turn
+            for i in range(0, len(context), 2):
+                current_utterance = context[i]
+                current_response = context[i+1]
+                this_dialog.append(f"user: {current_utterance}\nsystem: {current_response}")
+        
+        # current turn
+        dialog = "\n".join(this_dialog) 
+
+
+        this_prompt.append(dialog)
+        this_prompt.append("# Here is the User Question: " + turn["cur_utt_text"])
+        
+        this_prompt.append(f"# Now give me the {self.phi} different questions. Don't say any other words. Don't generate sequence number of indicator. Just write questions. each question on one line.")
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+
+        text = text.strip()
+
+        try:
+            splits = text.split('\n')
+            result_list = []
+
+            for i in range(len(splits)):
+                if splits[i].startswith("#"):
+                    splits[i] = splits[i][1:]
+                if splits[i] == "\n":
+                    continue
+                
+                result_list.append(remove_leading_number(splits[i]).strip())
+
+            return result_list
+        except Exception as e:
+            print(e)
+        
 class RewriteAndResponsePromptor:
     def __init__(
         self, 

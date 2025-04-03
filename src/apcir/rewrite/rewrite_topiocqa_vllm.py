@@ -1,0 +1,500 @@
+'''
+Rewrite all queries in input_query_path 
+'''
+import os
+import argparse
+import tkinter as tk
+from tkinter import simpledialog
+from tqdm import tqdm
+import json
+
+import nltk
+nltk.download('words')
+nltk.download('wordnet')
+from nltk.corpus import words
+from nltk.stem import WordNetLemmatizer
+
+# Initialize the WordNet lemmatizer
+lemmatizer = WordNetLemmatizer()
+
+
+from vllm import LLM, SamplingParams
+
+def is_english_word(word):
+    base_form = lemmatizer.lemmatize(word.lower())
+    return base_form in words.words()
+
+
+from apcir.functional.promptor import (
+    RewriteAndResponsePromptor,
+    PersonalizedCIRQueryExpansionPromptor,
+    SummarizePTKBPromptor,
+    PersonalizeViaPTKBSummaryPrompter,
+    RARPersonalizedCoTPromptor,
+    RARNonPersonalizedCoTPromptor,
+    JudgePersonalizeLevelPromptor, 
+    JudgeThenRewritePromptor,
+    MQ4CSPrompter,
+    MQ4CSRWPrompter,
+    GtR_RS,
+    GtR_RW,
+    Fengran_10QR_Prompter,
+    Fengran_10GRF_Prompter
+)
+
+from apcir.functional.topics import (
+    save_turns_to_json, 
+    save_turns_to_topiocqa, 
+    load_turns_from_json,
+    load_turns_from_topiocqa,
+    get_context_by_qid,
+)
+
+from apcir.functional.llm import (
+    LM,
+    OpenAILM
+)
+
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--input_query_path", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/ikat_2023_test.json")
+
+    parser.add_argument("--output_query_path", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json")
+
+    parser.add_argument("--demo_file", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json")
+
+    parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface")
+
+    parser.add_argument("--rewrite_model", type=str, default="gpt-3.5-turbo", choices=[
+        "gpt-3.5-turbo", 
+        "gpt-3.5-turbo-16k", 
+        "gpt-4-0613",
+        "gpt-4o-2024-08-06",
+        "mistral-8b",
+        "llama3-8b"])
+
+    parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
+        "rar",
+        "rar_cot",
+        "gpt-4o_rar",
+        "gpt-4o_rar_cot",
+        "rar_ptkb_sum_cot0",
+        "rar_ptkb_sum",
+        "ptkb_summarize",
+        "raw_llm_rm_PDCReORf",
+        # P -> personalize, D -> demo, C -> cot, Re -> rel explain
+        # O -> oracle, Rf -> rel feedback
+        "raw_llm_rm_P__Re___",
+        "raw_llm_rm____Re___",
+        "rar_personalized_cot1",
+        "rar_personalized_cot0",
+        "rar_personalized_cotN",
+        "gpt-4o_rar_personalized_cot1",
+        "gpt-4o_rar_non_personalized_cot1",              # modify the few shot example to remove personalization
+        "gpt-4o_rar_manual_depersonalized_cot1",         # directly modify the resulting rewrite to remove personalizaiton.
+        "personalization_level",
+        "gpt-4o_judge_and_rewrite",
+        "gpt-3.5_judge_and_rewrite",
+        "gpt-4_judge_and_rewrite",
+        "llama3.1_rar",
+        "mistral_rar",
+        "mistral_judge_and_rewrite",
+        "llama3.1_judge_and_rewrite",
+        "gpt-4o_MQ4CS_mq",
+        "gpt-4o_MQ4CS_persq",
+        "gpt-4o_jtr_wo_cot",
+        "gpt-4o_jtr_wo_in_context",
+        "gpt-4o_MQ4CS_mq_3",
+        "gpt-4o_GtR_rs",
+        "gpt-4o_GtR_mq_3",
+        "gpt-4_MQ4CS_persq",
+        "gpt-3.5_MQ4CS_persq",
+        "llama3.1_MQ4CS_persq",
+        "mistral_MQ4CS_persq",
+        "llama3.1_fengran_10_qr",
+        "llama3.1_fengran_10_qr_ctx",
+        "llama3.1_fengran_10_GRF"
+        ]
+    ) 
+    args = parser.parse_args()
+
+    return args
+
+
+def get_llm_rm_expansion_terms(
+    prompter_choices: str,
+    turn,
+    turn_list,
+    llm_model, # A hugging face LLM model
+    num_expansion_terms,
+):
+
+    if llm_model == None:
+        cache_dir = args.cache_dir
+        llm_model = LM(
+            model_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
+            tokenizer_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
+            padding_side="left",
+            dtype="bf16",
+            device_map= "auto",
+            attn_implementation="flash_attention_2",
+            access_token=None,
+            cache_dir=cache_dir,
+            accelerator = None,
+            load_in_8bit = False,
+            load_in_4bit = False,
+        )
+
+
+    enable_personalization=False
+    enable_demo=False
+    enable_cot=False
+    enable_relevance_explanation=False
+    enable_oracle=False
+    enable_relevance_feedback=False
+
+    # pasre the prompter choices pattern "PDCReORf"
+    if prompter_choices[0] == "P":
+        enable_personalization = True
+    if prompter_choices[1] == "D":
+        enable_demo = True
+    if prompter_choices[2] == "C":
+        enable_cot = True
+    if prompter_choices[3:5] == "Re":
+        enable_relevance_explanation = True
+    if prompter_choices[5] == "O":
+        enable_oracle = True
+    if prompter_choices[6:7] == "Rf":
+        enable_relevance_feedback = True
+
+
+    prompter = PersonalizedCIRQueryExpansionPromptor(
+    demo_file = "/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json",
+    enable_personalization=enable_personalization,
+    enable_demo=enable_demo,
+    enable_cot=enable_cot,
+    enable_relevance_explanation=enable_relevance_explanation,
+    enable_oracle=enable_oracle,
+    enable_relevance_feedback=enable_relevance_feedback
+    )
+
+    context = get_context_by_qid(turn.turn_id,turn_list)
+    current_turn_ptkb_dict = turn.ptkb
+    prompt = prompter.build_turn_prompt(context,current_turn_ptkb_dict,turn)
+
+    messages = [
+        {
+            "role": "user",
+            "content": prompt 
+        }
+    ]
+
+    sequences,logits = llm_model.hf_llm_generate(
+        messages,
+        temperature = 1,
+        top_p = 0.9,
+        max_new_tokens = 256,
+        do_sample = True,
+        num_beams = 1,
+        num_return_sequences = 1
+    )
+
+    expension_terms_weights_dict = llm_model.yield_expansion_terms(logits,num_expansion_terms,":")
+
+    return expension_terms_weights_dict, prompt
+
+if __name__ == '__main__':
+    args = get_args()
+
+    # print the arguments
+    print(args)
+
+    input_query_path = args.input_query_path
+    rewrite_model = args.rewrite_model
+    demo_file = args.demo_file
+    reformulation_name = args.reformulation_name
+
+    # ask user for openai api key
+    if 'openai_key' not in os.environ:
+        os.environ['openai_key'] = input("Please Enter your OpenAI API key: ")
+
+    ###########################
+    ## load prompter
+    ###########################
+
+
+    if "fengran_10_GRF" in reformulation_name:
+        prompter = Fengran_10GRF_Prompter(phi=10)
+
+    if "fengran_10_qr" in reformulation_name:
+        if "ctx" in reformulation_name:
+            prompter = Fengran_10QR_Prompter(phi=10, enable_context = True)
+        else:
+            prompter = Fengran_10QR_Prompter(phi=10)
+
+    if "GtR_mq" in reformulation_name:
+        splits = reformulation_name.split("_")
+        number = splits[-1]
+        if number.isdigit():
+            number = int(number)
+            prompter = GtR_RW(phi = number)
+        else:
+            prompter = GtR_RW(phi = 2)
+    
+    if "GtR_rs" in reformulation_name:
+        prompter = GtR_RS() 
+    if "MQ4CS_mq" in reformulation_name:
+        splits = reformulation_name.split("_")
+        number = splits[-1]
+        if number.isdigit():
+            number = int(number)
+            prompter = MQ4CSPrompter(phi = number)
+        else:
+            prompter = MQ4CSPrompter(phi = 2)
+
+    if "MQ4CS_persq" in reformulation_name:
+        prompter = MQ4CSRWPrompter()
+
+    if "judge_and_rewrite" in reformulation_name:
+        prompter =  JudgeThenRewritePromptor(
+            enable_cot=True,
+            enable_demo=True,
+            demo_file = demo_file 
+        )
+    if "jtr_wo_cot" in reformulation_name:
+        prompter =  JudgeThenRewritePromptor(
+            enable_cot=False,
+            enable_demo=True,
+            demo_file = demo_file
+            )
+    if "jtr_wo_in_context" in reformulation_name:
+        prompter =  JudgeThenRewritePromptor(
+            enable_cot=True,
+            enable_demo=False,
+            demo_file = demo_file
+            )
+        
+    if "personalization_level" in reformulation_name:
+        prompter = JudgePersonalizeLevelPromptor(
+            enable_cot=True
+        )
+
+    if (reformulation_name == "rar" or 
+        reformulation_name == "gpt-4o_rar" or
+        reformulation_name == "llama3.1_rar" or
+        reformulation_name == "mistral_rar"
+        ):
+        prompter = RewriteAndResponsePromptor(
+            demo_file = demo_file, 
+            enable_cot = False
+        )
+
+    if reformulation_name == "rar_cot" or reformulation_name == "gpt-4o_rar_cot":
+        prompter = RewriteAndResponsePromptor(
+            demo_file = demo_file, 
+            enable_cot = True
+        )
+
+    if "summarize" in reformulation_name:
+        prompter= SummarizePTKBPromptor()
+    
+    if reformulation_name == "rar_ptkb_sum_cot0":
+        prompter = PersonalizeViaPTKBSummaryPrompter(
+            enable_cot = True
+        )
+    
+    if reformulation_name == "rar_ptkb_sum":
+        prompter = PersonalizeViaPTKBSummaryPrompter(
+            enable_cot = False
+        )
+
+    if ("rar_personalized_cot" in reformulation_name) or ("rar_non_personalized_cot" in reformulation_name):
+        enable_cot = True
+        zero_shot_cot = False
+        one_shot_cot = False
+        if reformulation_name[-1] == "0":
+            zero_shot_cot = True
+        if reformulation_name[-1] == "1":
+            one_shot_cot = True
+        if reformulation_name[-1] == "N":
+            enable_cot = False
+        
+        if "non" in reformulation_name:
+            prompter = RARNonPersonalizedCoTPromptor(
+                demo_file = demo_file,
+                enable_cot = enable_cot,
+                zero_shot_cot = zero_shot_cot,
+                one_shot_cot = one_shot_cot,
+                cot_format="cot_seperate"
+            )
+        else:
+            prompter = RARPersonalizedCoTPromptor(
+                demo_file = demo_file,
+                enable_cot = enable_cot,
+                zero_shot_cot = zero_shot_cot,
+                one_shot_cot = one_shot_cot,
+                cot_format="cot_seperate"
+            )
+
+
+
+
+    ###########################
+    ## load langauge model
+    ###########################
+
+    if "gpt" in rewrite_model:
+        rewriter = OpenAILM(
+        api_key = os.environ['openai_key'],
+        model_name = rewrite_model,
+        n = 1,
+        max_tokens=2048,
+        wait_till_success=True 
+        )
+
+    if "llm_rm" in  reformulation_name:
+        llm_model = LM(
+            model_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
+            tokenizer_name_or_path="meta-llama/Meta-Llama-3-8B-Instruct",
+            padding_side="left",
+            dtype="bf16",
+            device_map= "auto",
+            attn_implementation="flash_attention_2",
+            access_token=None,
+            cache_dir=args.cache_dir,
+            accelerator = None,
+            load_in_8bit = False,
+            load_in_4bit = False,
+        )
+    
+    if "mistral" in rewrite_model:
+        rewriter = LM(
+        model_name_or_path="mistralai/Ministral-8B-Instruct-2410",
+        tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
+        padding_side="left",
+        dtype="bf16",
+        device_map= "cuda:0",
+        attn_implementation="flash_attention_2",
+        #use_flash_attention_2=False, (deprecated)
+        access_token=None,
+        cache_dir=args.cache_dir,
+        accelerator = None
+        )
+    
+    if "llama" in rewrite_model:
+
+        model_path = "/data/rech/huiyuche/huggingface/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659"  # Or your local path
+        model_path = "/data/rech/huiyuche/huggingface/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/e0bc86c23ce5aae1db576c8cca6f06f1f73af2db"
+
+        llm = LLM(
+            model=model_path, 
+            tensor_parallel_size=1, 
+            max_model_len=20000#40000
+            )  
+
+        sampling_params = SamplingParams(
+            temperature=0,  # Deterministic
+            max_tokens=1500,   # Max generated tokens
+        )
+
+
+    #################################
+    ## load topic file and rewrite
+    #################################
+
+    turn_list = load_turns_from_topiocqa(input_query_path)
+
+    prompts = [ 
+        prompter.build_turn_prompt(turn) for turn in turn_list]
+
+    print(prompts[3])
+    
+    
+    outputs = llm.generate(prompts, sampling_params)
+    # dump the outputs to a file
+    try:
+        with open(args.output_query_path + "_temp", "w") as f:
+            json.dump([output.outputs[0].text for output in outputs], f)
+    except Exception as e:
+        print(e)
+        print(f"想坑本王？没门！")
+    
+    for index, output in enumerate(outputs):
+        if "fengran_10_GRF" in reformulation_name:
+            turn = turn_list[index]
+            liste = prompter.parse_returned_text(output.outputs[0].text)
+
+            if liste == None:
+                print(f"error with turn id {turn["sample_id"]}")
+                print(output.outputs[0].text)
+                continue
+
+            if len(liste) < 10:
+                # append " " to the end of the list
+                for i in range(10 - len(liste)):
+                    liste.append("GG")
+
+            liste = liste[:10]
+            turn["GRF"] = []
+
+            for i in range(len(liste)):
+                query = liste[i]
+                turn["GRF"].append(query)
+                
+            try:
+                print("#########################")
+                print("this is turn: ", turn["sample_id"])
+                print(f"original query: {turn["cur_utt_text"]}")
+                for i in range(len(liste)):
+                    print(f"Fengran GRF_{i+1}: {liste[i]}")
+
+            except Exception as e:
+                print(f"print error with turn id {turn["sample_id"]}")
+                continue
+
+
+        elif "fengran_10_qr" in reformulation_name:
+
+            turn = turn_list[index]
+            liste = prompter.parse_returned_text(output.outputs[0].text)
+
+            if liste == None:
+                print(f"error with turn id {turn["sample_id"]}")
+                print(output.outputs[0].text)
+                continue
+
+            if len(liste) < 10:
+                # append " " to the end of the list
+                for i in range(10 - len(liste)):
+                    liste.append("GG")
+
+            liste = liste[:10]
+            turn["rewrites"] = []
+
+            for i in range(len(liste)):
+                query = liste[i]
+                turn["rewrites"].append(query)
+                
+            try:
+                print("#########################")
+                print("this is turn: ", turn["sample_id"])
+                print(f"original query: {turn["cur_utt_text"]}")
+                for i in range(len(liste)):
+                    print(f"Fengran query_{i+1}: {liste[i]}")
+
+            except Exception as e:
+                print(f"print error with turn id {turn["sample_id"]}")
+                continue
+
+    
+    #################################
+    ## save turn list
+    #################################
+
+    #save_turns_to_json(turn_list, args.output_query_path)
+    save_turns_to_topiocqa(turn_list, args.output_query_path)
+    
+
+
+         

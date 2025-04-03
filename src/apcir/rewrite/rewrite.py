@@ -6,12 +6,15 @@ import argparse
 import tkinter as tk
 from tkinter import simpledialog
 from tqdm import tqdm
+import json
 
 import nltk
 nltk.download('words')
 nltk.download('wordnet')
 from nltk.corpus import words
 from nltk.stem import WordNetLemmatizer
+
+from vllm import LLM, SamplingParams
 
 # Initialize the WordNet lemmatizer
 lemmatizer = WordNetLemmatizer()
@@ -33,12 +36,16 @@ from apcir.functional.promptor import (
     MQ4CSPrompter,
     MQ4CSRWPrompter,
     GtR_RS,
-    GtR_RW
+    GtR_RW,
+    Fengran_10QR_Prompter,
+    Fengran_10GRF_Prompter
 )
 
 from apcir.functional.topics import (
     save_turns_to_json, 
+    save_turns_to_topiocqa, 
     load_turns_from_json,
+    load_turns_from_topiocqa,
     get_context_by_qid,
 )
 
@@ -103,7 +110,8 @@ def get_args():
         "gpt-4_MQ4CS_persq",
         "gpt-3.5_MQ4CS_persq",
         "llama3.1_MQ4CS_persq",
-        "mistral_MQ4CS_persq"
+        "mistral_MQ4CS_persq",
+        "llama3.1_fengran_10_qr"
         ]
     ) 
     args = parser.parse_args()
@@ -212,6 +220,9 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
+
+    if "fengran_10_qr" in reformulation_name:
+        prompter = Fengran_10QR_Prompter(phi=10)
 
     if "GtR_mq" in reformulation_name:
         splits = reformulation_name.split("_")
@@ -349,6 +360,8 @@ if __name__ == '__main__':
         )
     
     if "mistral" in rewrite_model:
+
+
         rewriter = LM(
         model_name_or_path="mistralai/Ministral-8B-Instruct-2410",
         tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
@@ -368,7 +381,7 @@ if __name__ == '__main__':
         tokenizer_name_or_path="meta-llama/Llama-3.1-8B-Instruct",
         padding_side="left",
         dtype="bf16",
-        device_map= "cuda:3",
+        device_map= "cuda:0",
         attn_implementation="flash_attention_2",
         access_token=None,
         cache_dir=args.cache_dir,
@@ -384,8 +397,9 @@ if __name__ == '__main__':
     turn_list = load_turns_from_json(input_query_path)
 
     for index, turn in tqdm(enumerate(turn_list), total=len(turn_list), desc="Rewriting"):
-        context = get_context_by_qid(turn.turn_id,turn_list)
 
+        context = get_context_by_qid(turn.turn_id,turn_list)
+            
         if "GtR_rs" in reformulation_name:
             context = get_context_by_qid(turn.turn_id,turn_list)
             current_turn_ptkb_dict = turn.ptkb
@@ -966,6 +980,8 @@ if __name__ == '__main__':
                 reformulated_query = cot,
                 ptkb_provenance = []
             )
+    
+            
 
     
     #################################

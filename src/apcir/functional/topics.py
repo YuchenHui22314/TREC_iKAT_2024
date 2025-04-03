@@ -479,6 +479,20 @@ def save_turns_to_json(
     
     return turn_list
 
+def save_turns_to_topiocqa(
+    turns: List[dict],
+    output_file_path: str
+) -> Any:
+
+    '''
+    Load a list of dictionary from the topiocqa topic files provided by Fengran 
+    '''
+
+    # write each dictionary in the list to a line to form a jsonl file
+    with open(output_file_path, "w") as f:
+        for turn in turns:
+            f.write(json.dumps(turn) + "\n") 
+
             
 def load_turns_from_json(
         input_topic_path: str, 
@@ -544,6 +558,21 @@ def load_turns_from_ikat_topic_files(
             list_of_turns.append(turn_object)
     
     return list_of_turns
+
+def load_turns_from_topiocqa(
+    topiocqa_topic_file: str
+) -> List[dict]:
+    '''
+    Load a list of dictionary from the topiocqa topic files provided by Fengran 
+    '''
+
+    # laod a jsonl file
+    with open(topiocqa_topic_file, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for
+                line in f.readlines()]
+    
+    return data
+    
 
 def filter_ikat_23_evaluated_turns(
     turns: List[Turn]

@@ -158,8 +158,8 @@ iterate:
 # ]
 
   machine: ["octal31"]
-  retrieval_model: ["BM25"]
-  reranker: ["monot5_base_10k"]
+  retrieval_model: ["splade_v3"]
+  reranker: ["none"]
   topics: ["ikat_23_test", "ikat_24_test"]
   retrieval_query_type: [
     # "gpt-4o_GtR_mq_3_1",
@@ -172,9 +172,8 @@ iterate:
     # "gpt-3.5_MQ4CS_persq_rw",
     # "llama3.1_MQ4CS_persq_rw",
     # "mistral_MQ4CS_persq_rw"
-    "raw"
+    gpt-4o_rar_rw_fuse_judge_and_rewrite_rw
 ]
-  reranking_query_type: ["oracle"]
 
 param_mapping:
   machine:
@@ -521,6 +520,7 @@ param_mapping:
     gpt-4o_rar_rw_fuse_judge_and_rewrite_rw:
       QRs_to_rank: [gpt-4o_rar_rw, gpt-4o_judge_and_rewrite_rw]
       fuse_weights: [1, 0.4]
+      fusion_type: 'linear_combination'
     gpt-4o_rar_rw_fuse_judge_and_rewrite_rwrs:
       QRs_to_rank: [gpt-4o_rar_rw, gpt-4o_judge_and_rewrite_rwrs]
       fuse_weights: [1, 0.1]
