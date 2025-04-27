@@ -1,12 +1,14 @@
 from functools import reduce
 import re
 import os
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import Any, Dict, List, Tuple
+import math
 
 from tqdm import tqdm
 from pyserini.search.lucene import LuceneSearcher
 from pyserini.search import FaissSearcher
+from pyserini.index.lucene import IndexReader
 import pytrec_eval
 
 from .rerank import rerank
@@ -602,3 +604,203 @@ def Retrieval(args):
         hits = splade_search(args)
 
     return hits
+
+
+
+###############################################################
+###############################################################
+###############################################################
+# The following part can simulate the Lucene BM25 score calculation. Especially, the document length approximation that is a little bit confusing.
+###############################################################
+###############################################################
+###############################################################
+
+# Java Integer.MAX_VALUE
+INTEGER_MAX_VALUE = 2**31 - 1
+
+def longToInt4(i: int) -> int:
+    """
+    将正整数（模拟 Java long）编码为压缩整数。
+    对应 Java SmallFloat.longToInt4
+    """
+    if i < 0:
+        raise ValueError(f"Only supports positive values, got {i}")
+    if i == 0:
+        return 0 # bit_length(0) is 0, handle explicitly
+
+    numBits = i.bit_length() # 获取实际需要的位数
+
+    if numBits < 4:
+        # subnormal value - 低于 4 位的值直接返回
+        # Java Math.toIntExact 在这里主要是防止 long 转 int 溢出，Python不需要
+        return i
+    else:
+        # normal value
+        shift = numBits - 4 # 计算需要右移的位数，保留最重要的 4 位（包括隐含的最高位）
+        # Java >>> 是无符号右移，Python >> 对于正数行为一致
+        encoded = i >> shift
+        # 清除隐含的最高位 (保留尾数部分，最低 3 位)
+        encoded &= 0x07 # 0b00000111
+        # 将 (位移数 + 1) 编码到高位 (第 3 位开始)
+        # +1 是因为 0 被用来标记 subnormal 值
+        encoded |= (shift + 1) << 3
+        return encoded
+
+def int4ToLong(i: int) -> int:
+    """
+    解码由 longToInt4 编码的整数。
+    对应 Java SmallFloat.int4ToLong
+    """
+    bits = i & 0x07 # 提取尾数部分 (最低 3 位)
+    shift = (i >> 3) - 1 # 提取位移数 (高位) 并减 1
+
+    if shift == -1:
+        # subnormal value - 位移数为 -1 (即编码时为 0) 表示是 subnormal 值
+        decoded = bits
+    else:
+        # normal value
+        # 恢复隐含的最高位 (0x08)，然后左移相应的位数
+        decoded = (bits | 0x08) << shift # 0x08 = 0b00001000
+
+    return decoded
+
+# --- 计算常量 ---
+# 计算 MAX_INT4，即 Integer.MAX_VALUE 编码后的值
+MAX_INT4 = longToInt4(INTEGER_MAX_VALUE)
+# 计算未被压缩编码使用的“空闲”字节值的数量
+NUM_FREE_VALUES = 255 - MAX_INT4
+
+# --- 编码和解码函数 ---
+def intToByte4(i: int) -> int:
+    """
+    将正整数编码为一个字节 (0-255 范围内的整数)。
+    对应 Java SmallFloat.intToByte4
+    """
+    if i < 0:
+        raise ValueError(f"Only supports positive values, got {i}")
+
+    if i < NUM_FREE_VALUES:
+        # 小数值直接返回，精确存储
+        # Python 中没有 byte 类型，直接返回 0-255 的 int
+        return i
+    else:
+        # 大数值需要压缩
+        # 先减去偏移量，然后用 longToInt4 压缩差值
+        encoded_diff = longToInt4(i - NUM_FREE_VALUES)
+        # 再加上偏移量，映射到较高的字节范围
+        # 结果应该在 0-255 范围内
+        return NUM_FREE_VALUES + encoded_diff
+
+def byte4ToInt(b: int) -> int:
+    """
+    解码由 intToByte4 编码的字节 (0-255 范围内的整数)。
+    对应 Java SmallFloat.byte4ToInt
+    """
+    # Java byte 是有符号的，需要转无符号。Python int 已经是，假设输入 b 在 0-255
+    if not (0 <= b <= 255):
+         raise ValueError(f"Input byte must be between 0 and 255, got {b}")
+
+    if b < NUM_FREE_VALUES:
+        # 小数值直接返回
+        return b
+    else:
+        # 大数值需要解压
+        # 先减去偏移量，得到当初压缩后的差值
+        # 然后用 int4ToLong 解码差值
+        decoded_diff = int4ToLong(b - NUM_FREE_VALUES)
+        # 再加上偏移量，还原原始值
+        decoded = NUM_FREE_VALUES + decoded_diff
+        # Java Math.toIntExact 检查 long 转 int 溢出，这里直接返回 Python int
+        return decoded
+
+        
+
+def compute_term_bm25_score(freq, doc_len, avg_doc_len, doc_freq, doc_count, k1=1.2, b=0.75, boost=1.0):
+    """
+    Compute BM25 score for a term in a document.
+
+    Parameters:
+    - freq: Term frequency in the document
+    - doc_len: Document length (number of terms)
+    - avg_doc_len: Average document length in the collection
+    - doc_freq: Number of documents containing the term
+    - doc_count: Total number of documents in the collection
+    - k1: Term frequency saturation parameter
+    - b: Length normalization parameter
+    - boost: Optional query boost (default 1.0)
+
+    Returns:
+    - BM25 score
+
+    """
+
+    # Simulate lucene's document length approximation
+
+    encoded_length = intToByte4(doc_len)
+    decoded_length = byte4ToInt(encoded_length)
+
+    # IDF computation (exact same formula as Lucene's)
+    idf = math.log(1 + (doc_count - doc_freq + 0.5) / (doc_freq + 0.5))
+
+    # Normalization denominator
+    norm = k1 * ((1 - b) + b * decoded_length / avg_doc_len)
+
+    # BM25 term frequency component
+    tf = 1 - 1 / (1 + freq * 1/norm)
+
+    # Final score
+    score = boost * idf * tf
+    return score
+
+
+
+def compute_document_bm25_score(
+    doc_content,
+    query, 
+    index_reader
+    ):
+
+    """
+    Compute BM25 score for a document given a query.
+    Parameters:
+    - doc_content: The content of the document  
+    - query: The query string
+    - index_reader: The index reader object
+    Returns:
+    - calculated_score: The BM25 score for the document
+    """
+
+    # get the average document length and the number of documents in the index
+    stat_dict = index_reader.stats()
+    average_len = stat_dict["total_terms"]/stat_dict["non_empty_documents"]
+    doc_count = stat_dict["non_empty_documents"] 
+    analyzed_doc = index_reader.analyze(doc_content)
+
+
+    # manually get the scored doc vector without using the index
+    pseudo_doc_vector = Counter(analyzed_doc) 
+
+
+    # calculate the length of the analyzed document
+    doc_len = len(analyzed_doc)
+
+
+    calculated_score = 0
+    pseudo_BM25_vector = {}
+
+    for analyzed_term in index_reader.analyze(query):
+        if analyzed_term in pseudo_doc_vector:
+            df, cf = index_reader.get_term_counts(analyzed_term, analyzer=None)
+            score = compute_term_bm25_score(
+                freq= pseudo_doc_vector[analyzed_term],
+                doc_len=doc_len,
+                avg_doc_len=average_len,
+                doc_freq=df,
+                doc_count=doc_count,
+                k1=0.9,
+                b=0.4
+            )
+            pseudo_BM25_vector[analyzed_term] = score
+            calculated_score += score
+    
+    return calculated_score
