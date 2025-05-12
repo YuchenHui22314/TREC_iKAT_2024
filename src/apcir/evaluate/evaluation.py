@@ -87,7 +87,7 @@ def get_args():
     #### Fusion ####
     ###################
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', "RRF", 'gpt-4o_judge_and_rewrite',"concat"])
+                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', "RRF", 'gpt-4o_judge_and_rewrite',"concat", "pre_calculated"])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
     parser.add_argument('--fuse_weights', type=float, nargs='+', default = [1,0.1,0.4], help='weights for linear weighted score fusion')
     parser.add_argument("--fusion_normalization", type=str, default="none",
@@ -439,6 +439,8 @@ if __name__ == "__main__":
         generation_query_list, 
         fusion_query_lists, 
         qid_list_string, 
+        qid_personalized_level_dict,
+        qid_weights_dict,
         turn_list 
         ) =  get_query_list(args)
 
@@ -455,6 +457,8 @@ if __name__ == "__main__":
         args.reranking_query_list = reranking_query_list
         args.fusion_query_lists = fusion_query_lists
         args.qid_list_string = qid_list_string
+        args.qid_personalized_level_dict = qid_personalized_level_dict
+        args.qid_weights_dict = qid_weights_dict
 
         ##################################
         #### Personalization Specific ####
@@ -472,6 +476,9 @@ if __name__ == "__main__":
         del args.qid_list_string
         if "qid_personalized_level_dict" in args:
             del args.qid_personalized_level_dict
+        if "qid_weights_dict" in args:
+            del args.qid_weights_dict 
+
 
         ##########################
         # response generation 

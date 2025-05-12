@@ -212,7 +212,7 @@ class LM(nn.Module):
         outputs = outputs.tolist()
         if decode:
             outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
-        return output
+        return outputs
 
 
     @torch.no_grad()

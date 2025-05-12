@@ -117,11 +117,12 @@ def search(
         - args.retrieval_query_type: str (optional)
     # Fusion
         - args.fusion_type: str
-        - args.QRs_to_rank: List[str]
+        - args.QRs_to_rank: List[str] type of query representation to fuse (should have been named as "QRs_to_fuse" but it costs to change now.)
         - args.fuse_weights: List[float]
         - args.fusion_normalization: str
         - args.fusion_query_lists: List[List[str]]
         - args.per_query_weight_max_value: float
+        - args.qid_weights_dict: Dict[str, List[float]]
         - args.qid_personalized_level_dict: Dict[str, str]
         - args.optimize_level_weights: str ("group" or "false" or "2+1" or "no_level")
         - args.qrel_file_path: str (non-necessary if args.optimize_level_weights is "false")
@@ -230,6 +231,11 @@ def search(
         del args.QR_name
         
 
+        # fusion 0: pre_calcuated weights
+        if args.fusion_type == "pre_calculated":
+            # linear combination fusion
+            hits = per_query_linear_combination(hits_list, args.qid_weights_dict, args.retrieval_top_k)
+        
         # fusion 1: linear weighted score
         if args.fusion_type == "linear_weighted_score":
             assert len(args.QRs_to_rank) -1 == len(args.fuse_weights), "The number of QRs to fuse should be one more than the number of weights."
@@ -610,7 +616,7 @@ def Retrieval(args):
 ###############################################################
 ###############################################################
 ###############################################################
-# The following part can simulate the Lucene BM25 score calculation. Especially, the document length approximation that is a little bit confusing.
+# The following part can simulate the Lucene BM25 score calculation. Especially, the document length approximation can be a little bit confusing.
 ###############################################################
 ###############################################################
 ###############################################################

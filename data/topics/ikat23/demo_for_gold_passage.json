@@ -1,0 +1,41 @@
+[
+        {
+            "ptkb": {
+            "1": "My mother has a collection of antique crystals and porcelains.",
+            "2": "I had a long layover on the way to Singapore.",
+            "3": "I bought some perfume for Mother's Day and my mother liked it.",
+            "4": "I respect Asian culture very much.",
+            "5": "I enjoy reading books.",
+            "6": "I found the Indian food too spicy.",
+            "7": "I will stay in Singapore for two more weeks.",
+            "8": "I traveled to Singapore last week.",
+            "9": "My sister has recently moved to her new apartment.",
+            "10": "I liked the Laska that I tried yesterday.",
+            "11": "I've traveled for business."
+        },
+
+        "turns": [
+            {
+                "turn_id": 1,
+                "question": "I will travel to Turkey and stay there for two days before traveling home. Can you recommend some Turkish souvenirs?",
+                "response": "Here are some famous Turkish souvenirs: Handmade Turkish ceramics, Turkish lamps, and Turkish Carpets."
+            },
+            {
+                "turn_id": 2,
+                "question": "What else?",
+                "response": "There are also some other products like 1. Nargile pipes 2. Turkish Jewelry 3. Turkish Delight 4. Spices and scents and 5. Hammam Soap."
+            },
+            {
+                "turn_id": 3,
+                "question": "Which one do you suggest for my mom?",
+                "response": "Handmade Turkish ceramics are produced with traditional methods and are one of the ideal Turkish gifts for tourists. Today's tourists who visit Turkey, still prefer genuine Iznik ceramics as Turkish souvenirs, like Western travelers have done for centuries. They are beautiful, colorful, and sturdy and make for the perfect decorative item for your mother's home."
+            }],
+        
+        "gold_passages":[
+            "Iznik Classics Where to buy Iznik style Turkish ceramics Turkish culture is very rich in terms of traditional handicrafts. One of the most important of these handicrafts is the Turkish pottery. These handmade Turkish ceramics are produced with traditional methods and are one of the ideal Turkish gifts for tourists. Today's tourists who visit Turkey, still prefer genuine Iznik ceramics as Turkish souvenirs, like Western travellers have done for centuries. One of the biggest reasons behind this is the admiration for the never aging Turkish tiles that decorate the historic Ottoman structures. Naturally, travelers want to take souvenirs of a similar beauty with them. Of course, there are many places in Turkey that Iznik ceramics can be bought. However, there is no doubt that the most ceramic shops are located in Istanbul, the touristic capital of Turkey. If you wonder where to buy Turkish ceramics, you should look at the touristic districts of Istanbul. Best ceramic shops in Istanbul located around Sultanahmet and Grand Bazaar."
+        ],
+
+        "gold_reasons": ["This passage is relevant because (1) it talks about Turkish souvenirs, which aligns with the conversation context. (2) it considers the preference of the user's mother, who has a collection of antique crystals and porcelains. Turkish ceramics can be a good gift for their mother."]
+    
+    }
+]

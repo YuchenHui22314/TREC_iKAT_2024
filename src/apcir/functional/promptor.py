@@ -10,6 +10,201 @@ def check_length(prompt, max_length):
 def remove_leading_number(sentence):
     return re.sub(r'^\d+\.\s*', '', sentence)
 
+
+
+class PCIRRollOutPrompter:
+    def __init__(
+        self, 
+        ) -> None:
+        
+        # head_instruction
+        self.instruction = "# Instruction:\nYou will be provided with (1) A conversation between a user and a system. (2) A User Profile containing background information about the user. **Your Task:** Rewrite the user's *final* question from the conversation into a single, self-contained search query. Imagine you are searching for relevant web pages with Google. The query you generate should be optimized for this purpose. Crucially, incorporate appropriate terms that can be inferred as relevant from the User Profile to personalize the search results."
+    
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn):
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("# User Profile:")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}: {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = " ".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = [ptkb_instruction + "\n" + "# Context:"]
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"user: {turn.current_utterance}\nsystem: {turn.current_response}")
+        
+        # current turn
+        this_dialog.append("# Please rewrite the *final* user question: " + current_turn.current_utterance)
+        this_dialog.append("# Re-written Google search query:")
+        this_dialog = "\n".join(this_dialog)  
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        this_prompt.append(this_dialog)
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+        try:
+            text = text.strip()
+            return text
+        except Exception as e:
+            print(e)
+            return None    
+
+class PCIRGoldPassageGeneratePromptor:
+    def __init__(
+        self, 
+        phi=10,
+        enable_demo=True,
+        demo_file=None,
+        ) -> None:
+        
+        self.phi = phi
+        self.enable_demo = enable_demo
+        self.demo = self.get_demo(demo_file)
+
+
+        # head_instruction
+        self.instruction = f"# Task Description:\nYou will be given\n\t(1) An information-seeking dialog between an user and an intelligent assistant.\n\t(2) The user's last query in the dialog for information seeking.\n\t(3) The profile of the user, in form of several sentences describing his/her background information.\nYour tasks: For the user's final query, provide {phi} **distinct, relevant, and informative** passages. These passages should be formatted in the style of a web page excerpt. A passage is considered relevant if it contains useful information to solve the user's (personalized) information need implied by the conversation (and the profile, if applicable), even if it does not directly provide a complete answer to the question."
+
+        if self.enable_demo:
+            self.instruction += "\n\nNow, I will give you a sample dialog with profile and the corresponding relevent documents."
+
+
+        self.tail_instruction = f"# Now give me the {self.phi} **different** **informative** passages that can help answer the **Last Question** under the **Dialog Context**, considering the **User Profile**. The format should be:\n$PASSAGE1 CONTENT\n$PASSAGE2 CONTENT\n...\n. This means that you should provide one passage on one line without any prefix (Your answer should not contain literally $PASSAGEn CONTENT, because they are just placeholders for concret content of a passage). Go ahead!"
+
+
+        self.stop_tokens = None
+                            
+    
+
+    def get_demo(self, demo_file):
+        try:
+            with open(demo_file, "r") as f:
+                demos = json.load(f)
+        except:
+            print("warning: No demonstration file.")
+            return ""
+        
+        examples = []
+        for demo in demos:
+            turns = demo['turns']
+            ptkb_dict = demo['ptkb']
+            gold_passages = demo['gold_passages']
+            why_gold = demo["gold_reasons"] 
+
+            # ptkb
+            ptkb_instruction = []
+            ptkb_instruction.append("Example user profile:")
+            for num, ptkb_sentence in ptkb_dict.items():
+                ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+            
+            ptkb_instruction = "\n".join(ptkb_instruction)
+
+            # conversation turns
+            dialog = []
+            for i, turn in enumerate(turns):
+                question = turn['question']
+                response = turn['response']
+
+
+                turn_text = f"Question {i+1}: {question}\nResponse {i+1}: {response}"
+
+
+                dialog.append(turn_text)
+
+            dialog = "\n\n".join(dialog)
+
+            # add ptkb before dialog
+            dialog = ptkb_instruction + "\n\nExample dialog:\n" + dialog + f"\n\nFor the last question, a potential relevant passage is: [{gold_passages[0]}]\n{why_gold[0]}\n"
+            
+            examples.append(dialog)
+        
+        for i in range(len(examples)):
+            examples[i] = "Example ########### {} ##########\n".format(i+1) + examples[i] + "\n######################"
+        
+        return "\n\n".join(examples)
+    
+    def build_turn_prompt(self, context, ptkb_dict, current_turn):
+        # ptkb
+        ptkb_instruction = []
+        ptkb_instruction.append("Here is the **User Profile**:\n")
+        for num, ptkb_sentence in ptkb_dict.items():
+            ptkb_instruction.append("{}. {}".format(num, ptkb_sentence))
+        
+        ptkb_instruction = "\n".join(ptkb_instruction)
+
+
+        # previous turn context
+        this_dialog = []
+        if not context:
+            this_dialog.append("N/A (this is the first question in the dialog, so no previous dialog context)")
+        else:
+            for i, turn in enumerate(context):
+                this_dialog.append(f"Question {i+1}: {turn.current_utterance}\nResponse {i+1}: {turn.current_response}")
+        
+        this_dialog[0] = "Here is the **Dialog Context**:\n\n" + this_dialog[0]
+            
+        # current turn
+        this_dialog.append("**Last Question**: " + current_turn.current_utterance)
+        this_dialog = "\n\n".join(this_dialog)  
+        
+        # combine to form the prompt
+        this_prompt = []
+        this_prompt.append(self.instruction)
+        if self.enable_demo:
+            this_prompt.append(self.demo)
+            this_prompt.append("# Now, the examples are over. Let's move to the dialog and the user profile you have to consider.")
+        else:
+            this_prompt.append("Now, let's move to the dialog and the user profile you have to consider.")
+        this_prompt.append(ptkb_instruction)
+        this_prompt.append(this_dialog)
+        this_prompt.append(self.tail_instruction)
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+    
+    def parse_returned_text(self, text):
+
+        try:
+            splits = text.split('\n')
+            result_list = []
+
+            for i in range(len(splits)):
+                if splits[i].startswith("#"):
+                    splits[i] = splits[i][1:]
+                if splits[i].startswith("-"):
+                    splits[i] = splits[i][1:]
+                if splits[i] == "\n":
+                    continue
+                if len(splits[i]) < 10:
+                    continue
+                if ":" in splits[i]:
+                    continue
+                
+                result_list.append(remove_leading_number(splits[i]).strip())
+
+            return result_list
+
+        except Exception as e:
+            print(e)
+
+
+        
+
 class Fengran_10GRF_Prompter:
     def __init__(
         self, 

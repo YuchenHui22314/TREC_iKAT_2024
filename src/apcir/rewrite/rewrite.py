@@ -7,6 +7,12 @@ import tkinter as tk
 from tkinter import simpledialog
 from tqdm import tqdm
 import json
+import math
+
+from transformers import AutoTokenizer, AutoModel
+from sentence_transformers import SentenceTransformer
+import torch
+import numpy as np
 
 import nltk
 nltk.download('words')
@@ -15,6 +21,8 @@ from nltk.corpus import words
 from nltk.stem import WordNetLemmatizer
 
 from vllm import LLM, SamplingParams
+from .personalized_weight_topic_entropy import calculate_topic_entrop
+from apcir.search.models import ANCE
 
 # Initialize the WordNet lemmatizer
 lemmatizer = WordNetLemmatizer()
@@ -111,7 +119,8 @@ def get_args():
         "gpt-3.5_MQ4CS_persq",
         "llama3.1_MQ4CS_persq",
         "mistral_MQ4CS_persq",
-        "llama3.1_fengran_10_qr"
+        "llama3.1_fengran_10_qr",
+        "ptkb_topic_entropy"
         ]
     ) 
     args = parser.parse_args()
@@ -391,6 +400,19 @@ if __name__ == '__main__':
         )
 
     #################################
+    ## load query encoder
+    #################################
+
+    if "ptkb_topic_entropy" in reformulation_name:
+        model_name = "castorini/ance-msmarco-passage" 
+        tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=args.cache_dir)
+        query_encoder = ANCE.from_pretrained(model_name, cache_dir=args.cache_dir)
+        query_encoder.eval()
+
+        # query_encoder = SentenceTransformer('all-MiniLM-L6-v2', cache_folder='/data/rech/huiyuche/huggingface')
+        # tokenizer = None
+
+    #################################
     ## load topic file and rewrite
     #################################
 
@@ -400,6 +422,25 @@ if __name__ == '__main__':
 
         context = get_context_by_qid(turn.turn_id,turn_list)
             
+        if "ptkb_topic_entropy" in reformulation_name:
+
+            scores = calculate_topic_entrop(
+                query_encoder,
+                tokenizer,
+                turn
+            ) 
+
+            print("the scores are: ", scores)
+
+            turn.add_reformulation(
+                reformulation_name = reformulation_name,
+                reformulated_query = scores,
+                ptkb_provenance = []
+            )
+
+            assert turn.find_reformulation(reformulation_name).reformulated_query == scores
+        
+
         if "GtR_rs" in reformulation_name:
             context = get_context_by_qid(turn.turn_id,turn_list)
             current_turn_ptkb_dict = turn.ptkb
