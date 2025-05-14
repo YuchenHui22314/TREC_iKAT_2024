@@ -22,6 +22,7 @@ from nltk.stem import WordNetLemmatizer
 
 from vllm import LLM, SamplingParams
 from .personalized_weight_topic_entropy import calculate_topic_entrop
+from .personalized_weight_DEPS import calculate_std_top_k_list
 from apcir.search.models import ANCE
 
 # Initialize the WordNet lemmatizer
@@ -71,6 +72,10 @@ def get_args():
 
     parser.add_argument("--demo_file", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json")
 
+    parser.add_argument("--result_file", type=str, default="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rw]-S2[none]-g[none]-[splade_v3]-[none_4_1_none]-[s2_top50].txt")
+
+    parser.add_argument("--deps_entropy_top_k", type=int, default=100)
+
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface")
 
     parser.add_argument("--rewrite_model", type=str, default="gpt-3.5-turbo", choices=[
@@ -79,7 +84,8 @@ def get_args():
         "gpt-4-0613",
         "gpt-4o-2024-08-06",
         "mistral-8b",
-        "llama3-8b"])
+        "llama3-8b",
+        'none'])
 
     parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
         "rar",
@@ -120,9 +126,12 @@ def get_args():
         "llama3.1_MQ4CS_persq",
         "mistral_MQ4CS_persq",
         "llama3.1_fengran_10_qr",
-        "ptkb_topic_entropy"
+        "result_topic_entropy",
+        "DEPS"
         ]
     ) 
+
+
     args = parser.parse_args()
 
     return args
@@ -370,7 +379,6 @@ if __name__ == '__main__':
     
     if "mistral" in rewrite_model:
 
-
         rewriter = LM(
         model_name_or_path="mistralai/Ministral-8B-Instruct-2410",
         tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
@@ -403,7 +411,7 @@ if __name__ == '__main__':
     ## load query encoder
     #################################
 
-    if "ptkb_topic_entropy" in reformulation_name:
+    if "result_topic_entropy" in reformulation_name:
         model_name = "castorini/ance-msmarco-passage" 
         tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=args.cache_dir)
         query_encoder = ANCE.from_pretrained(model_name, cache_dir=args.cache_dir)
@@ -411,6 +419,13 @@ if __name__ == '__main__':
 
         # query_encoder = SentenceTransformer('all-MiniLM-L6-v2', cache_folder='/data/rech/huiyuche/huggingface')
         # tokenizer = None
+    
+    if "DEPS" in reformulation_name:
+        qid_personalized_weight_dict = calculate_std_top_k_list(
+            args.result_file,
+            args.deps_entropy_top_k
+            )
+        print("the qid_personalized_weight_dict is: ", qid_personalized_weight_dict)    
 
     #################################
     ## load topic file and rewrite
@@ -422,7 +437,22 @@ if __name__ == '__main__':
 
         context = get_context_by_qid(turn.turn_id,turn_list)
             
-        if "ptkb_topic_entropy" in reformulation_name:
+        if "DEPS" in reformulation_name:
+            
+            if turn.turn_id in qid_personalized_weight_dict:
+                deps_score = qid_personalized_weight_dict[turn.turn_id]
+                assert len(deps_score) == 3, f"the deps score for turn id {turn.turn_id} is {deps_score}, which is not 3"
+                
+                # add the DEPS score to the turn
+                turn.add_reformulation(
+                    reformulation_name = reformulation_name,
+                    reformulated_query = deps_score,
+                    ptkb_provenance = []
+                )
+
+
+
+        if "result_topic_entropy" in reformulation_name:
 
             scores = calculate_topic_entrop(
                 query_encoder,

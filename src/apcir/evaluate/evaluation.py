@@ -284,7 +284,9 @@ def get_args():
                             "gpt-4o_judge_and_rewrite_optimize_retrieval_score",
                             "gpt-3.5_MQ4CS_persq_rw",
                             "llama3.1_MQ4CS_persq_rw",
-                            "mistral_MQ4CS_persq_rw"
+                            "mistral_MQ4CS_persq_rw",
+                            "result_topic_entropy",
+                            "DEPS"
 
                             
                             ],)

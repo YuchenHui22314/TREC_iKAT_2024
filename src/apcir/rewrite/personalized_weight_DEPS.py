@@ -1,5 +1,19 @@
+import math
+
+def sigmoid_math(x):
+  """
+  Calculates the sigmoid of a number using the math module.
+
+  Args:
+    x: A number (integer or float).
+
+  Returns:
+    The sigmoid of x.
+  """
+  return 1 / (1 + math.exp(-x))
+
 # compute personalized weight for DEPS method - heuristic-based
-# input是根据非personalized reformulated query检索得到的top-k output file
+
 def variance_of_first_k_elements(data, k):
     result = {}
     for key, value_list in data.items():
@@ -12,7 +26,7 @@ def variance_of_first_k_elements(data, k):
                 variance = None
         else:
             variance = None
-        result[key] = variance
+        result[key] = sigmoid_math(variance)
     return result
 
 def calculate_fusion_weight(data):
@@ -26,6 +40,7 @@ def calculate_fusion_weight(data):
     return result
 
 def calculate_std_top_k_list(output_file, k=100):
+
     with open(output_file, 'r') as f:
         top_k_result = f.readlines()
     
