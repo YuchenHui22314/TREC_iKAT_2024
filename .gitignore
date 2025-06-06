@@ -188,5 +188,5 @@ src/evaluate/wandb/*
 /data/rech/huiyuche/TREC_iKAT_2024/data/qrels/toy_qrel.txt
 /test
 **/wandb/*
-/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/fengran_10_qr_GRF_mistral.json
-./data/topics/ikat23/fengran_10_qr_GRF_mistral.json
+#
+/data/topics/ikat23/fengran_10_qr_GRF_mistral.json
