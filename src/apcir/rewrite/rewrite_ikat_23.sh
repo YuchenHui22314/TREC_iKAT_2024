@@ -8,8 +8,9 @@ input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/ikat_202
 demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24_level.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/original_demonstration.json"
 #demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/demonstration_using_ikat24.json"
+
 result_file="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_23_test/ranking/S1[gpt-4o_rar_rw]-S2[none]-g[none]-[splade_v3]-[none_4_1_none]-[s2_top50].txt"
-deps_entropy_top_k=100
+deps_entropy_top_k=3
 
 
 # "mistral-8b",
@@ -44,7 +45,7 @@ rewrite_model="none"
 #reformulation_name="gpt-4o_GtR_mq_3"
 #reformulation_name="llama3.1_MQ4CS_persq"
 reformulation_name="result_topic_entropy"
-reformulation_name="DEPS"
+#reformulation_name="DEPS"
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2023.txt"
 
 cd ../../
@@ -54,6 +55,8 @@ python -m apcir.rewrite.rewrite \
   --output_query_path $output_query_path \
   --cache_dir $cache_dir \
   --demo_file $demo_file \
+  --result_file $result_file \
+  --deps_entropy_top_k $deps_entropy_top_k \
   --rewrite_model $rewrite_model \
   --reformulation_name $reformulation_name &>> $LOG_FILE
 

@@ -87,7 +87,8 @@ def get_args():
     #### Fusion ####
     ###################
     parser.add_argument("--fusion_type", type=str, default="none",
-                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', "RRF", 'gpt-4o_judge_and_rewrite',"concat", "pre_calculated"])
+                        choices=['none','linear_weighted_score','linear_combination','round_robin','per_query_personalize_level', "RRF", 'gpt-4o_judge_and_rewrite',"concat", "per_query_personalize_level",
+                        "pre_calculated", "random_weights"])
     parser.add_argument('--QRs_to_rank', type=str, nargs='+', default=["Cloud_Z", "Miyoko"], help='List of reformulation names to fuse')
     parser.add_argument('--fuse_weights', type=float, nargs='+', default = [1,0.1,0.4], help='weights for linear weighted score fusion')
     parser.add_argument("--fusion_normalization", type=str, default="none",
@@ -286,9 +287,8 @@ def get_args():
                             "llama3.1_MQ4CS_persq_rw",
                             "mistral_MQ4CS_persq_rw",
                             "result_topic_entropy",
-                            "DEPS"
-
-                            
+                            "DEPS",
+                            "random_weights"
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 

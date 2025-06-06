@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Default argument values
+cache_dir="/data/rech/huiyuche/huggingface"
 input_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
 #output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat24/ikat_2024_test.json"
 output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json"
@@ -10,7 +11,7 @@ output_query_path="/data/rech/huiyuche/TREC_iKAT_2024/test/ikat_2024_test.json"
 demo_file="/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/non_personalized_demonstration_using_ikat23_level.json"
 
 result_file="/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw]-S2[none]-g[none]-[splade_v3]-[none_4_1_none]-[s2_top50].txt"
-deps_entropy_top_k=100
+deps_entropy_top_k=10
 
 #rewrite_model="gpt-3.5-turbo" # gpt-3.5-turbo-0125 "gpt-4o-2024-08-06"
 #rewrite_model="gpt-4o-2024-08-06"
@@ -43,14 +44,19 @@ rewrite_model="none"
 #reformulation_name="gpt-4o_MQ4CS_mq_3"
 #reformulation_name="gpt-4o_GtR_rs"
 #reformulation_name="gpt-4o_GtR_mq_3"
-reformulation_name="llama3.1_MQ4CS_persq"
+#reformulation_name="llama3.1_MQ4CS_persq"
+# reformulation_name="DEPS"
+reformulation_name="result_topic_entropy"
 
 LOG_FILE="/data/rech/huiyuche/TREC_iKAT_2024/logs/rewrite_log_2024.txt"
 
+cd ../../
 # Run the program with the specified arguments
-python3 rewrite.py \
+python -m apcir.rewrite.rewrite \
   --input_query_path $input_query_path \
   --output_query_path $output_query_path \
   --demo_file $demo_file \
+  --result_file $result_file \
+  --cache_dir $cache_dir \
   --rewrite_model $rewrite_model \
   --reformulation_name $reformulation_name &>> $LOG_FILE

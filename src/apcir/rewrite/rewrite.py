@@ -414,11 +414,22 @@ if __name__ == '__main__':
     if "result_topic_entropy" in reformulation_name:
         model_name = "castorini/ance-msmarco-passage" 
         tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=args.cache_dir)
-        query_encoder = ANCE.from_pretrained(model_name, cache_dir=args.cache_dir)
+        query_encoder = ANCE.from_pretrained(model_name, cache_dir=args.cache_dir).to("cuda:0")
         query_encoder.eval()
+
+        turn_list = load_turns_from_json(input_query_path)
 
         # query_encoder = SentenceTransformer('all-MiniLM-L6-v2', cache_folder='/data/rech/huiyuche/huggingface')
         # tokenizer = None
+
+        qid_personalized_weight_dict = calculate_topic_entrop(
+                query_encoder,
+                tokenizer,
+                turn_list
+            ) 
+        
+        print("the normalized qid_personalized_weight_dict is: ", qid_personalized_weight_dict)    
+
     
     if "DEPS" in reformulation_name:
         qid_personalized_weight_dict = calculate_std_top_k_list(
@@ -454,14 +465,18 @@ if __name__ == '__main__':
 
         if "result_topic_entropy" in reformulation_name:
 
-            scores = calculate_topic_entrop(
-                query_encoder,
-                tokenizer,
-                turn
-            ) 
+            # scores = calculate_topic_entrop(
+            #     query_encoder,
+            #     tokenizer,
+            #     turn,
+            #     args.result_file,
+            #     args.deps_entropy_top_k
+            # ) 
 
-            print("the scores are: ", scores)
+            # print("the scores are: ", scores)
 
+            scores = qid_personalized_weight_dict[turn.turn_id]
+            
             turn.add_reformulation(
                 reformulation_name = reformulation_name,
                 reformulated_query = scores,

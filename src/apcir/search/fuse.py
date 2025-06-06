@@ -38,6 +38,63 @@ def calculate_3_weights_from_2_consecutive_weights(weight_pair_1, weight_pair_2)
     return [a, b, list_3_final_weight]
     
 
+def generate_random_numbers_sum_to_one(k: int, seed: int) -> list[float]:
+    """
+    Generate k random floating-point numbers that sum exactly to 1.0.
+
+    This method works by generating k-1 random split points within the [0,1] interval.
+    These points, along with 0 and 1, divide the interval into k segments. 
+    The length of each segment becomes a random number. By construction (telescoping sum),
+    their total sum is exactly 1.0.
+
+    Args:
+        k (int): The number of random numbers to generate. Must be a positive integer.
+
+    Returns:
+        list[float]: A list containing k random numbers that sum to 1.0.
+                     All numbers in the list are non-negative.
+
+    Raises:
+        TypeError: If k is not an integer.
+        ValueError: If k is not a positive integer (i.e., k <= 0).
+    """
+    if seed is not None:
+        random.seed(seed)
+
+    if not isinstance(k, int):
+        raise TypeError("Input parameter k must be an integer.")
+    if k <= 0:
+        raise ValueError("Input parameter k must be a positive integer.")
+
+    if k == 1:
+        # If k is 1, the result is a list containing the single element 1.0
+        return [1.0]
+
+    # Generate k-1 random split points. random.random() generates floats in [0.0, 1.0).
+    # These points will divide the [0,1] interval into k sub-intervals.
+    split_points = [random.random() for _ in range(k - 1)]
+
+    # Add 0.0 and 1.0 to the list of split points and sort all points.
+    # The sorted list will contain k+1 points, from p_0=0.0 to p_k=1.0.
+    # For example, if k=3, we have k-1=2 split points r1, r2.
+    # all_points will be sorted([0.0, r1, r2, 1.0]).
+    all_points = sorted([0.0] + split_points + [1.0])
+
+    # Calculate the differences between consecutive sorted points.
+    # The i-th random number is equal to all_points[i+1] - all_points[i].
+    # There will be k such differences (i.e., lengths of k sub-intervals).
+    # For example, if k=3, sorted points are p0, p1, p2, p3.
+    # The random numbers are (p1-p0), (p2-p1), (p3-p2).
+    # Their sum is (p1-p0) + (p2-p1) + (p3-p2) = p3 - p0 = 1.0 - 0.0 = 1.0.
+    random_numbers = [all_points[i+1] - all_points[i] for i in range(k)]
+
+    # Due to the construction method (telescoping sum), the sum is theoretically exact 1.0.
+    # Actual floating-point addition might introduce tiny computational errors,
+    # but this is precise enough for most applications.
+
+    return random_numbers
+
+
 def normalize_scores(hits, normalization_type):
     """
     Normalize the scores of hits objects.

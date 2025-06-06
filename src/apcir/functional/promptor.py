@@ -203,7 +203,71 @@ class PCIRGoldPassageGeneratePromptor:
             print(e)
 
 
+class PRAG_10_GRF_Prompter:       
+
+    def __init__(
+        self, 
+        phi=10,
+        ) -> None:
         
+        self.phi = phi 
+
+        # head_instruction
+        self.instruction = f"# Rewrite the following passage. While keeping the entities, proper nouns, and key details such as names, locations, and terminology intact, create {phi} new versions of the text that expresses the same ideas in a different way. Make sure the revised passages are all distinct from the original one, but preserve the core meaning and relevant information. Here is the passage to be rewritten:"
+    
+    
+    def build_turn_prompt(self, turn):
+        positive_passage = turn["pos_docs"][0]
+        positive_passage = positive_passage.replace("\n","")
+        this_prompt = [self.instruction, positive_passage[:-1]]
+         
+        this_prompt.append(f"# Now give me the {self.phi} **different** **informative** revised passages . The format should be:\npassage1\npassage2\npassage3\n....\npassage{self.phi}\n\n. Each passage should be **on one line**. Go ahead!")
+        
+        this_prompt = "\n\n".join(this_prompt)
+        
+        return this_prompt
+    
+
+    def parse_returned_text(self, text):
+
+        try:
+            splits = text.split('\n')
+            result_list = []
+
+            for i in range(len(splits)):
+                if splits[i].startswith("#"):
+                    splits[i] = splits[i][1:]
+                if splits[i].startswith("-"):
+                    splits[i] = splits[i][1:]
+                if splits[i].startswith("\n"):
+                    continue
+                if splits[i].startswith(" "):
+                    continue
+                if splits[i] == "":
+                    continue
+                if splits[i].startswith("passage"):
+                    if len(splits[i]) > 15:
+                        # remove pattern "passage1: using re"
+                        splits[i] = re.sub(r'passage\d+: ', '', splits[i])
+                    else:
+                        continue
+                # If begin with number. remove it using re
+                if re.match(r'^\d+\.', splits[i]):    
+                    splits[i] = re.sub(r'^\d+\.\s*', '', splits[i])
+                if splits[i].startswith("Here"):
+                    continue
+                # if len(splits[i].split()) < 15:
+                #     continue
+                # if ":" in splits[i]:
+                #     continue
+                
+                result_list.append(remove_leading_number(splits[i]).strip())
+
+            # print("the result list is: ", result_list) 
+            return result_list
+
+        except Exception as e:
+            print(e)
 
 class Fengran_10GRF_Prompter:
     def __init__(

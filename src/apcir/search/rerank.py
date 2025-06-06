@@ -223,7 +223,7 @@ def rerank_t5_DDP(
     tokenizer: Any,
     decoder_input_ids: Any,
     targeted_ids: Any,
-    outputs: Manager().list(),
+    outputs ,#Manager().list(),
     rerank_batch_size: int 
     ) -> None:
 

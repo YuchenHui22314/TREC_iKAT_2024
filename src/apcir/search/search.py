@@ -25,7 +25,8 @@ from .fuse import (
     per_query_linear_combination,
     calculate_3_weights_from_2_consecutive_weights,
     RRF,
-    concat
+    concat,
+    generate_random_numbers_sum_to_one
 )
 
 
@@ -493,6 +494,13 @@ def search(
             # linear combination fusion
             hits = per_query_linear_combination(hits_list, qid_weights_dict, args.retrieval_top_k)
 
+        # fusion 5: random weights
+        if args.fusion_type == "random_weights":
+            # linear combination fusion
+            args.qid_weights_dict = {
+                qid: generate_random_numbers_sum_to_one(len(hits_list), args.seed) for qid in args.qid_list_string
+            }
+            hits = per_query_linear_combination(hits_list, args.qid_weights_dict, args.retrieval_top_k)
 
 
     ##############################

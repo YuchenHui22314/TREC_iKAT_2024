@@ -92,7 +92,7 @@ def get_query_list(args):
 
                 qid_list_string = [qid for qid in qid_list_string if qid_personalized_level_dict[qid] == args.personalization_group]
         else:
-            args.qid_personalized_level_dict = None
+            qid_personalized_level_dict = None
         
 
         # get different query representations for fusion
@@ -111,14 +111,17 @@ def get_query_list(args):
 
         # Load the fusion weights from turn object, if applicable
         if args.fusion_type == "pre_calculated":
-            qid_weights_dict = retrieval_query_list
+            qid_weights_dict = {turn.turn_id : turn.query_type_2_query(args.retrieval_query_type, 0, 0) for turn in evaluated_turn_list}
             assert len(qid_weights_dict[evaluated_turn_list[0].turn_id]) == len(args.QRs_to_rank), "The number of weights does not match the number of queries."
+        else:
+            qid_weights_dict = None
+        
 
     assert len(retrieval_query_list) != 0, "No queries found, args.topics may be wrong"
     assert len(retrieval_query_list) == len(qid_list_string), "Number of queries and qid_list_string not match"
 
     
-    return retrieval_query_list, reranking_query_list, generation_query_list, fusion_query_lists, qid_list_string, qid_weights_dict, turn_list
+    return retrieval_query_list, reranking_query_list, generation_query_list, fusion_query_lists, qid_list_string, qid_personalized_level_dict, qid_weights_dict, turn_list
 
 
 

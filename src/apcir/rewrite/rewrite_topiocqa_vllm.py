@@ -4,6 +4,7 @@ Rewrite all queries in input_query_path
 import os
 import argparse
 import tkinter as tk
+import multiprocessing
 from tkinter import simpledialog
 from tqdm import tqdm
 import json
@@ -18,7 +19,7 @@ from nltk.stem import WordNetLemmatizer
 lemmatizer = WordNetLemmatizer()
 
 
-from vllm import LLM, SamplingParams
+from apcir.functional.llm import generate_with_multi_gpu_vllm
 
 def is_english_word(word):
     base_form = lemmatizer.lemmatize(word.lower())
@@ -39,7 +40,8 @@ from apcir.functional.promptor import (
     GtR_RS,
     GtR_RW,
     Fengran_10QR_Prompter,
-    Fengran_10GRF_Prompter
+    Fengran_10GRF_Prompter,
+    PRAG_10_GRF_Prompter
 )
 
 from apcir.functional.topics import (
@@ -54,6 +56,8 @@ from apcir.functional.llm import (
     LM,
     OpenAILM
 )
+
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -72,7 +76,8 @@ def get_args():
         "gpt-4-0613",
         "gpt-4o-2024-08-06",
         "mistral-8b",
-        "llama3-8b"])
+        "llama3-8b",
+        "vllm_mistral",])
 
     parser.add_argument("--reformulation_name", type = str, default="rar", choices=[
         "rar",
@@ -114,12 +119,14 @@ def get_args():
         "mistral_MQ4CS_persq",
         "llama3.1_fengran_10_qr",
         "llama3.1_fengran_10_qr_ctx",
-        "llama3.1_fengran_10_GRF"
+        "llama3.1_fengran_10_GRF",
+        "vllm_mistral_fengran_prag_10_GRF",
         ]
     ) 
     args = parser.parse_args()
 
     return args
+
 
 
 def get_llm_rm_expansion_terms(
@@ -205,6 +212,8 @@ def get_llm_rm_expansion_terms(
     return expension_terms_weights_dict, prompt
 
 if __name__ == '__main__':
+    multiprocessing.set_start_method("spawn", force=True)
+
     args = get_args()
 
     # print the arguments
@@ -223,6 +232,9 @@ if __name__ == '__main__':
     ## load prompter
     ###########################
 
+
+    if "prag" in reformulation_name:
+        prompter = PRAG_10_GRF_Prompter(phi=10)
 
     if "fengran_10_GRF" in reformulation_name:
         prompter = Fengran_10GRF_Prompter(phi=10)
@@ -368,35 +380,22 @@ if __name__ == '__main__':
             load_in_4bit = False,
         )
     
-    if "mistral" in rewrite_model:
-        rewriter = LM(
-        model_name_or_path="mistralai/Ministral-8B-Instruct-2410",
-        tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
-        padding_side="left",
-        dtype="bf16",
-        device_map= "cuda:0",
-        attn_implementation="flash_attention_2",
-        #use_flash_attention_2=False, (deprecated)
-        access_token=None,
-        cache_dir=args.cache_dir,
-        accelerator = None
-        )
+    # if "mistral" in rewrite_model:
+    #     rewriter = LM(
+    #     model_name_or_path="mistralai/Ministral-8B-Instruct-2410",
+    #     tokenizer_name_or_path="mistralai/Ministral-8B-Instruct-2410",
+    #     padding_side="left",
+    #     dtype="bf16",
+    #     device_map= "cuda:0",
+    #     attn_implementation="flash_attention_2",
+    #     #use_flash_attention_2=False, (deprecated)
+    #     access_token=None,
+    #     cache_dir=args.cache_dir,
+    #     accelerator = None
+    #     )
     
-    if "llama" in rewrite_model:
 
-        model_path = "/data/rech/huiyuche/huggingface/models--meta-llama--Llama-3.1-8B-Instruct/snapshots/0e9e39f249a16976918f6564b8830bc894c89659"  # Or your local path
-        model_path = "/data/rech/huiyuche/huggingface/models--mistralai--Mistral-7B-Instruct-v0.3/snapshots/e0bc86c23ce5aae1db576c8cca6f06f1f73af2db"
 
-        llm = LLM(
-            model=model_path, 
-            tensor_parallel_size=1, 
-            max_model_len=20000#40000
-            )  
-
-        sampling_params = SamplingParams(
-            temperature=0,  # Deterministic
-            max_tokens=1500,   # Max generated tokens
-        )
 
 
     #################################
@@ -407,20 +406,57 @@ if __name__ == '__main__':
 
     prompts = [ 
         prompter.build_turn_prompt(turn) for turn in turn_list]
+   
 
-    print(prompts[3])
-    
-    
-    outputs = llm.generate(prompts, sampling_params)
+    outputs = generate_with_multi_gpu_vllm(
+        prompts,
+        num_gpus = 4,
+        temperature= 0
+    )
+
     # dump the outputs to a file
     try:
         with open(args.output_query_path + "_temp", "w") as f:
-            json.dump([output.outputs[0].text for output in outputs], f)
+            json.dump([output for output in outputs], f)
     except Exception as e:
         print(e)
         print(f"想坑本王？没门！")
     
     for index, output in enumerate(outputs):
+        if "prag" in reformulation_name:
+            turn = turn_list[index]
+            liste = prompter.parse_returned_text(output)
+
+            if liste == None:
+                print(f"error with turn id {turn["sample_id"]}")
+                print(output.outputs[0].text)
+                continue
+
+            if len(liste) < 10:
+                # append " " to the end of the list
+                for i in range(10 - len(liste)):
+                    liste.append("GG")
+                
+                print(f"error with turn id {turn["sample_id"]}")
+
+            liste = liste[:10]
+            turn["prag_GRF"] = []
+
+            for i in range(len(liste)):
+                query = liste[i]
+                turn["prag_GRF"].append(query)
+                
+            try:
+                print("#########################")
+                print("this is turn: ", turn["sample_id"])
+                print(f"original query: {turn["cur_utt_text"]}")
+                for i in range(len(liste)):
+                    print(f"prag GRF_{i+1}: {liste[i]}")
+
+            except Exception as e:
+                print(f"print error with turn id {turn["sample_id"]}")
+                continue
+            
         if "fengran_10_GRF" in reformulation_name:
             turn = turn_list[index]
             liste = prompter.parse_returned_text(output.outputs[0].text)
