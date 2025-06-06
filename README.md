@@ -1,15 +1,15 @@
 ![Overview of the APCIR Framwork](./figures/overview.jpg)
-# 🤖APCIR: Adaptive Personalized Conversational IR via Fine-Grained Fusion 
+# 🤖Towards Adaptive Personalized Conversational Information Retrieval
 <p>
 <a href="https://github.com/DaoD/INTERS/blob/main/LICENSE">
 <img src="https://img.shields.io/badge/MIT-License-blue" alt="license">
 </a>
 </p> 
-This is the repository for the paper "Adaptive Personalized Conversational Information Retrieval via Fine-Grained Fusion" submitted to SIGIR 2025. To facilitate follow-up research on Personalized Conversational IR, we release the following resources:
+This is the repository for the paper "Towards Adaptive Personalized Conversational Information Retrieval" submitted to CIKM 2025. To facilitate follow-up research on Personalized Conversational IR, we release the following resources:
 
 - Our solid codebase for a personalized conversational RAG pipeline, with flexible choices of various retrievers, rerankers, as well as response generators.
 - Detailed hands-on guidance of index building, enveronment setting for dense, spasre and splade retrieval, as well as necessary data preprocessing for TREC iKAT 2023 & 2024 datasets.
-- All our [prompts](./src/rewrite/judge_and_rewrite_prompt_example.txt), [few-shot examples](./src/rewrite/personalization_level_examples.txt) for personalization level judgement, and manually curated [Chain-of-Thought reasoning](./src/rewrite/demonstration_using_ikat24_level.json) for query reformulation, as well as some [examples](./src/rewrite/query_reformulations_examples.txt) of query reformulation & pseudo-responses for each personalization level. 
+- All our prompts ([image illustration](./figures/apcir_prompt.png) and [full text](./src/rewrite/judge_and_rewrite_prompt_example.txt)), [few-shot examples](./src/rewrite/personalization_level_examples.txt) for personalization level judgement, and manually curated [Chain-of-Thought reasoning](./src/rewrite/demonstration_using_ikat24_level.json) for query reformulation, as well as some [examples](./src/rewrite/query_reformulations_examples.txt) of query reformulation & pseudo-responses for each personalization level. 
 
 Let us get started!
 

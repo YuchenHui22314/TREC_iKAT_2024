@@ -189,3 +189,6 @@ src/evaluate/wandb/*
 /src/__pycache__
 /logs
 /test
+/src/apcir/evaluate/wandb/** 
+/src/wandb/** 
+/data/topics/ikat23
