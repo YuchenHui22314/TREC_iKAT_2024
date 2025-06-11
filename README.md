@@ -15,22 +15,66 @@ This is the repository for the paper "Towards Adaptive Personalized Conversation
   2. An [example](#-case-study-showing-the-power-of-personalized-fusion) showing the effectiveness of fusion in terms of personalization.
 
 Let us get started!
+## 📑 Table of Contents
 
-## 📖 Case study showing the power of personalized fusion 
+- [📖 Illustration of the prompt](#-illustration-of-the-prompt)
+- [📖 Case study: the power of fusion](#-case-study-the-power-of-fusion)
+- [📚 Environment Setup & Index Building](#-environment-setup--index-building)
+  - [Conda Python Environment](#conda-python-environment)
+  - [Index Building](#index-building)
+    - [1. Sparse index building](#1-sparse-index-building)
+    - [2. Dense index building](#2-dense-index-building)
+    - [3. Splade indexing](#3-splade-indexing)
+- [📝 Download TREC iKAT topics and relevance judgement](#-download-trec-ikat-topics-and-relevance-judgement)
+  - [Topics file preprocessing](#topics-file-preprocessing)
+  - [Qrels file preprocessing](#qrels-file-preprocessing)
+- [✍ Query Rewrite](#-query-rewrite)
+  - [Prompts](#prompts)
+- [🚀 Running the evaluation Pipeline](#-running-the-evaluation-pipeline)
+  - [How to modify the yaml file](#how-to-modify-the-yaml-file)
+  - [Evaluation Parameters](#evaluation-parameters)
+    - [1. General parameters](#1-general-parameters)
+    - [2. Retrieval parameters](#2-retrieval-parameters)
+    - [3. Fusion parameters](#3-fusion-parameters)
+    - [4. Reranking parameters](#4-reranking-parameters)
+    - [5. Response Generation parameters](#5-response-generation-parameters)
+    - [6. Metrics parameters](#6-metrics-parameters)
+    - [7. iKAT Project Specific parameters](#7-ikat-project-specific-parameters)
+- [📄 Citation](#citation)
+- [🙏 Acknowledgement](#acknowledgement)
+
+
+## 📖 Illustration of the prompt
+The figure below illustrates our prompt design. Sentences highlighted in purple represent instructional components intended to encourage the reasoning capabilities of large language models (LLMs). In our implementation, these instructions can be optionally included or excluded. Effectiveness of these instructions in terms of personalization level judgement and query reformulation is confirmed by the ablation study part of our paper.
+
+![Prompt illustration](./figures/apcir_prompt.png)
+
+
+## 📖 Case study: the power of fusion 
 ![Case study on personalized fusion](./figures/ikat_case_study_3.png)
 
-This example shows how fusing a personalized query with its non-personalized counterpart can help overcome the query drift issue caused by noisy terms in the personalized query. 
+This example shows how fusing a personalized query with its non-personalized counterpart can help overcome the query drift issue caused by noisy terms in a personalized query. 
 
 In contrast with outstanding performance achieved by LLMs in Conversational Query Reformulation, formulating personalized queries by relying on LLMs to select and incorporate relevant pieces from the user profile can sometimes lead to poor search queries. 
 
-This is because user profile terms are inherently noisier than those extracted from conversation history.Terms added by LLMs in CQR typically address missing pieces in a conversational query caused by coreference and ellipsis. They are key components that contribute to the majority of the query’s semantic meaning and qre crucial to make the user’s primary search intent understandable. On the other hand, terms from user profiles are usually only weakly semantically related to the query. Although these profile terms may hint at the user’s preferences and potentially complement the search intent, explicitly expanding them into the reformulated queries might result in query drift issue, i.e., retrieving irrelevant documents that focus solely on these terms. This creates a dilemma: excluding profile terms risks omitting valuable personalized context, whereas introducing an excessive number of these pieces risks drifting from the original query and hinders search performance. This is a challenge we denote as over-personalization.
+This is because user profile terms are inherently noisier than those extracted from conversation history. Terms added by LLMs in CQR typically address missing pieces in a conversational query caused by coreference and ellipsis. They are key components that contribute to the majority of the query’s semantic meaning and qre crucial to make the user’s primary search intent understandable. On the other hand, terms from user profiles are usually only weakly semantically related to the query. Although these profile terms may hint at the user’s preferences and potentially complement the search intent, explicitly expanding them into the reformulated queries might result in query drift issue, i.e., retrieving irrelevant documents that focus solely on these terms. This creates a dilemma: excluding profile terms risks omitting valuable personalized context, whereas introducing an excessive number of these pieces risks drifting from the original query and hinders search performance. This is a challenge we denote as over-personalization.
 
-To be more concrete, let us consider the personalized query in the above illustration: 
+To be more concrete, let us consider the personalized query in the above figure: 
 
-> What Turkish souvenir would you recommend, considering my mother's interest in antique crystals and porcelains? 
+> What Turkish souvenir would you recommend, considering **my mother's interest in antique crystals and porcelains?** 
 
-In this query, terms "collection
-of antique crystals and porcelains" are selected by an LLM (GPT-4o) from the user’s profile. Although they indeed enriches the user’s search intent by implying a preference for fine art pieces as souvenirs, it also introduces potential noise.
+In this query, the phrase "**collection
+of antique crystals and porcelains**" is extracted from the user profile by an LLM (GPT-4o). While it indeed enriches the user’s search intent by implying a preference for fine art pieces as souvenirs, it also introduces potential noise. Specifically, a BM25 search using the personalized query may prioritize documents that mention these terms superficially, such as those discussing Turkish jewelries that are not souvenirs. For instance, as shown in the second row of the figure, the top-ranked document by BM25 simply lists types of Turkish jewelry, with no indication of whether they are good souvenir candidates or how a tourist might obtain them. In contrast, a truly relevant document that thoroughly discusses how to select and purchase high-quality antique Turkish souvenirs is buried at rank 32. This leads to a **zero** NDCG@3 score for the personalized query.
+
+The goal, then, is to surface such high-quality, contextually appropriate documents to the top of the ranking list. To achieve this, we seek distinguishing characteristics of these highly relevant documents that can separate them from those that merely include noisy personalized terms. We notice that truly relevant documents also tend to rank relatively well when using a non-personalized version of the query. This is illustrated in the first row of the figure, where the same ideal candidate is ranked 3rd by BM25 when searching with:
+
+> What Turkish souvenir would you recommend?
+
+This property can be exploited to improve ranking. Our approach fuses the results from the personalized and non-personalized queries. Specifically, we compute a final relevance score for each document by averaging its scores from both ranking lists. In this Turkish souvenir example, the fusion successfully elevates the ideal personalized candidate to the top of the final ranking.
+
+ The effectiveness of the fusion can also be highlighted with the final NDCG@3 score of 0.49. Note that the original personalized query yields a zero NDCG@3 score, while the non-personalized query only yields  NDCG@3 score of 0.33. Therefore The fusion mechanism counter-intuitively benefit from a 0-score NDCG@3 ranking list of very poor quality to bring a significant improvement of 0.49 - 0.33 = 0.16 in terms of NDCG@3, which is a 48% relative improvement over the non-personalized query. This showcases that, if judiciously leveraged, personalized information can meaningfully enhance retrieval quality. Moreover, it underscores ranking list fusion as an effective strategy for integrating personalization in search.
+
+
 ## 📚 Environment Setup & Index Building 
 ### Conda Python Environment
 Please follow the steps below to create a conda environment with all the necessary packages.
@@ -176,9 +220,6 @@ to rewrite queries for TREC iKAT 2023 or 2024 respectively. The program will fir
 
 ### Prompts
 An example of the prompt used in the paper is available at `/src/rewrite/judge_and_rewrite_prompt_example.txt`. The corresponding few-shot CoT examples are available at `/data/topics/ikat23/demonstration_using_ikat23_level.json` and `/data/topics/ikat24/demonstration_using_ikat24_level.json`
-
-Here is an illustration of our prompt:
-![Prompt illustration](./figures/apcir_prompt.png)
 
 
 ## 🚀 Running the evaluation Pipeline
