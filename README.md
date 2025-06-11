@@ -9,10 +9,28 @@ This is the repository for the paper "Towards Adaptive Personalized Conversation
 
 - Our solid codebase for a personalized conversational RAG pipeline, with flexible choices of various retrievers, rerankers, as well as response generators.
 - Detailed hands-on guidance of index building, enveronment setting for dense, spasre and splade retrieval, as well as necessary data preprocessing for TREC iKAT 2023 & 2024 datasets.
-- All our prompts ([image illustration](./figures/apcir_prompt.png) and [full text](./src/rewrite/judge_and_rewrite_prompt_example.txt)), [few-shot examples](./src/rewrite/personalization_level_examples.txt) for personalization level judgement, and manually curated [Chain-of-Thought reasoning](./src/rewrite/demonstration_using_ikat24_level.json) for query reformulation, as well as some [examples](./src/rewrite/query_reformulations_examples.txt) of query reformulation & pseudo-responses for each personalization level. 
+- All our prompts ([image illustration](./figures/apcir_prompt.png) and [full text](./src/rewrite/judge_and_rewrite_prompt_example.txt)), [few-shot examples](./src/rewrite/personalization_level_examples.txt) for personalization level judgement, and manually curated [Chain-of-Thought reasoning](./src/rewrite/demonstration_using_ikat24_level.json) for query reformulation
+- Case study on 
+  1. some [examples](./src/rewrite/query_reformulations_examples.txt) of query reformulation & pseudo-responses for each personalization level.
+  2. An [example](#-case-study-showing-the-power-of-personalized-fusion) showing the effectiveness of fusion in terms of personalization.
 
 Let us get started!
 
+## 📖 Case study showing the power of personalized fusion 
+![Case study on personalized fusion](./figures/ikat_case_study_3.png)
+
+This example shows how fusing a personalized query with its non-personalized counterpart can help overcome the query drift issue caused by noisy terms in the personalized query. 
+
+In contrast with outstanding performance achieved by LLMs in Conversational Query Reformulation, formulating personalized queries by relying on LLMs to select and incorporate relevant pieces from the user profile can sometimes lead to poor search queries. 
+
+This is because user profile terms are inherently noisier than those extracted from conversation history.Terms added by LLMs in CQR typically address missing pieces in a conversational query caused by coreference and ellipsis. They are key components that contribute to the majority of the query’s semantic meaning and qre crucial to make the user’s primary search intent understandable. On the other hand, terms from user profiles are usually only weakly semantically related to the query. Although these profile terms may hint at the user’s preferences and potentially complement the search intent, explicitly expanding them into the reformulated queries might result in query drift issue, i.e., retrieving irrelevant documents that focus solely on these terms. This creates a dilemma: excluding profile terms risks omitting valuable personalized context, whereas introducing an excessive number of these pieces risks drifting from the original query and hinders search performance. This is a challenge we denote as over-personalization.
+
+To be more concrete, let us consider the personalized query in the above illustration: 
+
+> What Turkish souvenir would you recommend, considering my mother's interest in antique crystals and porcelains? 
+
+In this query, terms "collection
+of antique crystals and porcelains" are selected by an LLM (GPT-4o) from the user’s profile. Although they indeed enriches the user’s search intent by implying a preference for fine art pieces as souvenirs, it also introduces potential noise.
 ## 📚 Environment Setup & Index Building 
 ### Conda Python Environment
 Please follow the steps below to create a conda environment with all the necessary packages.
@@ -158,6 +176,9 @@ to rewrite queries for TREC iKAT 2023 or 2024 respectively. The program will fir
 
 ### Prompts
 An example of the prompt used in the paper is available at `/src/rewrite/judge_and_rewrite_prompt_example.txt`. The corresponding few-shot CoT examples are available at `/data/topics/ikat23/demonstration_using_ikat23_level.json` and `/data/topics/ikat24/demonstration_using_ikat24_level.json`
+
+Here is an illustration of our prompt:
+![Prompt illustration](./figures/apcir_prompt.png)
 
 
 ## 🚀 Running the evaluation Pipeline
