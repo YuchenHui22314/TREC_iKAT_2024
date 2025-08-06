@@ -5,7 +5,7 @@
 <img src="https://img.shields.io/badge/MIT-License-blue" alt="license">
 </a>
 </p> 
-This is the repository for the paper "Towards Adaptive Personalized Conversational Information Retrieval" submitted to CIKM 2025. To facilitate follow-up research on Personalized Conversational IR, we release the following resources:
+This is the repository for our paper "Adaptive Personalized Conversational Information Retrieval" accepted by CIKM 2025. To facilitate follow-up research on Personalized Conversational IR, we release the following resources:
 
 - Our solid codebase for a personalized conversational RAG pipeline, with flexible choices of various retrievers, rerankers, as well as response generators.
 - Detailed hands-on guidance of index building, enveronment setting for dense, spasre and splade retrieval, as well as necessary data preprocessing for TREC iKAT 2023 & 2024 datasets.
