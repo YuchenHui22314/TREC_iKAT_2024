@@ -634,5 +634,19 @@ def generate_with_multi_gpu_vllm(
     return outputs
 
 
+###### BEIR encoders #######
+class BeirAsymmetricEncoder:
+    def __init__(
+        self,
+        qeury_encoder_path= None, 
+        document_encoder_path = None):
 
-
+        self.model = None # ---> HERE Load your custom model
+    
+    # Write your own encoding query function (Returns: Query embeddings as numpy array)
+    def encode_queries(self, queries: List[str], batch_size: int, **kwargs) -> np.ndarray:
+        pass
+    
+    # Write your own encoding corpus function (Returns: Document embeddings as numpy array)  
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
+        pass
