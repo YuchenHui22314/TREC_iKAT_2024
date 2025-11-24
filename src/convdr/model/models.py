@@ -205,9 +205,12 @@ class HFBertEncoder(BertModel):
     def forward(self, input_ids, attention_mask):
         hidden_states = None
 
-        sequence_output, pooled_output = super().forward(
+        output_object = super().forward(
             input_ids=input_ids, attention_mask=attention_mask)
+
+        sequence_output = output_object.last_hidden_state
         pooled_output = sequence_output[:, 0, :]
+
         return sequence_output, pooled_output, hidden_states
 
     def get_out_size(self):
