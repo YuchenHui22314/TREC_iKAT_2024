@@ -173,10 +173,14 @@ src/evaluate/wandb/*
 #/data/topics/*
 /results/**/metrics/per_query_metrics/*.json
 /results/**/metrics/*.json
+/results/**/*.json
+
+
 /results/**/per_query_metrics/*.json
 /results/test
 /alignir_env
 *.txt
+*.pkl
 !requirements.txt
 **/test.py
 **/*.out

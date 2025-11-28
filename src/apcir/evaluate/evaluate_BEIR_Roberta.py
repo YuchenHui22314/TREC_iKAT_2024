@@ -7,14 +7,16 @@ import json
 
 import torch
 from transformers import AutoTokenizer
+
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
+from beir.retrieval import models
 
 from convdr.drivers.gen_passage_embeddings import load_model
-from apcir.functional.llm import BeirConvdrEncoder
+from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder
 
-parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with ConvDR model")
+parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with roberta model")
 parser.add_argument(
     "--split",
     type=int,
@@ -24,44 +26,40 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-args.model_type = "dpr"  
 args.device = torch.device(f"cuda:{int(args.split) % 4}" if torch.cuda.is_available() else "cpu")
-args.cache_dir = None  
-args.local_rank = -1  
+args.embedding_dir = "/data/rech/huiyuche/beir/embeddings"
 
-config, tokenizer, model = load_model(args, "/data/rech/huiyuche/huggingface/convdr/convdr-multi-orquac.cp")    
 
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased") 
-tokenizer.model_max_length = 512
-
-convdr_model = BeirConvdrEncoder(
-    model,
-    tokenizer,
-    device=args.device
-    )
-
-custom_model = DRES(
-    convdr_model, batch_size=1400 ### 1024 should be ok for L40S 44G GPU memory.
+### roberta
+encoder = BeirCLSEncoder(
+    model_path="roberta-base",
+    device=args.device,
+    max_length_query=512,
+    max_length_doc=512
 )
 
-retriever = EvaluateRetrieval(custom_model, score_function="dot")
+# Then plug into BEIR
+
+model = DRES(encoder, batch_size=1400)
+
+retriever = EvaluateRetrieval(model, score_function="dot")
 
 base_path = "/data/rech/huiyuche/beir"
 
 
 dataset_list_01 = [
-    # "scifact",
-    # "trec-covid",
-    # "nfcorpus",
+    "scifact",
+    "trec-covid",
+    "nfcorpus",
     # "bioasq",     xxxxxx
-    # "fiqa",
+    "fiqa",
     # "signal1m",xxxxxx
     # "trec-news",xxxxxx
-    # "arguana",
-    # "webis-touche2020",
-    # "cqadupstack",
+    "arguana",
+    "webis-touche2020",
     "quora",
     "scidocs",
+    "cqadupstack"
     # "msmarco",
     # "nq",
     # "hotpotqa",
@@ -98,8 +96,26 @@ dataset_list_04 = [
     ]
 
 dataset_list_05 = [
-    "cqadupstack"
+    "msmarco",
+    "scifact",
+    "trec-covid",
+    "nfcorpus",
+    # "bioasq",     xxxxxx
+    "fiqa",
+    # "signal1m",xxxxxx
+    # "trec-news",xxxxxx
+    "arguana",
+    "webis-touche2020",
+    "quora",
+    "scidocs",
+    "nq",
+    "hotpotqa",
+    "dbpedia-entity",
+    "fever",
+    "climate-fever",
+    "cqadupstack",
 ]
+
 if args.split == 0:
     dataset_list = dataset_list_01
 elif args.split == 1:
@@ -111,7 +127,7 @@ elif args.split == 3:
 elif args.split == 4:
     dataset_list = dataset_list_05
 else:
-    raise ValueError("Invalid split value. It should be 0, 1, 2, 3, or 4.")
+    raise ValueError("Invalid split value. It should be 0, 1, 2, or 3.")
 
 result_dict = {}
 
@@ -130,7 +146,13 @@ for data_path in dataset_list:
                 corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,sub_data_path,sub_data_path)).load(split="test") # or split = "train" or "dev"
 
                 #### Retrieve dense results (format of results is identical to qrels)
-                results = retriever.retrieve(corpus, queries)
+                results = retriever.encode_and_retrieve(
+                    corpus=corpus,
+                    queries=queries,
+                    encode_output_path=args.embedding_dir,
+                    overwrite=False,  # Set to True if you want to overwrite existing embeddings
+                )
+
                 result_dict[sub_data_path] = results
 
                 print("###############################")
@@ -166,7 +188,7 @@ for data_path in dataset_list:
             weighted_metrics[key] = weighted_sum / total_query_number
 
 
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_convdr_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_roberta_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))
@@ -178,35 +200,48 @@ for data_path in dataset_list:
         
         continue
 
+    else: 
     
-    
-    corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split="test") # or split = "train" or "dev"
+        corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split="test") # or split = "train" or "dev"
+        print(queries.keys())
+        print(qrels.keys())
 
-    #### Retrieve dense results (format of results is identical to qrels)
-    results = retriever.retrieve(corpus, queries)
-    result_dict[data_path] = results
+        #### Retrieve dense results (format of results is identical to qrels)
+        results = retriever.retrieve(corpus, queries)
+        # results = retriever.encode_and_retrieve(
+        #     corpus=corpus,
+        #     queries=queries,
+        #     encode_output_path=args.embedding_dir,
+        #     overwrite=True,  # Set to True if you want to overwrite existing embeddings
+        # )
+        # print(results.keys())
 
-    with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/ranking/beir_{args.split}_convdr_results_up_to_{data_path}.pkl", "wb") as f:
-        pickle.dump(result_dict, f)
-    
-    
-    print("###############################")
-    print("###############################")
-    print("Results for dataset: {}".format(data_path))
-    ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
-    
-    with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_convdr_metrics.txt", "a") as f:
+        # save results for debugging:
+        
+        result_dict[data_path] = results
+
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/ranking/beir_{args.split}_roberta_results_up_to_{data_path}.pkl", "wb") as f:
+            pickle.dump(result_dict, f)
+
+        
+        
         print("###############################")
         print("###############################")
-        f.write("Results for dataset: {}\n".format(data_path))
-        f.write("NDCG: {}\n".format(ndcg))
-        f.write("MAP: {}\n".format(_map))
-        f.write("Recall: {}\n".format(recall))
-        f.write("Precision: {}\n\n".format(precision))
+        print("Results for dataset: {}".format(data_path))
+        ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+        
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_roberta_metrics.txt", "a") as f:
+            print("###############################")
+            print("###############################")
+            f.write("Results for dataset: {}\n".format(data_path))
+            f.write("NDCG: {}\n".format(ndcg))
+            f.write("MAP: {}\n".format(_map))
+            f.write("Recall: {}\n".format(recall))
+            f.write("Precision: {}\n\n".format(precision))
 
 
-# python -m apcir.evaluate.evaluate_BEIR --split 0
-# python -m apcir.evaluate.evaluate_BEIR --split 1
-# python -m apcir.evaluate.evaluate_BEIR --split 2
-# python -m apcir.evaluate.evaluate_BEIR --split 3
-# python -m apcir.evaluate.evaluate_BEIR --split 4
+# python -m apcir.evaluate.evaluate_BEIR_Roberta --split 0
+# python -m apcir.evaluate.evaluate_BEIR_Roberta --split 1
+# python -m apcir.evaluate.evaluate_BEIR_Roberta --split 2
+# python -m apcir.evaluate.evaluate_BEIR_Roberta --split 3
+# python -m apcir.evaluate.evaluate_BEIR_Roberta --split 4
