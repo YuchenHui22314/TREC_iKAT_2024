@@ -14,7 +14,7 @@ from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 from beir.retrieval import models
 
 from convdr.drivers.gen_passage_embeddings import load_model
-from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder
+from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder
 
 parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with roberta model")
 parser.add_argument(
@@ -31,7 +31,7 @@ args.embedding_dir = "/data/rech/huiyuche/beir/embeddings"
 
 
 ### roberta
-encoder = BeirCLSEncoder(
+encoder = BeirMPoolingEncoder(
     model_path="roberta-base",
     device=args.device,
     max_length_query=512,
@@ -68,6 +68,9 @@ dataset_list_01 = [
     # "climate-fever"
 ]
 
+# dataset_list_01 = [
+#     "cqadupstack"
+# ]
 
 dataset_list_02 = [
     # "scifact",
@@ -146,12 +149,7 @@ for data_path in dataset_list:
                 corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,sub_data_path,sub_data_path)).load(split="test") # or split = "train" or "dev"
 
                 #### Retrieve dense results (format of results is identical to qrels)
-                results = retriever.encode_and_retrieve(
-                    corpus=corpus,
-                    queries=queries,
-                    encode_output_path=args.embedding_dir,
-                    overwrite=False,  # Set to True if you want to overwrite existing embeddings
-                )
+                results = retriever.retrieve(corpus, queries)
 
                 result_dict[sub_data_path] = results
 
@@ -188,7 +186,7 @@ for data_path in dataset_list:
             weighted_metrics[key] = weighted_sum / total_query_number
 
 
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_roberta_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_roberta_mpooling_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))
@@ -203,8 +201,6 @@ for data_path in dataset_list:
     else: 
     
         corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split="test") # or split = "train" or "dev"
-        print(queries.keys())
-        print(qrels.keys())
 
         #### Retrieve dense results (format of results is identical to qrels)
         results = retriever.retrieve(corpus, queries)
@@ -230,7 +226,7 @@ for data_path in dataset_list:
         print("Results for dataset: {}".format(data_path))
         ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
         
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_roberta_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_roberta_mpooling_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))

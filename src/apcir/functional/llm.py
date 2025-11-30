@@ -818,6 +818,113 @@ class BeirCLSEncoder:
 
         return np.concatenate(embeddings, axis=0)
 
+
+class BeirMPoolingEncoder:
+    def __init__(
+        self,
+        model_path: str,
+        device: Optional[torch.device] = None,
+        max_length_query: int = 512,
+        max_length_doc: int = 512,
+    ):
+        """
+        Encoder using Bert-based encoder with mean pooling (not [CLS]).
+
+        Args:
+            model_path (str): Hugging Face model repo name or local path (e.g., "roberta-base")
+            device (torch.device, optional): Device to run the model on. Defaults to CPU if not provided.
+            max_length_query (int): Max length for query encoding.
+            max_length_doc (int): Max length for document encoding.
+        """
+        self.device = device or torch.device("cpu")
+        self.max_length_query = max_length_query
+        self.max_length_doc = max_length_doc
+
+        # Load tokenizer and model
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
+        self.model = AutoModel.from_pretrained(model_path)
+
+        # Move to device and set eval mode
+        self.model.eval()
+        self.model.to(self.device)
+
+    def _mean_pooling(self, token_embeddings: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        """
+        Apply mean pooling with attention mask.
+        
+        Args:
+            token_embeddings: (batch_size, seq_len, hidden_dim)
+            attention_mask: (batch_size, seq_len)
+            
+        Returns:
+            embeddings: (batch_size, hidden_dim)
+        """
+        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+        sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+        return sum_embeddings / sum_mask
+
+    def encode_queries(self, queries: List[str], batch_size: int, **kwargs) -> np.ndarray:
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(range(0, len(queries), batch_size), desc="Encoding Queries"):
+                batch = queries[i:i + batch_size]
+                encoded = self.tokenizer(
+                    batch,
+                    max_length=self.max_length_query,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt"
+                ).to(self.device)
+
+                outputs = self.model(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"]
+                )
+                # Mean pooling over non-padding tokens
+                mean_embeddings = self._mean_pooling(outputs.last_hidden_state, encoded["attention_mask"])
+                # L2 normalize (required by BEIR for dot-product retrieval)
+                mean_embeddings = F.normalize(mean_embeddings, p=2, dim=-1)
+                embeddings.append(mean_embeddings.cpu().numpy())
+
+        return np.concatenate(embeddings, axis=0)
+
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
+        # Preprocess: combine title and text like BEIR expects
+        texts = []
+        for doc in corpus:
+            title = doc.get("title", "").strip()
+            text = doc.get("text", "").strip()
+            if title and text:
+                texts.append(f"{title} {text}")
+            elif title:
+                texts.append(title)
+            else:
+                texts.append(text)
+
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(range(0, len(texts), batch_size), desc="Encoding Corpus"):
+                batch = texts[i:i + batch_size]
+                encoded = self.tokenizer(
+                    batch,
+                    max_length=self.max_length_doc,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt"
+                ).to(self.device)
+
+                outputs = self.model(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"]
+                )
+                # Mean pooling
+                mean_embeddings = self._mean_pooling(outputs.last_hidden_state, encoded["attention_mask"])
+                # L2 normalize
+                mean_embeddings = F.normalize(mean_embeddings, p=2, dim=-1)
+                embeddings.append(mean_embeddings.cpu().numpy())
+
+        return np.concatenate(embeddings, axis=0)
         
 # class BeirAsymmetricEncoder:
 #     def __init__(
