@@ -394,9 +394,24 @@ Now let us continue with all the parameters~
 # Citation
 If you find this project useful, please cite our paper: 
 ```
-xxxxxx
+@inproceedings{10.1145/3746252.3761255,
+author = {Mo, Fengran and Hui, Yuchen and Tian, Yuxing and Tan, Zhaoxuan and Meng, Chuan and Su, Zhan and Huang, Kaiyu and Nie, Jian-Yun},
+title = {Towards Adaptive Personalized Conversational Information Retrieval},
+year = {2025},
+isbn = {9798400720406},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3746252.3761255},
+doi = {10.1145/3746252.3761255},
+pages = {2137–2147},
+numpages = {11},
+keywords = {adaptive personalization, conversational information retrieval, personalized query reformulation},
+location = {Seoul, Republic of Korea},
+series = {CIKM '25}
+}
 ```
 
 # Acknowledgement
-We would like to thank xxx, xxx, and xxx.
+Huge thanks to Prof. Nie for his continuous support and supervision; Thanks [Milan Mao](https://www.linkedin.com/in/milan-mao-6b8824198/) for her help in the initial stage of the project.
+
 
