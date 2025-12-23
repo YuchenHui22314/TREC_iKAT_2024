@@ -412,6 +412,6 @@ series = {CIKM '25}
 ```
 
 # Acknowledgement
-Huge thanks to Prof. Nie for his continuous support and supervision; Thanks [Milan Mao](https://www.linkedin.com/in/milan-mao-6b8824198/) for her help in the initial stage of the project.
+Huge thanks to Prof. Nie for his continuous support and supervision; Thanks [Fabrizio Gotti](https://www.linkedin.com/in/fabrizio-gotti/), [Raouf Bencheraiet](bencherr@iro.umontreal.ca), and [Milan Mao](https://www.linkedin.com/in/milan-mao-6b8824198/) for their invaluable help for the project.
 
 
