@@ -395,7 +395,7 @@ Now let us continue with all the parameters~
 If you find this project useful, please cite our paper: 
 ```
 @inproceedings{10.1145/3746252.3761255,
-author = {Mo, Fengran and Hui, Yuchen and Tian, Yuxing and Tan, Zhaoxuan and Meng, Chuan and Su, Zhan and Huang, Kaiyu and Nie, Jian-Yun},
+author = {Mo*, Fengran and Hui*, Yuchen and Tian, Yuxing and Tan, Zhaoxuan and Meng, Chuan and Su, Zhan and Huang, Kaiyu and Nie, Jian-Yun},
 title = {Towards Adaptive Personalized Conversational Information Retrieval},
 year = {2025},
 isbn = {9798400720406},
