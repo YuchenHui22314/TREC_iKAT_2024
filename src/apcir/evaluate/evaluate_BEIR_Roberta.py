@@ -119,6 +119,10 @@ dataset_list_05 = [
     "cqadupstack",
 ]
 
+dataset_list_06 = [
+    "trec-covid",
+]
+
 if args.split == 0:
     dataset_list = dataset_list_01
 elif args.split == 1:
@@ -129,6 +133,8 @@ elif args.split == 3:
     dataset_list = dataset_list_04  
 elif args.split == 4:
     dataset_list = dataset_list_05
+elif args.split == 5:
+    dataset_list = dataset_list_06
 else:
     raise ValueError("Invalid split value. It should be 0, 1, 2, or 3.")
 
@@ -241,3 +247,4 @@ for data_path in dataset_list:
 # python -m apcir.evaluate.evaluate_BEIR_Roberta --split 2
 # python -m apcir.evaluate.evaluate_BEIR_Roberta --split 3
 # python -m apcir.evaluate.evaluate_BEIR_Roberta --split 4
+# python  

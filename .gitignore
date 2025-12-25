@@ -170,7 +170,7 @@ src/evaluate/wandb/*
 /data/embeddings/*
 /data/indexes/*
 #/data/qrels/*
-#/data/topics/*
+/data/topics/*
 /results/**/metrics/per_query_metrics/*.json
 /results/**/metrics/*.json
 /results/**/*.json
@@ -181,6 +181,8 @@ src/evaluate/wandb/*
 /alignir_env
 *.txt
 *.pkl
+*.pt
+*.pth
 !requirements.txt
 **/test.py
 **/*.out

@@ -28,11 +28,13 @@ from transformers import (
     pipeline,
     logging,
     T5Tokenizer,
-    T5ForConditionalGeneration
+    T5ForConditionalGeneration,
+    RobertaConfig, RobertaTokenizer
 )
 
 from accelerate import Accelerator
 from peft import PeftModel, PeftConfig
+from apcir.search.models import ANCE
 
 logger = logging.get_logger(__name__)
 
@@ -925,7 +927,249 @@ class BeirMPoolingEncoder:
                 embeddings.append(mean_embeddings.cpu().numpy())
 
         return np.concatenate(embeddings, axis=0)
+
+
+# ---- assume your ANCE class is already defined exactly as you pasted ----
+# class ANCE(RobertaForSequenceClassification): ...
+# def load_model(...): ...
+
+class BeirANCEEncoder:
+    def __init__(
+        self,
+        model_path: str,
+        device: Optional[torch.device] = None,
+        max_length_query: int = 512,
+        max_length_doc: int = 512,
+    ):
+        """
+        Encoder using ANCE-style encoder producing 768-d dense embeddings
+        (CLS token by default, or mean pooling if ANCE.use_mean=True).
+
+        Args:
+            model_path (str): Hugging Face model repo name or local path (ANCE checkpoint dir)
+            device (torch.device, optional): Device to run the model on. Defaults to CPU if not provided.
+            max_length_query (int): Max length for query encoding.
+            max_length_doc (int): Max length for document encoding.
+        """
+        self.device = device or torch.device("cpu")
+        self.max_length_query = max_length_query
+        self.max_length_doc = max_length_doc
+
+        # Load ANCE tokenizer + model (same as your load_model behavior)
+        self.tokenizer = RobertaTokenizer.from_pretrained(model_path, do_lower_case=True)
+
+        config = RobertaConfig.from_pretrained(
+            model_path,
+            finetuning_task="MSMarco",
+        )
+        self.model = ANCE.from_pretrained(model_path, config=config)
+
+        # Move to device and set eval mode
+        self.model.eval()
+        self.model.to(self.device)
+
+    def encode_queries(self, queries: List[str], batch_size: int, **kwargs) -> np.ndarray:
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(range(0, len(queries), batch_size), desc="Encoding Queries"):
+                batch = queries[i : i + batch_size]
+                encoded = self.tokenizer(
+                    batch,
+                    max_length=self.max_length_query,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt",
+                )
+                encoded = {k: v.to(self.device) for k, v in encoded.items()}
+
+                # ANCE forward returns (batch_size, 768)
+                dense = self.model(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"],
+                )
+
+                # L2 normalize
+                dense = F.normalize(dense, p=2, dim=-1)
+                embeddings.append(dense.cpu().numpy())
+
+        return np.concatenate(embeddings, axis=0)
+
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
+        # Preprocess: combine title and text like BEIR expects
+        texts = []
+        for doc in corpus:
+            title = doc.get("title", "").strip()
+            text = doc.get("text", "").strip()
+            if title and text:
+                texts.append(f"{title} {text}")
+            elif title:
+                texts.append(title)
+            else:
+                texts.append(text)
+
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(range(0, len(texts), batch_size), desc="Encoding Corpus"):
+                batch = texts[i : i + batch_size]
+                encoded = self.tokenizer(
+                    batch,
+                    max_length=self.max_length_doc,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt",
+                )
+                encoded = {k: v.to(self.device) for k, v in encoded.items()}
+
+                dense = self.model(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"],
+                )
+
+                dense = F.normalize(dense, p=2, dim=-1)
+                embeddings.append(dense.cpu().numpy())
+
+        return np.concatenate(embeddings, axis=0)
         
+
+
+class BeirAsymmetricANCEEncoder:
+    def __init__(
+        self,
+        query_encoder_path: str,
+        passage_encoder_path: str,
+        device: Optional[torch.device] = None,
+        max_length_query: int = 512,
+        max_length_doc: int = 512,
+    ):
+        """
+        Asymmetric ANCE encoder:
+        - one encoder for queries
+        - one encoder for passages (documents)
+
+        Args:
+            query_encoder_path (str): HF repo or local path for query encoder
+            passage_encoder_path (str): HF repo or local path for passage encoder
+            device (torch.device, optional): torch device
+            max_length_query (int): max length for query encoding
+            max_length_doc (int): max length for document encoding
+        """
+        self.device = device or torch.device("cpu")
+        self.max_length_query = max_length_query
+        self.max_length_doc = max_length_doc
+
+        # -------------------------
+        # Query encoder
+        # -------------------------
+        self.query_tokenizer = RobertaTokenizer.from_pretrained(
+            query_encoder_path, do_lower_case=True
+        )
+        query_config = RobertaConfig.from_pretrained(
+            query_encoder_path,
+            finetuning_task="MSMarco",
+        )
+        self.query_encoder = ANCE.from_pretrained(
+            query_encoder_path, config=query_config
+        )
+        self.query_encoder.eval()
+        self.query_encoder.to(self.device)
+
+        # -------------------------
+        # Passage encoder
+        # -------------------------
+        self.passage_tokenizer = RobertaTokenizer.from_pretrained(
+            passage_encoder_path, do_lower_case=True
+        )
+        passage_config = RobertaConfig.from_pretrained(
+            passage_encoder_path,
+            finetuning_task="MSMarco",
+        )
+        self.passage_encoder = ANCE.from_pretrained(
+            passage_encoder_path, config=passage_config
+        )
+        self.passage_encoder.eval()
+        self.passage_encoder.to(self.device)
+
+    def encode_queries(
+        self,
+        queries: List[str],
+        batch_size: int,
+        **kwargs,
+    ) -> np.ndarray:
+        """
+        Encode queries using the query encoder.
+        """
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(
+                range(0, len(queries), batch_size),
+                desc="Encoding Queries (Asymmetric)",
+            ):
+                batch = queries[i : i + batch_size]
+                encoded = self.query_tokenizer(
+                    batch,
+                    max_length=self.max_length_query,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt",
+                )
+                encoded = {k: v.to(self.device) for k, v in encoded.items()}
+
+                dense = self.query_encoder(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"],
+                )
+
+                dense = F.normalize(dense, p=2, dim=-1)
+                embeddings.append(dense.cpu().numpy())
+
+        return np.concatenate(embeddings, axis=0)
+
+    def encode_corpus(
+        self,
+        corpus: List[Dict[str, str]],
+        batch_size: int,
+        **kwargs,
+    ) -> np.ndarray:
+        """
+        Encode documents using the passage encoder.
+        """
+        # BEIR-style preprocessing: title + text
+        texts = []
+        for doc in corpus:
+            title = doc.get("title", "").strip()
+            text = doc.get("text", "").strip()
+            if title and text:
+                texts.append(f"{title} {text}")
+            elif title:
+                texts.append(title)
+            else:
+                texts.append(text)
+
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(
+                range(0, len(texts), batch_size),
+                desc="Encoding Corpus (Asymmetric)",
+            ):
+                batch = texts[i : i + batch_size]
+                encoded = self.passage_tokenizer(
+                    batch,
+                    max_length=self.max_length_doc,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt",
+                )
+                encoded = {k: v.to(self.device) for k, v in encoded.items()}
+
+                dense = self.passage_encoder(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"],
+                )
+
+                dense = F.normalize(dense, p=2, dim=-1)
+                embeddings.append(dense.cpu().numpy())
+
+        return np.concatenate(embeddings, axis=0)
 # class BeirAsymmetricEncoder:
 #     def __init__(
 #         self,
