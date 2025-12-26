@@ -14,7 +14,7 @@ from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 from beir.retrieval import models
 
 from convdr.drivers.gen_passage_embeddings import load_model
-from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder, BeirANCEEncoder
+from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder, BeirANCEEncoder, BeirAsymmetricANCEEncoder
 
 parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with ance model")
 parser.add_argument(
@@ -27,12 +27,13 @@ args = parser.parse_args()
 
 
 args.device = torch.device(f"cuda:{int(args.split) % 4}" if torch.cuda.is_available() else "cpu")
-args.embedding_dir_base = "/data/rech/huiyuche/beir/embeddings/ance"
+args.embedding_dir = "/data/rech/huiyuche/beir/embeddings/ance"
 
 
-### ance
-encoder = BeirANCEEncoder(
-    model_path="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234",
+### Asymmetric Ance
+encoder = BeirAsymmetricANCEEncoder(
+    query_encoder_path="/data/rech/huiyuche/huggingface/continual_ir/topiocqa/checkpoint-step-1144",
+    passage_encoder_path="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234",
     device=args.device,
     max_length_query=512,
     max_length_doc=512
@@ -48,7 +49,7 @@ base_path = "/data/rech/huiyuche/beir"
 
 
 dataset_list_01 = [
-    #"cqadupstack",
+    "cqadupstack",
     "scifact",
     "trec-covid",
     "nfcorpus",
@@ -89,8 +90,8 @@ dataset_list_02 = [
 ]
 
 dataset_list_03 = [
-    "climate-fever"
     "fever",
+    "climate-fever"
     ]
 
 dataset_list_04 = [
@@ -142,7 +143,7 @@ result_dict = {}
 
 for data_path in dataset_list:
 
-    args.embedding_dir = os.path.join(args.embedding_dir_base,data_path)
+    args.embedding_dir = os.path.join(args.embedding_dir,data_path)
 
     if data_path == "cqadupstack":
 
@@ -170,6 +171,7 @@ for data_path in dataset_list:
                 queries=queries,
                 encode_output_path=args.embedding_dir,
                 overwrite=False,  # Set to True if you want to overwrite existing embeddings
+                query_filename="topiocqa_conv_ance_queries.pkl"
             )
 
             result_dict[sub_data_path] = results
@@ -207,7 +209,7 @@ for data_path in dataset_list:
             weighted_metrics[key] = weighted_sum / total_query_number
 
 
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_ance_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_topiocqa_ance_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))
@@ -233,6 +235,7 @@ for data_path in dataset_list:
             queries=queries,
             encode_output_path=args.embedding_dir,
             overwrite=False,  # Set to True if you want to overwrite existing embeddings
+            query_filename="topiocqa_conv_ance_queries.pkl"
         )
         # print(results.keys())
 
@@ -240,7 +243,7 @@ for data_path in dataset_list:
         
         result_dict[data_path] = results
 
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/ranking/beir_{args.split}_ance_results_up_to_{data_path}.pkl", "wb") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/ranking/beir_{args.split}_topiocqa_ance_results_up_to_{data_path}.pkl", "wb") as f:
             pickle.dump(result_dict, f)
 
         
@@ -250,7 +253,7 @@ for data_path in dataset_list:
         print("Results for dataset: {}".format(data_path))
         ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
         
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_ance_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_topiocqa_ance_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))
@@ -260,9 +263,9 @@ for data_path in dataset_list:
             f.write("Precision: {}\n\n".format(precision))
 
 
-# python -m apcir.evaluate.evaluate_BEIR_ance --split 0
-# python -m apcir.evaluate.evaluate_BEIR_ance --split 1
-# python -m apcir.evaluate.evaluate_BEIR_ance --split 2
-# python -m apcir.evaluate.evaluate_BEIR_ance --split 3
-# python -m apcir.evaluate.evaluate_BEIR_ance --split 4
-# python -m apcir.evaluate.evaluate_BEIR_ance --split 5
+# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 0 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_0_topiocqa_ance_eval.txt
+# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 1 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_1_topiocqa_ance_eval.txt
+# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 2 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_2_topiocqa_ance_eval.txt
+# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 3 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_3_topiocqa_ance_eval.txt
+# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 4 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval.txt
+# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 5 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_5_topiocqa_ance_eval.txt
