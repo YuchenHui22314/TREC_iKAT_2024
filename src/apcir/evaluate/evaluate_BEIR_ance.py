@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 
 args.device = torch.device(f"cuda:{int(args.split) % 4}" if torch.cuda.is_available() else "cpu")
-args.embedding_dir_base = "/data/rech/huiyuche/beir/embeddings/ance"
+args.embedding_base_path = "/data/rech/huiyuche/beir/embeddings/ance"
 
 
 ### ance
@@ -85,7 +85,7 @@ dataset_list_02 = [
     # "cqadupstack",
     # "quora",
     "msmarco",
-    "dbpedia-entity"
+    #"dbpedia-entity"
 ]
 
 dataset_list_03 = [
@@ -142,7 +142,8 @@ result_dict = {}
 
 for data_path in dataset_list:
 
-    args.embedding_dir = os.path.join(args.embedding_dir_base,data_path)
+    args.embedding_dir = os.path.join(args.embedding_base_path,data_path)
+    split = "test" if data_path != "msmarco" else "dev"
 
     if data_path == "cqadupstack":
 
@@ -158,7 +159,7 @@ for data_path in dataset_list:
 
 
             print("Loading dataset: {}".format(sub_data_path))
-            corpus, queries, qrels = GenericDataLoader(sub_data_path).load(split="test") # or split = "train" or "dev"
+            corpus, queries, qrels = GenericDataLoader(sub_data_path).load(split=split) # or split = "train" or "dev"
 
             #### Retrieve dense results (format of results is identical to qrels)
             #### ( and save to embedding directory)
@@ -223,7 +224,7 @@ for data_path in dataset_list:
 
         base_path = "/data/rech/huiyuche/beir"
     
-        corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split="test") # or split = "train" or "dev"
+        corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split=split) # or split = "train" or "dev"
 
         #### Retrieve dense results (format of results is identical to qrels)
         #### ( and save to embedding directory)
@@ -233,6 +234,7 @@ for data_path in dataset_list:
             queries=queries,
             encode_output_path=args.embedding_dir,
             overwrite=False,  # Set to True if you want to overwrite existing embeddings
+            query_filename=f"haha.pkl",
         )
         # print(results.keys())
 

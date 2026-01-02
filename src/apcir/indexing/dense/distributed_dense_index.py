@@ -226,8 +226,9 @@ def get_args():
 
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     parser.add_argument("--use_data_percent", type=float, default=1.0, help="Percent of samples to use. Faciliating the debugging.")
-    parser.add_argument("--per_gpu_index_batch_size", type=int, default=700)
+    parser.add_argument("--per_gpu_index_batch_size", type=int, default=700) # octal30: 700, octal40: 1400.
     parser.add_argument("--num_docs_per_block", type=int, default=1000000)
+    parser.add_argument("--total_num_docs", type=int, default=116000000)  # the total number of docs in the clueweb22b collection
 
     parser.add_argument("--max_doc_length", type=int, default=512, help="Max doc length, consistent with \"Dialog inpainter\".")
 
@@ -262,17 +263,56 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     set_seed(args)
-    dense_indexing(args)
+    # dense_indexing(args)
     # fuse block content from from 4 GPUs to 1 block. You can also modify the expected_num_doc_per_block to a bigger block size
-    merge_blocks_to_large_blocks(
-    input_folder = args.output_index_dir_path,
-    output_folder = args.output_index_dir_path,
-    num_block = 116000000/args.num_docs_per_block, # 116M: the total number of docs in the clueweb22b collection
-    num_rank = args.n_gpu,
-    expected_num_doc_per_block = args.num_docs_per_block
-    )
+    num_block = args.total_num_docs // args.num_docs_per_block
+    residual = args.total_num_docs % args.num_docs_per_block
+    if residual > 0:
+        num_block += 1
+    print("num_block = {}".format(num_block))
+    if dist.get_rank() == 0:
+        merge_blocks_to_large_blocks(
+        input_folder = args.output_index_dir_path,
+        output_folder = args.output_index_dir_path + "_merged",
+        num_block = num_block, 
+        num_rank = args.n_gpu,
+        expected_num_doc_per_block = args.num_docs_per_block
+        )
 
 # python  -m torch.distributed.launch --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
 # torchrun --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
 # For merge
 # python -m torch.distributed.launch --nproc_per_node 1 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
+
+'''
+torchrun --nproc_per_node 4 distributed_dense_index.py \
+    --local-rank 0 \
+    --n_gpu 4 \
+    --model_type ance \
+    --collection_path /part/01/Tmp/yuchen/topiocqa_wiki_collection.tsv \
+    --pretrained_doc_encoder_path /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234 \
+    --output_index_dir_path /part/01/Tmp/yuchen/indexes/topiocqa_ance \
+    --force_emptying_dir \
+    --seed 42 \
+    --use_data_percent 1.0 \
+    --per_gpu_index_batch_size 1400 \
+    --num_docs_per_block 1000000 \
+    --total_num_docs 25700592 \
+    --max_doc_length 512 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_log.txt
+
+'''
+
+
+'''
+For merge:
+torchrun --nproc_per_node 4 distributed_dense_index.py \
+    --n_gpu 4 \
+    --output_index_dir_path /part/01/Tmp/yuchen/indexes/topiocqa_ance \
+    --force_emptying_dir \
+    --seed 42 \
+    --use_data_percent 1.0 \
+    --num_docs_per_block 1000000 \
+    --total_num_docs 25700592 \
+    --max_doc_length 512 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_log.txt
+
+'''

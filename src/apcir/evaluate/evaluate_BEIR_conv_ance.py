@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 
 args.device = torch.device(f"cuda:{int(args.split) % 4}" if torch.cuda.is_available() else "cpu")
-args.embedding_dir = "/data/rech/huiyuche/beir/embeddings/ance"
+args.embedding_base_path = "/data/rech/huiyuche/beir/embeddings/ance"
 
 
 ### Asymmetric Ance
@@ -50,23 +50,24 @@ base_path = "/data/rech/huiyuche/beir"
 
 dataset_list_01 = [
     "cqadupstack",
-    "scifact",
-    "trec-covid",
-    "nfcorpus",
-    # "bioasq",     xxxxxx
-    "fiqa",
-    # "signal1m",xxxxxx
-    # "trec-news",xxxxxx
-    "arguana",
-    "webis-touche2020",
-    "quora",
-    "scidocs"
+    # "scifact",
+    # "trec-covid",
+    # "nfcorpus",
+    # "fiqa",
+    # "arguana",
+    # "webis-touche2020",
+    # "quora",
+    # "scidocs"
+
     # "msmarco",
     # "nq",
     # "hotpotqa",
     # "dbpedia-entity",
     # "fever",
     # "climate-fever"
+    # "signal1m",xxxxxx
+    # "trec-news",xxxxxx
+    # "bioasq",     xxxxxx
 ]
 
 # dataset_list_01 = [
@@ -86,7 +87,7 @@ dataset_list_02 = [
     # "cqadupstack",
     # "quora",
     "msmarco",
-    "dbpedia-entity"
+    #"dbpedia-entity"
 ]
 
 dataset_list_03 = [
@@ -143,7 +144,8 @@ result_dict = {}
 
 for data_path in dataset_list:
 
-    args.embedding_dir = os.path.join(args.embedding_dir,data_path)
+    args.embedding_dir = os.path.join(args.embedding_base_path, data_path)
+    split = "test" if data_path != "msmarco" else "dev"
 
     if data_path == "cqadupstack":
 
@@ -159,7 +161,7 @@ for data_path in dataset_list:
 
 
             print("Loading dataset: {}".format(sub_data_path))
-            corpus, queries, qrels = GenericDataLoader(sub_data_path).load(split="test") # or split = "train" or "dev"
+            corpus, queries, qrels = GenericDataLoader(sub_data_path).load(split=split) # or split = "train" or "dev"
 
             #### Retrieve dense results (format of results is identical to qrels)
             #### ( and save to embedding directory)
@@ -180,6 +182,7 @@ for data_path in dataset_list:
             print("###############################")
             print("Results for dataset: cqadupstack_{}".format(sub_data_path))
             ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+            mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
             
             query_num_metric_dict[sub_data_path] = {
                 "num_queries": len(queries),
@@ -187,7 +190,8 @@ for data_path in dataset_list:
                     **ndcg,
                     **_map,
                     **recall,
-                    **precision
+                    **precision,
+                    **mrr
                 }
             }
         
@@ -225,7 +229,7 @@ for data_path in dataset_list:
 
         base_path = "/data/rech/huiyuche/beir"
     
-        corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split="test") # or split = "train" or "dev"
+        corpus, queries, qrels = GenericDataLoader(os.path.join(base_path,data_path,data_path)).load(split=split) # or split = "train" or "dev"
 
         #### Retrieve dense results (format of results is identical to qrels)
         #### ( and save to embedding directory)
@@ -235,7 +239,7 @@ for data_path in dataset_list:
             queries=queries,
             encode_output_path=args.embedding_dir,
             overwrite=False,  # Set to True if you want to overwrite existing embeddings
-            query_filename="topiocqa_conv_ance_queries.pkl"
+            query_filename="topiocqa_ance_queries.pkl"
         )
         # print(results.keys())
 
@@ -247,11 +251,11 @@ for data_path in dataset_list:
             pickle.dump(result_dict, f)
 
         
-        
         print("###############################")
         print("###############################")
         print("Results for dataset: {}".format(data_path))
         ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
+        mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
         
         with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_topiocqa_ance_metrics.txt", "a") as f:
             print("###############################")
@@ -260,7 +264,8 @@ for data_path in dataset_list:
             f.write("NDCG: {}\n".format(ndcg))
             f.write("MAP: {}\n".format(_map))
             f.write("Recall: {}\n".format(recall))
-            f.write("Precision: {}\n\n".format(precision))
+            f.write("Precision: {}\n".format(precision))
+            f.write("MRR: {}\n\n".format(mrr))
 
 
 # python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 0 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_0_topiocqa_ance_eval.txt
