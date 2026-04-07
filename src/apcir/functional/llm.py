@@ -1,4 +1,6 @@
 import os
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+os.environ.setdefault("USE_TF", "0")
 import multiprocessing
 multiprocessing.set_start_method("spawn", force=True)
 from typing import Tuple, List, Optional, Any
@@ -13,11 +15,25 @@ from tqdm import tqdm
 
 from sklearn.preprocessing import normalize
 
-from vllm import LLM, SamplingParams
+try:
+    from vllm import LLM, SamplingParams
+except Exception:
+    LLM = None
+    SamplingParams = None
 
-from pyserini.encode import DocumentEncoder, QueryEncoder
+if os.environ.get("APCIR_ENABLE_PYSERINI_IMPORT", "0") == "1":
+    from pyserini.encode import DocumentEncoder, QueryEncoder
+else:
+    class DocumentEncoder:
+        pass
 
-from openai import OpenAI
+    class QueryEncoder:
+        pass
+
+try:
+    from openai import OpenAI
+except Exception:
+    OpenAI = None
 
 from transformers import (
     AutoModel,
@@ -25,15 +41,22 @@ from transformers import (
     AutoConfig,
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
-    pipeline,
     logging,
     T5Tokenizer,
     T5ForConditionalGeneration,
     RobertaConfig, RobertaTokenizer
 )
 
-from accelerate import Accelerator
-from peft import PeftModel, PeftConfig
+try:
+    from accelerate import Accelerator
+except Exception:
+    Accelerator = None
+
+try:
+    from peft import PeftModel, PeftConfig
+except Exception:
+    PeftModel = None
+    PeftConfig = None
 from apcir.search.models import ANCE
 
 logger = logging.get_logger(__name__)
@@ -54,6 +77,8 @@ class OpenAILM():
                  logprobs = False,
                  top_logprobs = 1,
                  ):
+        if OpenAI is None:
+            raise ImportError("openai is required to use OpenAILM.")
         self.api_key = api_key
         self.model_name = model_name
         self.n = n
@@ -351,6 +376,8 @@ class LM(nn.Module):
         tokenizer = self.tokenizer
         model = self.model
 
+        from transformers import pipeline
+
         generate_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
         terminators = [
@@ -429,6 +456,8 @@ def get_model_repllama(
     quant_8bit = True,
     quant_4bit = False,
     ):
+    if PeftConfig is None or PeftModel is None:
+        raise ImportError("peft is required to load Repllama models.")
     config = PeftConfig.from_pretrained(peft_model_name, cache_dir=cache_dir)
     base_model = AutoModel.from_pretrained(
         config.base_model_name_or_path, 
@@ -557,6 +586,8 @@ def _launch_llm_on_gpu(
     max_tokens: int,
     return_queue: multiprocessing.Queue
 ):
+    if LLM is None or SamplingParams is None:
+        raise ImportError("vllm is required for generate_with_multi_gpu_vllm.")
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
     print(os.environ["CUDA_VISIBLE_DEVICES"])
@@ -927,6 +958,133 @@ class BeirMPoolingEncoder:
                 embeddings.append(mean_embeddings.cpu().numpy())
 
         return np.concatenate(embeddings, axis=0)
+
+
+class BEIRQwenEncoder:
+    def __init__(
+        self,
+        model_path: str,
+        device: Optional[torch.device] = None,
+        cache_dir: Optional[str] = None,
+        max_length_query: int = 512,
+        max_length_doc: int = 512,
+        query_instruction: str = "Given a web search query, retrieve relevant passages that answer the query",
+        attn_implementation: Optional[str] = None,
+    ):
+        self.device = device or torch.device("cpu")
+        self.cache_dir = cache_dir
+        self.max_length_query = max_length_query
+        self.max_length_doc = max_length_doc
+        self.query_instruction = query_instruction
+
+        tokenizer_kwargs = {
+            "padding_side": "left",
+            "trust_remote_code": True,
+        }
+        if cache_dir is not None:
+            tokenizer_kwargs["cache_dir"] = cache_dir
+
+        model_kwargs = {
+            "trust_remote_code": True,
+        }
+        if cache_dir is not None:
+            model_kwargs["cache_dir"] = cache_dir
+        if self.device.type == "cuda":
+            model_kwargs["torch_dtype"] = torch.bfloat16
+            if attn_implementation is not None:
+                model_kwargs["attn_implementation"] = attn_implementation
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, **tokenizer_kwargs)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        self.model = AutoModel.from_pretrained(model_path, **model_kwargs)
+        self.model.eval()
+        self.model.to(self.device)
+
+    @staticmethod
+    def _last_token_pool(
+        last_hidden_states: torch.Tensor,
+        attention_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        left_padding = bool(
+            torch.all(attention_mask[:, -1] == 1).item()
+        )
+        if left_padding:
+            return last_hidden_states[:, -1]
+
+        sequence_lengths = attention_mask.sum(dim=1) - 1
+        batch_size = last_hidden_states.shape[0]
+        return last_hidden_states[
+            torch.arange(batch_size, device=last_hidden_states.device),
+            sequence_lengths,
+        ]
+
+    def _format_query(self, query: str) -> str:
+        return f"Instruct: {self.query_instruction}\nQuery:{query}"
+
+    def _encode_texts(
+        self,
+        texts: List[str],
+        batch_size: int,
+        max_length: int,
+        desc: str,
+    ) -> np.ndarray:
+        embeddings = []
+        with torch.no_grad():
+            for i in tqdm(range(0, len(texts), batch_size), desc=desc):
+                batch = texts[i : i + batch_size]
+                encoded = self.tokenizer(
+                    batch,
+                    max_length=max_length,
+                    padding=True,
+                    truncation=True,
+                    return_tensors="pt",
+                ).to(self.device)
+
+                outputs = self.model(
+                    input_ids=encoded["input_ids"],
+                    attention_mask=encoded["attention_mask"],
+                )
+                pooled = self._last_token_pool(
+                    outputs.last_hidden_state,
+                    encoded["attention_mask"],
+                )
+                pooled = F.normalize(pooled, p=2, dim=-1)
+                embeddings.append(pooled.float().cpu().numpy())
+                del outputs
+                del pooled
+                del encoded
+
+        return np.concatenate(embeddings, axis=0)
+
+    def encode_queries(self, queries: List[str], batch_size: int, **kwargs) -> np.ndarray:
+        formatted_queries = [self._format_query(query) for query in queries]
+        return self._encode_texts(
+            texts=formatted_queries,
+            batch_size=batch_size,
+            max_length=self.max_length_query,
+            desc="Encoding Queries (Qwen3)",
+        )
+
+    def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int, **kwargs) -> np.ndarray:
+        texts = []
+        for doc in corpus:
+            title = doc.get("title", "").strip()
+            text = doc.get("text", "").strip()
+            if title and text:
+                texts.append(f"{title} {text}")
+            elif title:
+                texts.append(title)
+            else:
+                texts.append(text)
+
+        return self._encode_texts(
+            texts=texts,
+            batch_size=batch_size,
+            max_length=self.max_length_doc,
+            desc="Encoding Corpus (Qwen3)",
+        )
 
 
 # ---- assume your ANCE class is already defined exactly as you pasted ----

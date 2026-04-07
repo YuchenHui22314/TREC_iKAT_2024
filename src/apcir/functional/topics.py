@@ -1,3 +1,4 @@
+from ast import Not
 import json
 import warnings
 from typing import List, Dict, Any
@@ -5,6 +6,7 @@ from dataclasses import dataclass, field, asdict
 import math
 
 from pyserini.search.lucene import LuceneSearcher
+from sympy import N
 
 from .constants import (
     IKAT_23_EVALUATED_TURNS,
@@ -323,7 +325,8 @@ class Turn:
         self, 
         query_type: str,
         nb_expansion_terms: int,
-        initial_query_weight: float 
+        initial_query_weight: float,
+        args: Any,
         ) -> str:
         '''
         Generates a query based on the specified query type.
@@ -354,7 +357,7 @@ class Turn:
             final_query = self.oracle_utterance
         elif "+" in query_type:
             query_type_list = query_type.split("+")
-            reformulation_list = [self.query_type_2_query(query_type,0,0.0) for query_type in query_type_list]
+            reformulation_list = [self.query_type_2_query(query_type,0,0.0,args) for query_type in query_type_list]
             if None in reformulation_list:
                 raise e
             else:
@@ -371,7 +374,7 @@ class Turn:
                 final_query = reformulation.reformulated_query
             else:
                 if "rs" in query_type:
-                    final_query = self.query_type_2_query("gpt-4o_judge_and_rewrite_rwrs",0,0)
+                    final_query = self.query_type_2_query("gpt-4o_judge_and_rewrite_rwrs",0,0,args)
                 else:
                     reformulation = self.find_reformulation("gpt-4o_judge_and_rewrite_rw")
                     if reformulation is None:
@@ -382,7 +385,7 @@ class Turn:
 
             
         elif "llm_rm" in query_type:
-            initial_query = self.query_type_2_query(query_type.split("_")[0],0,0.0)
+            initial_query = self.query_type_2_query(query_type.split("_")[0],0,0.0,args)
 
             # check if we have already added this version to the json file
             reformulation = self.find_reformulation(query_type)
@@ -410,6 +413,15 @@ class Turn:
                 rewrite = rewrite.reformulated_query
                 response = response.reformulated_query
                 final_query = rewrite*initial_query_weight + " " + response
+        elif query_type == "full_conversation_dense":
+            # TODO, consider the difference between ance and LLM.
+            if "topiocqa" in args.topics:
+                self.context_utterances.append(self.current_utterance)
+                final_query = "[sep]".join(self.context_utterances)
+                # [sep] is just a placeholder. we will replace it with the real sep token in the search code
+            else:
+                # TODO
+                raise NotImplementedError(f"full_conversation not implemented for topic type {args.topics}")
         else:
             reformulation = self.find_reformulation(query_type)
             if reformulation is not None:
@@ -519,6 +531,55 @@ def load_turns_from_json(
     return turn_objects
     
 
+def load_turns_from_topiocqa_test_file(
+    topiocqa_test_file: str
+) -> List[Turn]:
+    '''
+    Load TopiOCQA-style test jsonl file and map to Turn objects.
+
+    Mapping:
+    - Context                     -> context_utterances
+    - Topic__Topic_section        -> title
+    - Question                    -> current_utterance & oracle_utterance
+    - Answer                      -> current_response
+    - Gold_passage.id             -> response_provenance
+    - Conversation_no / Turn_no   -> conversation_id / turn_id
+    '''
+
+    turns: List[Turn] = []
+
+    with open(topiocqa_test_file, "r", encoding="utf-8") as f:
+        for line in f:
+            record = json.loads(line)
+
+            conversation_no = record["Conversation_no"]
+            turn_no = record["Turn_no"]
+
+            # gold provenance (may be missing)
+            response_provenance = []
+            if "Gold_passage" in record and record["Gold_passage"] is not None:
+                if "id" in record["Gold_passage"]:
+                    response_provenance = [record["Gold_passage"]["id"]]
+
+            turn = Turn(
+                turn_id=f"{conversation_no}-{turn_no}",
+                conversation_id=str(conversation_no),
+                title=f"{record['Topic']}__{record['Topic_section']}",
+                current_utterance=record["Question"],
+                oracle_utterance=record["Question"],
+                current_response=record.get("Answer"),
+                response_provenance=response_provenance,
+                context_utterances=record.get("Context", []),
+                ptkb={},
+                ptkb_provenance=[]
+            )
+
+            turns.append(turn)
+
+    return turns
+
+
+    
 def load_turns_from_ikat_topic_files(
     ikat_topic_file: str
 ) -> List[Turn]:

@@ -25,7 +25,6 @@ from utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, psto
 from models import load_model
 
 from libs import CollateClass
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3,5,6,7'
 
 
 def distributed_index_dataset_generator(collection_path, num_doc_per_block):
@@ -106,7 +105,7 @@ def dense_indexing(args):
             for batch in tqdm(dataloader, desc="Distributed Dense Indexing", position=0, leave=True):
                 inputs = {k: v.to(args.device) for k, v in batch.items() if k not in {"id"}}
                 batch_doc_embs = model(**inputs)
-                batch_doc_embs = batch_doc_embs.detach().cpu().numpy()
+                batch_doc_embs = batch_doc_embs.detach().cpu().float().numpy()  # numpy does not support bfloat16; cast to fp32 for FAISS compatibility
                 doc_embeddings.append(batch_doc_embs)
                 for doc_id in batch["id"]:
                     try:
@@ -216,6 +215,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--local-rank', type=int, default=-1, metavar='N', help='Local process rank.')  # you need this argument in your scripts for DDP to work
     parser.add_argument('--n_gpu', type=int, default=4, help='The number of used GPU.')
+    parser.add_argument("--cuda_visible_devices", type=str, default="0,1,2,3",
+                        help="Comma-separated GPU indices visible to this process (sets CUDA_VISIBLE_DEVICES).")
 
     parser.add_argument("--model_type", type=str, default="ance")
     parser.add_argument("--collection_path", type=str, default="/part/01/Tmp/yuchen/cluweb22B_ikat_v2.tsv")
@@ -232,8 +233,16 @@ def get_args():
 
     parser.add_argument("--max_doc_length", type=int, default=512, help="Max doc length, consistent with \"Dialog inpainter\".")
 
+    parser.add_argument("--do_dense_indexing", action="store_true", default=False,
+                        help="Run dense indexing (embed documents and save to output_index_dir_path).")
+    parser.add_argument("--do_merge", action="store_true", default=False,
+                        help="Run merge of per-rank/block output files into large blocks.")
 
     args = parser.parse_args()
+
+    # Set CUDA_VISIBLE_DEVICES early, before any CUDA initialization
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_visible_devices
+    print("CUDA_VISIBLE_DEVICES set to: {}".format(args.cuda_visible_devices))
 
     world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
     local_rank = int(os.environ['LOCAL_RANK']) if 'LOCAL_RANK' in os.environ else 0
@@ -263,21 +272,27 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     set_seed(args)
-    # dense_indexing(args)
-    # fuse block content from from 4 GPUs to 1 block. You can also modify the expected_num_doc_per_block to a bigger block size
-    num_block = args.total_num_docs // args.num_docs_per_block
-    residual = args.total_num_docs % args.num_docs_per_block
-    if residual > 0:
-        num_block += 1
-    print("num_block = {}".format(num_block))
-    if dist.get_rank() == 0:
-        merge_blocks_to_large_blocks(
-        input_folder = args.output_index_dir_path,
-        output_folder = args.output_index_dir_path + "_merged",
-        num_block = num_block, 
-        num_rank = args.n_gpu,
-        expected_num_doc_per_block = args.num_docs_per_block
-        )
+
+    if args.do_dense_indexing:
+        # Embed all documents and save per-rank/block output files
+        dense_indexing(args)
+
+    if args.do_merge:
+        # Fuse per-rank/block files into large blocks.
+        # You can also modify expected_num_doc_per_block to a bigger block size.
+        num_block = args.total_num_docs // args.num_docs_per_block
+        residual = args.total_num_docs % args.num_docs_per_block
+        if residual > 0:
+            num_block += 1
+        print("num_block = {}".format(num_block))
+        if dist.get_rank() == 0:
+            merge_blocks_to_large_blocks(
+                input_folder = args.output_index_dir_path,
+                output_folder = args.output_index_dir_path + "_merged",
+                num_block = num_block,
+                num_rank = args.n_gpu,
+                expected_num_doc_per_block = args.num_docs_per_block
+            )
 
 # python  -m torch.distributed.launch --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
 # torchrun --nproc_per_node 4 distributed_dense_index.py &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_log.txt
@@ -298,7 +313,7 @@ torchrun --nproc_per_node 4 distributed_dense_index.py \
     --per_gpu_index_batch_size 1400 \
     --num_docs_per_block 1000000 \
     --total_num_docs 25700592 \
-    --max_doc_length 512 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_log.txt
+    --max_doc_length 512 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_log.txt
 
 '''
 
@@ -313,6 +328,29 @@ torchrun --nproc_per_node 4 distributed_dense_index.py \
     --use_data_percent 1.0 \
     --num_docs_per_block 1000000 \
     --total_num_docs 25700592 \
-    --max_doc_length 512 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_log.txt
+    --max_doc_length 512 \
+    --do_merge &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_log.txt
+
+'''
+
+
+'''
+Qwen3-Embedding-0.6B indexing on topiocqa (GPU1,2,3):
+torchrun --nproc_per_node 3 distributed_dense_index.py \
+    --cuda_visible_devices 1,2,3 \
+    --n_gpu 3 \
+    --model_type qwen-embedding \
+    --collection_path /part/01/Tmp/yuchen/topiocqa_wiki_collection.tsv \
+    --pretrained_doc_encoder_path /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418 \
+    --output_index_dir_path /part/01/Tmp/yuchen/indexes/topiocqa_qwen_emb_0.6 \
+    --force_emptying_dir \
+    --seed 42 \
+    --use_data_percent 1.0 \
+    --per_gpu_index_batch_size 600 \
+    --num_docs_per_block 1000000 \
+    --total_num_docs 25700592 \
+    --max_doc_length 512 \
+    --do_dense_indexing \
+    2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/indexing_topiocqa_qwen_emb_0.6_log.txt
 
 '''

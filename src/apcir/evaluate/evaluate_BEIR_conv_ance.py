@@ -4,6 +4,7 @@ import types
 import pickle
 import argparse
 import json
+from pathlib import Path
 
 import torch
 from transformers import AutoTokenizer
@@ -23,16 +24,39 @@ parser.add_argument(
     default=0,
     help="the split of BEIR datasets to evaluate: 0 - first split, 1 - second split, 2 - third split, 3 - fourth split",
 )
+
+parser.add_argument(
+    "--gpu_to_use",
+    type=int,
+    default=0,
+    help="0,2,3, or 1",
+)
+
+parser.add_argument(
+    "--query_encoder_path",
+    type = str,
+    default = "none"
+)
+
+# parser.add_argument(
+#     "--query_file_name",
+#     type = str,
+#     default = "keep_it_vairiate.pkl"
+# )
+
 args = parser.parse_args()
 
 
-args.device = torch.device(f"cuda:{int(args.split) % 4}" if torch.cuda.is_available() else "cpu")
+args.device = torch.device(f"cuda:{int(args.gpu_to_use) % 4}" if torch.cuda.is_available() else "cpu")
 args.embedding_base_path = "/data/rech/huiyuche/beir/embeddings/ance"
+args.base_folder = Path(args.query_encoder_path).parts[-2] 
+print("the base folder is: ", args.base_folder)
+args.query_file_name = args.base_folder
 
 
 ### Asymmetric Ance
 encoder = BeirAsymmetricANCEEncoder(
-    query_encoder_path="/data/rech/huiyuche/huggingface/continual_ir/topiocqa/checkpoint-step-1144",
+    query_encoder_path = args.query_encoder_path,
     passage_encoder_path="/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234",
     device=args.device,
     max_length_query=512,
@@ -41,7 +65,7 @@ encoder = BeirAsymmetricANCEEncoder(
 
 # Then plug into BEIR
 
-model = DRES(encoder, batch_size=1400)
+model = DRES(encoder, batch_size=1024) # octal40: max 1400
 
 retriever = EvaluateRetrieval(model, score_function="dot")
 
@@ -168,12 +192,13 @@ for data_path in dataset_list:
 
             # results = retriever.retrieve(corpus, queries)
 
+            print("the query file name is", args.query_file_name)
             results = retriever.encode_and_retrieve(
                 corpus=corpus,
                 queries=queries,
                 encode_output_path=args.embedding_dir,
                 overwrite=False,  # Set to True if you want to overwrite existing embeddings
-                query_filename="topiocqa_conv_ance_queries.pkl"
+                query_filename=args.query_file_name
             )
 
             result_dict[sub_data_path] = results
@@ -213,7 +238,7 @@ for data_path in dataset_list:
             weighted_metrics[key] = weighted_sum / total_query_number
 
 
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_topiocqa_ance_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_{args.base_folder}_ance_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))
@@ -234,12 +259,14 @@ for data_path in dataset_list:
         #### Retrieve dense results (format of results is identical to qrels)
         #### ( and save to embedding directory)
         # results = retriever.retrieve(corpus, queries)
+
+        print("the query file name is", args.query_file_name)
         results = retriever.encode_and_retrieve(
             corpus=corpus,
             queries=queries,
             encode_output_path=args.embedding_dir,
             overwrite=False,  # Set to True if you want to overwrite existing embeddings
-            query_filename="topiocqa_ance_queries.pkl"
+            query_filename= args.query_file_name
         )
         # print(results.keys())
 
@@ -257,7 +284,7 @@ for data_path in dataset_list:
         ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
         mrr = retriever.evaluate_custom(qrels, results, retriever.k_values, metric="mrr")
         
-        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_topiocqa_ance_metrics.txt", "a") as f:
+        with open(f"/data/rech/huiyuche/TREC_iKAT_2024/results/beir/metrics/beir_{args.split}_{args.base_folder}_ance_metrics.txt", "a") as f:
             print("###############################")
             print("###############################")
             f.write("Results for dataset: {}\n".format(data_path))
@@ -272,5 +299,41 @@ for data_path in dataset_list:
 # python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 1 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_1_topiocqa_ance_eval.txt
 # python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 2 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_2_topiocqa_ance_eval.txt
 # python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 3 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_3_topiocqa_ance_eval.txt
-# python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 4 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval.txt
+'''
+python -m apcir.evaluate.evaluate_BEIR_conv_ance \
+--split 4 \
+--query_encoder_path /data/rech/huiyuche/huggingface/continual_ir/continual_110_10_no_negative/checkpoint-step-2575 \
+--gpu_to_use 0 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval.txt
+'''
+'''
+python -m apcir.evaluate.evaluate_BEIR_conv_ance \
+--split 4 \
+--query_encoder_path /data/rech/huiyuche/huggingface/continual_ir/continual_100_20_no_negative/checkpoint-step-2825 \
+--gpu_to_use 0 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval.txt
+'''
+'''
+python -m apcir.evaluate.evaluate_BEIR_conv_ance \
+--split 4 \
+--query_encoder_path /data/rech/huiyuche/huggingface/continual_ir/continual_90_30_no_negative/checkpoint-step-3150 \
+--gpu_to_use 1 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval_2.txt
+'''
+'''
+python -m apcir.evaluate.evaluate_BEIR_conv_ance \
+--split 4 \
+--query_encoder_path /data/rech/huiyuche/huggingface/continual_ir/continual_80_40_no_negative/checkpoint-step-3550 \
+--gpu_to_use 2 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval_1.txt
+'''
+'''
+python -m apcir.evaluate.evaluate_BEIR_conv_ance \
+--split 4 \
+--query_encoder_path /data/rech/huiyuche/huggingface/continual_ir/continual_60_60_no_negative/checkpoint-step-2835 \
+--gpu_to_use 3 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval_3.txt
+'''
+'''
+python -m apcir.evaluate.evaluate_BEIR_conv_ance \
+--split 4 \
+--query_encoder_path /data/rech/huiyuche/huggingface/continual_ir/topiocqa_120bs_no_negatives/checkpoint-step-1880 \
+--gpu_to_use 3 2>&1 | tee -a /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_4_topiocqa_ance_eval_4.txt
+'''
 # python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 5 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_5_topiocqa_ance_eval.txt
+

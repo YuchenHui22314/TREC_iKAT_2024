@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.distributed as dist
 from torch.utils.data import DataLoader, Dataset, TensorDataset, IterableDataset
 torch.multiprocessing.set_sharing_strategy('file_system')
-from transformers import AdamW
+from torch.optim import AdamW
 
 # from multiprocessing import Process
 

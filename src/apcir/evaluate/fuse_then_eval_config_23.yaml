@@ -157,23 +157,23 @@ iterate:
 #     "MQ4CS_low_resource_3_grid_search"
 # ]
 
-  machine: ["octal31"]
-  retrieval_model: ["splade_v3"]
+  machine: ["octal40"]
+  retrieval_model: ["ance"]
   reranker: ["none"]
-  topics: ["ikat_23_test", "ikat_24_test"]
+  topics: ["topiocqa"]
   retrieval_query_type: [
-    # "gpt-4o_GtR_mq_3_1",
-    # "gpt-4o_GtR_mq_3_2",
-    # "gpt-4o_GtR_mq_3_3",
-    # "gpt-4o_GtR_low_resource_3_Round_Robin",
-    # "gpt-4o_GtR_low_resource_3_RRF",
-    # gpt-4o_judge_and_rewrite_optimize_retrieval_score
-    #"gpt-4o_GtR_low_resource_3"
-    # "gpt-3.5_MQ4CS_persq_rw",
-    # "llama3.1_MQ4CS_persq_rw",
-    # "mistral_MQ4CS_persq_rw"
-    result_topic_entropy
-]
+    full_conversation
+  ]
+  dense_query_encoder_path: [
+    # /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+    /data/rech/huiyuche/huggingface/continual_ir/topiocqa_120bs_no_negatives/checkpoint-step-1880,
+    /data/rech/huiyuche/huggingface/continual_ir/continual_110_10_no_negative/checkpoint-step-2575,
+    /data/rech/huiyuche/huggingface/continual_ir/continual_100_20_no_negative/checkpoint-step-2825,
+    /data/rech/huiyuche/huggingface/continual_ir/continual_90_30_no_negative/checkpoint-step-3150,
+    /data/rech/huiyuche/huggingface/continual_ir/continual_80_40_no_negative/checkpoint-step-3550,
+    /data/rech/huiyuche/huggingface/continual_ir/continual_60_60_no_negative/checkpoint-step-2835
+    ] 
+
 
 param_mapping:
   machine:
@@ -181,10 +181,32 @@ param_mapping:
       sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"  # Use local disk index for fastest access
       splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"  # Splade index path
       dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"  
+      query_encoder_batch_size: 200  # Batch size for query encoding
     octal30:
       sparse_index_dir_path: "/part/02/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"  # Use local disk index for fastest access
       splade_index_dir_path: "/part/02/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"  # Splade index path
       dense_index_dir_path: "/part/02/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"  
+      query_encoder_batch_size: 200  # Batch size for query encoding
+    octal40:
+      query_encoder_batch_size: 200  # Batch size for query encoding
+      dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/topiocqa_ance_merged"
+
+  dense_query_encoder_path:
+    /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234:
+      wandb_run_name: "original_ance" 
+    /data/rech/huiyuche/huggingface/continual_ir/topiocqa_120bs_no_negatives/checkpoint-step-1880: 
+      wandb_run_name: "conv-ance"
+    /data/rech/huiyuche/huggingface/continual_ir/continual_110_10_no_negative/checkpoint-step-2575:
+      wandb_run_name: "110_10"
+    /data/rech/huiyuche/huggingface/continual_ir/continual_100_20_no_negative/checkpoint-step-2825:
+      wandb_run_name: "100_20"
+    /data/rech/huiyuche/huggingface/continual_ir/continual_90_30_no_negative/checkpoint-step-3150:
+      wandb_run_name: "90_30"
+    /data/rech/huiyuche/huggingface/continual_ir/continual_80_40_no_negative/checkpoint-step-3550:
+      wandb_run_name: "80_40"
+    /data/rech/huiyuche/huggingface/continual_ir/continual_60_60_no_negative/checkpoint-step-2835:
+      wandb_run_name: "60_60"
+
 
   reranker:
     monot5_base_10k:
@@ -200,9 +222,15 @@ param_mapping:
     ikat_24_test:
       input_query_path: "../data/topics/ikat24/ikat_2024_test.json"
       qrel_file_path: "../data/qrels/ikat_24_qrel.txt"
+      passage_block_num: 12
     ikat_23_test:
       input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
       qrel_file_path: "../data/qrels/ikat_23_qrel.txt"
+      passage_block_num: 12
+    topiocqa:
+      input_query_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/topics/topiocqa/topiocqa_processed_valid.json"
+      qrel_file_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/topiocqa_qrel.trec"
+      passage_block_num: 26
 
   retrieval_query_type:
 
@@ -687,6 +715,7 @@ fixed:
   ## Metrics
   ###############################################
   save_to_wandb: true
+  wandb_run_name: ""
   metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"  
   metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
   given_ranking_list_path: "/data/rech/huiyuche/TREC_iKAT_2024/results/ClueWeb_ikat/ikat_24_test/ranking/S1[gpt-4o_rar_rw_fuse_rar_rwrs_fuse_non_personalized_cot1_rw]-S2[gpt-4o_rar_personalized_cot1_rw]-g[gpt-4o_rar_personalized_cot1_rw]-[none]-[monot5_base_10k_4_1_none]-[s2_top50].txt"  
@@ -698,3 +727,4 @@ fixed:
   retrieval_query_type: "none"  
   reranking_query_type: "none"  
   generation_query_type: "none"  
+  generate_ikat_submission: false

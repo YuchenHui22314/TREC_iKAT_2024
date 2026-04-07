@@ -3,6 +3,7 @@ sys.path += ['../']
 import numpy as np
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from transformers import (RobertaConfig, RobertaModel,
                           RobertaForSequenceClassification, RobertaTokenizer,
@@ -99,6 +100,44 @@ class TCTColBERT(nn.Module):
 
 
 
+# Qwen3-Embedding model
+class QwenEmbedding(nn.Module):
+    """
+    Qwen3-Embedding model wrapper for dense retrieval.
+    Uses last-token pooling + L2 normalization, as recommended by official Qwen3-Embedding docs.
+    Embedding dimension: 1024.
+    Ref: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
+    Note: tokenizer should be loaded with padding_side='left' for correct last-token pooling.
+    """
+    def __init__(self, model_path):
+        super(QwenEmbedding, self).__init__()
+        self.model = AutoModel.from_pretrained(model_path, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2")
+
+    @staticmethod
+    def last_token_pool(last_hidden_states, attention_mask):
+        """Pool by taking the last non-padding token's hidden state.
+        Works with both left-padded and right-padded batches.
+        """
+        left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
+        if left_padding:
+            return last_hidden_states[:, -1]
+        else:
+            # right-padded: find the actual last token position per sequence
+            sequence_lengths = attention_mask.sum(dim=1) - 1
+            batch_size = last_hidden_states.shape[0]
+            return last_hidden_states[
+                torch.arange(batch_size, device=last_hidden_states.device),
+                sequence_lengths
+            ]
+
+    def forward(self, input_ids, attention_mask, **kwargs):
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        embeddings = self.last_token_pool(outputs.last_hidden_state, attention_mask)
+        # L2 normalize for cosine similarity retrieval
+        embeddings = F.normalize(embeddings, p=2, dim=1)
+        return embeddings
+
+
 '''
 Model-related functions
 '''
@@ -125,6 +164,10 @@ def load_model(model_type, query_or_doc, model_path):
     elif model_type.lower() == "tctcolbert":
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = TCTColBERT(model_path)
+    elif model_type.lower() == "qwen-embedding":
+        # padding_side='left' is required for correct last-token pooling
+        tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
+        model = QwenEmbedding(model_path)
     else:
         raise ValueError
     

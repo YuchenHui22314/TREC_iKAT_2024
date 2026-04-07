@@ -11,7 +11,7 @@ from transformers import RobertaConfig, RobertaTokenizer
 
 from .models import ANCE
 from .utils import  set_seed
-from .data_format import  Retrieval_trec
+from .data_format import  Retrieval_trec, Retrieval_topiocqa
 
 
 
@@ -216,6 +216,7 @@ def get_test_query_embedding(args):
     Load the model, build the test query dataset/dataloader, and get the query embeddings.
 
     Arguments:
+    args.topics: str, the type of topics, canbe ikat-23, topiocqa, etc.
     args.dense_query_encoder_path: str, the path of the pretrained encoder
     args.retrieval_model: str, the model name 
     args.query_gpu_id: int, if None, use cpu
@@ -238,27 +239,39 @@ def get_test_query_embedding(args):
 
     # test dataset/dataloader
     print("Buidling test dataset...")
-    test_dataset = Retrieval_trec(
-        tokenizer = tokenizer,
-        retrieval_query_list = args.retrieval_query_list,
-        qid_list_string = args.qid_list_string
-        )
+    if "ikat" in args.topics:
+        test_dataset = Retrieval_trec(
+            tokenizer = tokenizer,
+            retrieval_query_list = args.retrieval_query_list,
+            qid_list_string = args.qid_list_string
+            )
+
+    elif "topiocqa" in args.topics:
+        test_dataset = Retrieval_topiocqa(
+            tokenizer = tokenizer,
+            retrieval_query_list = args.retrieval_query_list,
+            qid_list_string = args.qid_list_string
+            )
+    else:
+        raise NotImplementedError(f"Dataset building not implemented for topic type {args.topics}")
+    
     test_loader = DataLoader(
         test_dataset, 
         batch_size = args.query_encoder_batch_size, 
         shuffle=False, 
-        collate_fn=test_dataset.get_collate_fn()
+        collate_fn=test_dataset.get_collate_fn(tokenizer.pad_token_id)
         )
 
     print("Generating query embeddings for testing...")
     model.zero_grad()
+    model.eval()
 
     embeddings = []
     embedding2id = []
 
     with torch.no_grad():
         for batch in tqdm(test_loader, desc="generating query embeddings"):
-            model.eval()
+            #model.eval()
             bt_sample_ids = batch["qid"] # question id
             input_ids = batch["input_ids"].to(query_device)
             input_masks = batch["attention_mask"].to(query_device)
@@ -381,6 +394,7 @@ def dense_search(args):
     args.embed_dim: int, the dimension of embeddings
     args.tempmem: int, the temporary memory for Faiss index. Set to -1 to use default value.
 
+    args.topics: str, the type of topics, canbe ikat-23, topiocqa, etc.
     args.dense_query_encoder_path: str, the path of the pretrained encoder
     args.retrieval_model: str, the model name 
     args.query_gpu_id: int, if -1, use cpu

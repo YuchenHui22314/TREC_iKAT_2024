@@ -31,9 +31,9 @@ def get_args():
     ########################
 
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
-                        choices=["ClueWeb_ikat"])
+                        choices=["ClueWeb_ikat","topiocqa_wiki"])
     parser.add_argument("--topics", type=str, default="ikat_23_test",
-                        choices = ["ikat_23_test", "ikat_24_test"])
+                        choices = ["ikat_23_test", "ikat_24_test", "topiocqa"])
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
     parser.add_argument("--output_dir_path", type=str, default="../../results")
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
@@ -60,7 +60,7 @@ def get_args():
     parser.add_argument("--use_pyserini_dense_search", action="store_true", help="if we will use pyserini dense search or our own dense search implementation.")
     parser.add_argument("--dense_query_encoder_path", type=str, default="castorini/ance-msmarco-passage", help="should be a huggingface face format folder/link to a model") 
     parser.add_argument("--dense_index_dir_path", type=str, default="../../data/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
-    parser.add_argument("--query_gpu_id", type=int, default=1)
+    parser.add_argument("--query_gpu_id", type=int, default=1) # only use one gpu for query encoding, should be enough. 
     parser.add_argument("--query_encoder_batch_size", type=int, default=200)
 
     # faiss
@@ -137,6 +137,7 @@ def get_args():
 
     # after evaluation
     parser.add_argument("--save_to_wandb", action="store_true", help="if we will save the results to wandb.")
+    parser.add_argument("--wandb_run_name", type=str, default="", help="if we will save the results to wandb.")
     parser.add_argument("--metrics", type=str, default="map,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,recall.5,recall.50,recall.100,recall.1000,recip_rank",
                         help= "should be a comma-separated string of metrics, such as map,ndcg_cut.5,ndcg_cut.10,P.5,P.10,recall.50,recall.100,recall.1000")
 
@@ -147,7 +148,7 @@ def get_args():
     parser.add_argument("--save_ranking_list",  action="store_true", help="if we will save ranking list yieled by the search component.")
 
     parser.add_argument("--run_rag", action="store_true", help="if we will run the search + generation component (retrieval + reranking + generation, rag)")
-
+    parser.add_argument("--generate_ikat_submission", action="store_true", help="if we will generate the ikat submission file.")
     parser.add_argument("--given_ranking_list_path", type=str, default="none", help="when retrieval_model == 'none', we have to provide the path of a given ranking list then rerank.")
 
 
@@ -288,7 +289,8 @@ def get_args():
                             "mistral_MQ4CS_persq_rw",
                             "result_topic_entropy",
                             "DEPS",
-                            "random_weights"
+                            "random_weights",
+                            "full_conversation"
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -377,11 +379,14 @@ if __name__ == "__main__":
     #### WANDB initialization ####
     topic_name_map = {  
         "ikat_23_test": "TREC_iKAT_2023",
-        "ikat_24_test": "TREC_iKAT_2024"  
+        "ikat_24_test": "TREC_iKAT_2024",
+        "topiocqa": "continual_ir"
     }
     project_name = topic_name_map[args.topics] 
 
     if args.save_to_wandb:
+        if args.topics == "topiocqa":
+            file_name_stem = args.wandb_run_name + "_" + file_name_stem 
         wandb.init(
             project=project_name, 
             name=file_name_stem
@@ -486,28 +491,31 @@ if __name__ == "__main__":
         # response generation 
         ##########################
 
-        response_dict = generate_responses(
-            turn_list,
-            hits, 
-            generation_query_list,
-            qid_list_string,
-            args
-            ) 
+        if not args.generation_model == "none":
+            response_dict = generate_responses(
+                turn_list,
+                hits, 
+                generation_query_list,
+                qid_list_string,
+                args
+                ) 
 
         ##############################
         #  Export to ikat format
         ##############################
         print("generating ikat format results...")
-        generate_and_save_ikat_submission(
-            ikat_output_path,
-            args.run_name,
-            # TODO: other mechanism for choosing the correct ptkb_provenance ...
-            args.reranking_query_type,
-            hits,
-            turn_list,
-            response_dict,
-            args.generation_top_k
-        )
+
+        if args.generate_ikat_submission:
+            generate_and_save_ikat_submission(
+                ikat_output_path,
+                args.run_name,
+                # TODO: other mechanism for choosing the correct ptkb_provenance ...
+                args.reranking_query_type,
+                hits,
+                turn_list,
+                response_dict,
+                args.generation_top_k
+            )
 
     if args.run_eval:
 
@@ -553,7 +561,7 @@ if __name__ == "__main__":
 
             for qid, result_dict in query_metrics_dic.items():
 
-                if args.run_rag:
+                if not args.generation_model == "none":
                     response = response_dict[qid][0]
                 else:
                     response = "rag_not_run, no response."

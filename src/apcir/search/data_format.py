@@ -1,9 +1,14 @@
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+import json
+
+from anyio import sleep_forever
+
 import torch
 from torch.utils.data import Dataset
-import json
+from torch.nn.utils.rnn import pad_sequence
+
 from tqdm import tqdm, trange
 import random
 
@@ -23,6 +28,31 @@ def padding_seq_to_same_length(input_ids, max_pad_length, pad_token = 0):
     assert len(attention_mask) == max_pad_length
   
     return input_ids, attention_mask
+
+def pad_and_mask(seqs, pad_token_id=0):
+    """
+    Shared helper to pad a list of variable-length sequences to the maximum length
+    in the batch and build attention masks.
+    """
+    # create a tenror of length max_length, add it to the seqs, do the pad, then remove this extra row
+    # # this is a temporary fix to the problem of experience replay batch size mismatch. TODO: find a remedy for this.
+    # seqs.append([pad_token_id] * max_length)
+    # Convert to tensors
+
+    tensors = [torch.tensor(s, dtype=torch.long) for s in seqs]
+
+    # Pad to batch-longest
+    padded = pad_sequence(
+        tensors,
+        batch_first=True,
+        padding_value=pad_token_id
+    )
+
+    # padded = padded[:-1, :]  # remove the extra row
+
+    # Attention mask
+    mask = (padded != pad_token_id).long()
+    return padded, mask
 
 class T5FT_context(Dataset):
     def __init__(self, args, tokenizer, filename):
@@ -998,25 +1028,163 @@ class Retrieval_trec(Dataset):
             
     
     @staticmethod
-    def get_collate_fn():
+    def get_collate_fn(pad_token_id = 0 ):
         
         def collate_fn(batch: list):
             # padding
             input_ids = torch.nn.utils.rnn.pad_sequence(
                 [torch.tensor(item["input_ids"]) for item in batch],
                 batch_first = True,
-                padding_value = 0
+                padding_value = pad_token_id
             )
             attention_mask = torch.nn.utils.rnn.pad_sequence(
                 [torch.tensor(item["attention_mask"]) for item in batch],
                 batch_first = True,
-                padding_value = 0
+                padding_value = pad_token_id
             )
             return {
                 "qid": [item["qid"] for item in batch],
                 "query": [item["query"] for item in batch],
                 "input_ids": input_ids,
                 "attention_mask": attention_mask,
+            }
+
+        return collate_fn
+
+class Retrieval_topiocqa(Dataset):
+    def __init__(
+        self, 
+        tokenizer, 
+        retrieval_query_list, 
+        qid_list_string,
+        max_length = 512,
+        max_response_length = 64
+        ):
+
+        self.queries = retrieval_query_list
+        self.qids = qid_list_string 
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.max_response_length = max_response_length
+    
+    def tokenize(self, text, max_len):
+        tokens = self.tokenizer.encode(
+            text,
+            add_special_tokens=True,
+            max_length=max_len,
+            truncation=True
+        )
+        return tokens
+
+    def build_conv_query_tokens(
+        self,
+        tokenizer,
+        cur_utt_text,
+        ctx_utts_text,
+        max_query_length,
+        max_response_length,
+        max_concat_length,
+    ):
+        # We reserve 1 position for [CLS] at the beginning
+        max_context_len = max_concat_length - 1
+        flat_concat = []
+        total_len = 0
+
+        # build current utterance tokens
+        # goal of this code segement: build the conversation context as:
+        # [cls,q1,sep,r1,sep,q2,sep,r2,sep,...,qn,sep,rn,sep]
+
+        # ---- 1. Add current utterance first (most recent) ----
+        cur_utt_tokens = self.tokenize(cur_utt_text, max_len=max_query_length)
+        cur_tokens = cur_utt_tokens[1:] # remove [CLS], keep [SEP]
+
+        if len(cur_tokens) > max_context_len:
+            cur_tokens = cur_tokens[:max_context_len]
+            cur_tokens[-1] = tokenizer.sep_token_id
+
+        flat_concat.append(cur_tokens)
+        total_len += len(cur_tokens)
+
+        # ---- 2. Add historical utterances backward ----
+        for j in range(len(ctx_utts_text) - 1, -1, -1):
+            # odd index : response, even index : query
+            if j % 2 == 1: max_length = max_response_length
+            else: max_length = max_query_length
+
+            # tokenize with special tokens, then remove [CLS]
+            tokens = self.tokenize(ctx_utts_text[j], max_len=max_length)
+            tokens = tokens[1:] # remove [CLS], keep trailing [SEP]
+
+            remaining = max_context_len - total_len
+            if remaining <= 0: break
+
+            if len(tokens) <= remaining:
+                flat_concat.append(tokens)
+                total_len += len(tokens)
+            else:
+                # need to truncate tokens, but must end with [SEP]
+                truncated = tokens[:remaining]
+                truncated[-1] = tokenizer.sep_token_id
+                flat_concat.append(truncated)
+                total_len += len(truncated)
+                break
+
+        # ---- 3. Restore chronological order ----
+        flat_concat = flat_concat[::-1]
+
+        # ---- 4. Flatten and prepend [CLS] ----
+        flat_concat = [tok for turn in flat_concat for tok in turn]
+        flat_tokens = [tokenizer.cls_token_id]
+        flat_tokens.extend(flat_concat)
+
+        # HARD SAFETY CHECK (debug only, can remove later)
+
+        assert len(flat_tokens) <= max_concat_length
+        return flat_tokens
+
+    def __len__(self):
+        return len(self.queries)
+
+    def __getitem__(self, index):
+        qid = self.qids[index]
+        query = self.queries[index]
+        query_response_list = query.split("[SEP]")
+        query_response_list = [item.strip() for item in query_response_list]
+        current_query_text = query_response_list[-1]
+        context_query_response_text = query_response_list[:-1]
+
+        encoded_query = self.build_conv_query_tokens(
+            tokenizer = self.tokenizer,
+            cur_utt_text = current_query_text,
+            ctx_utts_text = context_query_response_text,
+            max_query_length = self.max_length,
+            max_response_length =  self.max_response_length,
+            max_concat_length = self.max_length
+        )
+
+        
+        return {
+            "qid": qid,
+            "query": query,
+            "input_ids": encoded_query
+        }
+            
+    
+    @staticmethod
+    def get_collate_fn(pad_token_id = 0):
+        
+        def collate_fn(batch: list):
+            query_tokens = [item["input_ids"] for item in batch]
+            query_tokens_padded, query_mask = pad_and_mask(
+                seqs = query_tokens,
+                pad_token_id = pad_token_id
+            )
+
+            return {
+                "qid": [item["qid"] for item in batch],
+                "query": [item["query"] for item in batch],
+                "input_ids": query_tokens_padded, 
+                "attention_mask": query_mask
             }
 
         return collate_fn

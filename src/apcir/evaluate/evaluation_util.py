@@ -37,6 +37,7 @@ def get_query_list(args):
     Arguments:
     args.topics: str
     args.input_query_path: str
+    args.retrieval_model: str
     args.retrieval_query_type: str
     args.reranking_query_type: str
     args.generation_query_type: str
@@ -60,8 +61,16 @@ def get_query_list(args):
 
     '''
 
+    # process full conversation type queries:
+    if args.retrieval_query_type == "full_conversation" and args.retrieval_model == "BM25":
+        args.retrieval_query_type = "full_conversation_sparse"
+    else: 
+        args.retrieval_query_type = "full_conversation_dense"
+    
+    # TODO: for reranking and generation, conceptually we use LLM readable format full conversation, right?
+
     # apply topic specific processing
-    if "ikat" in args.topics:
+    if "ikat" in args.topics or "topiocqa" in args.topics:
         turn_list = load_turns_from_json(
             input_topic_path=args.input_query_path,
             range_start=0,
@@ -73,6 +82,8 @@ def get_query_list(args):
             evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
         elif args.topics == "ikat_24_test":
             evaluated_turn_list = filter_ikat_24_evaluated_turns(turn_list)
+        elif "topiocqa" in args.topics:
+            evaluated_turn_list = turn_list
         
         qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]
 
@@ -99,19 +110,19 @@ def get_query_list(args):
         if args.fusion_type != "none":
             fusion_query_lists = []
             for QR_name in args.QRs_to_rank:
-                fusion_query_lists.append([turn.query_type_2_query(QR_name, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list])
+                fusion_query_lists.append([turn.query_type_2_query(QR_name, args.fb_terms, args.original_query_weight,args) for turn in evaluated_turn_list])
         else:
             fusion_query_lists = None
 
         # load query according to query type.
-        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
-        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight) for turn in evaluated_turn_list]
+        retrieval_query_list = [turn.query_type_2_query(args.retrieval_query_type, args.fb_terms, args.original_query_weight,args) for turn in evaluated_turn_list]
+        reranking_query_list = [turn.query_type_2_query(args.reranking_query_type , args.fb_terms, args.original_query_weight,args) for turn in evaluated_turn_list]
+        generation_query_list = [turn.query_type_2_query(args.generation_query_type, args.fb_terms, args.original_query_weight,args) for turn in evaluated_turn_list]
     
 
         # Load the fusion weights from turn object, if applicable
         if args.fusion_type == "pre_calculated":
-            qid_weights_dict = {turn.turn_id : turn.query_type_2_query(args.retrieval_query_type, 0, 0) for turn in evaluated_turn_list}
+            qid_weights_dict = {turn.turn_id : turn.query_type_2_query(args.retrieval_query_type, 0, 0,args) for turn in evaluated_turn_list}
             assert len(qid_weights_dict[evaluated_turn_list[0].turn_id]) == len(args.QRs_to_rank), "The number of weights does not match the number of queries."
         else:
             qid_weights_dict = None
