@@ -55,8 +55,12 @@ def extend_command(config, command):
 
 
 if __name__ == "__main__":
-    # Load configuration
-    config_file = "./apcir/evaluate/fuse_then_eval_config_23.yaml"  
+    # Load configuration (override the default with --config <path>)
+    import argparse
+    _ap = argparse.ArgumentParser()
+    _ap.add_argument("--config", default="./apcir/evaluate/fuse_then_eval_config_23.yaml",
+                     help="Path to the experiment YAML config to run.")
+    config_file = _ap.parse_args().config
     log_file = "../logs/evaluation_log_2023.txt"
     
 

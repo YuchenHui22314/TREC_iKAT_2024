@@ -12,7 +12,9 @@ from torch.utils.data import IterableDataset
 import torch.nn.functional as F
 import torch
 import torch.distributed as dist
-from transformers import AdamW
+from torch.optim import AdamW   # was `from transformers import AdamW`; newer transformers (the
+                                # trec_ikat py3.12 env needed for Qwen3) removed it. Same signature
+                                # (params, lr, eps) for the training path; not used during retrieval.
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 

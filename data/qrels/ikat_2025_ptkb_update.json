@@ -1,0 +1,143 @@
+[
+    {
+        "number": "1-2",
+        "title": "Healthier lifestyle",
+        "new_ptkb": [
+            {
+                "statement": "I have acid reflux.",
+                "turn_dependence": [5, 10]
+            }, 
+            {
+                "statement": "I have a deadline approaching.",
+                "turn_dependence": [4,5]
+            },
+            {
+                "statement": "I have slightly impaired kidneys. ",
+                "turn_dependence": [8]
+            }
+            
+        ]
+    },
+    {
+        "number": "2-2",
+        "title": "Select a wine",
+        "new_ptkb": [
+            {
+                "statement": "I don’t want my coffee to be sour.",
+                "turn_dependence": [1]
+            }, 
+            {
+                "statement": "I find it very boring to read too many details!",
+                "turn_dependence": [1,2,3,4,6,7,10,11]
+            }
+            
+        ]
+    },
+    {
+        "number": "3-2",
+        "title": "New activities",
+        "new_ptkb": [
+            {
+                "statement": "I got a medium A2 pulley injury while climbing.",
+                "turn_dependence": [1,2,4,5]
+            }, 
+            {
+                "statement": "I don't like taking supplements.",
+                "turn_dependence": []
+            },
+            {
+                "statement": "I want to take it slow on my injured finger.",
+                "turn_dependence": [4,5]
+            }
+            
+        ]
+    },
+    {
+        "number": "4-2",
+        "title": "Visiting new-york",
+        "new_ptkb": [
+            {
+                "statement": "I have a 10km run in New York in April.",
+                "turn_dependence": [9,10,11]
+            }
+        ]
+    },
+    {
+        "number": "5-2",
+        "title": "Question about infants",
+        "new_ptkb": [
+            {
+                "statement": "I don’t like milk.",
+                "turn_dependence": [4,5]
+            }, 
+            {
+                "statement": "I want to eat healthier.",
+                "turn_dependence": [4,5]
+            }
+            
+        ]
+    },
+    {
+        "number": "6-2",
+        "title": "Skincare routine",
+        "new_ptkb": [
+            {
+                "statement": "I am tired of my skin’s appearance, and don’t want to wear makeup anymore.",
+                "turn_dependence": []
+            }, 
+            {
+                "statement": "I use La Roche-Posay products for my skin and hair.",
+                "turn_dependence": [4,5]
+            },
+            {
+                "statement": "I have an oily scalp and hair.",
+                "turn_dependence": [1,2,3]
+            },
+            {
+                "statement": "I have a face wash with salicylic acid in my routine.",
+                "turn_dependence": []
+            }
+            
+        ]
+    },
+    {
+        "number": "8-2",
+        "title": "Tattooing 101",
+        "new_ptkb": [
+            {
+                "statement": "I was diagnosed with ADHD a few months ago.",
+                "turn_dependence": [1]
+            }, 
+            {
+                "statement": "I get easily overwhelmed with tasks.",
+                "turn_dependence": []
+            },
+            {
+                "statement": "I don't want to interrupt my hyperfocus with a timer.",
+                "turn_dependence": []
+            },
+            {
+                "statement": "My office is pretty quiet.",
+                "turn_dependence": []
+            }
+            
+        ]
+    },
+        {
+        "number": "9-2",
+        "title": "Bike repairs",
+        "new_ptkb": [
+            {
+                "statement": "I have a mountain bike.",
+                "turn_dependence": []
+            }, 
+            {
+                "statement": "I used to have back pain while riding my bike.",
+                "turn_dependence": [7]
+            }
+        ]
+    }
+
+
+
+]    

@@ -601,7 +601,7 @@ def Retrieval(args):
         hits = searcher.batch_search(args.retrieval_query_list, args.qid_list_string, k = args.retrieval_top_k, threads = 40)
 
     # dense search
-    elif args.retrieval_model in ["ance", "dpr"]:
+    elif args.retrieval_model in ["ance", "dpr", "qwen3"]:
         print(f"{args.retrieval_model} searching...")
 
         if args.use_pyserini_dense_search:

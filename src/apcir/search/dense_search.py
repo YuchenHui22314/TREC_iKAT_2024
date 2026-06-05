@@ -7,9 +7,9 @@ import copy
 import pickle
 import torch
 import numpy as np
-from transformers import RobertaConfig, RobertaTokenizer
+from transformers import RobertaConfig, RobertaTokenizer, AutoTokenizer
 
-from .models import ANCE
+from .models import ANCE, QwenEmbedding
 from .utils import  set_seed
 from .data_format import  Retrieval_trec, Retrieval_topiocqa
 
@@ -230,6 +230,42 @@ def get_test_query_embedding(args):
     '''
 
     set_seed(args.seed, True)
+
+    # ---- Qwen3-Embedding query encoding -------------------------------------
+    # Reuse the SAME tokenizer call + QwenEmbedding (last-token pool + L2) used to
+    # encode the corpus (indexing/dense: CollateClass tokenizes docs with
+    # add_special_tokens=True, max_length=512, left padding; QwenEmbedding pools the
+    # last token + L2). `add_special_tokens=True` appends <|endoftext|> (151643) on
+    # both sides, identical to continual_ir's build_qwen_instruct_query_ids EOS, so
+    # query and document embeddings are directly comparable. The instruction is
+    # already baked into the query string by the `oracle_qwen_instruct` query type;
+    # documents carry NO instruction (Qwen3-Embedding protocol).
+    if args.retrieval_model == "qwen3":
+        query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu"
+        tokenizer = AutoTokenizer.from_pretrained(args.dense_query_encoder_path, padding_side="left")
+        model = QwenEmbedding(args.dense_query_encoder_path).to(query_device)
+        model.eval()
+        embeddings, embedding2id = [], []
+        bs = args.query_encoder_batch_size
+        with torch.no_grad():
+            for i in trange(0, len(args.retrieval_query_list), bs,
+                            desc="generating qwen3 query embeddings"):
+                batch_q  = args.retrieval_query_list[i:i + bs]
+                batch_id = args.qid_list_string[i:i + bs]
+                # Qwen3-Embedding has a long context (32k). Do NOT cap conversational
+                # queries to the 512-token doc length — that would chop conversation/PTKB
+                # context. We pad to the batch's longest (padding=True), not to max_length,
+                # so memory stays proportional to the actual query length.
+                enc = tokenizer(batch_q, add_special_tokens=True, max_length=32768,
+                                padding=True, truncation=True, return_tensors="pt")
+                embs = model(enc["input_ids"].to(query_device),
+                             enc["attention_mask"].to(query_device))
+                embeddings.append(embs.detach().cpu().float().numpy())
+                embedding2id.extend(batch_id)
+        embeddings = np.concatenate(embeddings, axis=0)
+        torch.cuda.empty_cache()
+        return embeddings, embedding2id
+
     # laod query encoder and tokenizer
     if args.retrieval_model == "ance":
         config = RobertaConfig.from_pretrained(args.dense_query_encoder_path)
@@ -240,11 +276,21 @@ def get_test_query_embedding(args):
     # test dataset/dataloader
     print("Buidling test dataset...")
     if "ikat" in args.topics:
-        test_dataset = Retrieval_trec(
-            tokenizer = tokenizer,
-            retrieval_query_list = args.retrieval_query_list,
-            qid_list_string = args.qid_list_string
-            )
+        # full_conversation_dense needs the CONVERSATIONAL dataset: it splits the query on
+        # the "[SEP]" placeholder and rebuilds the tokens with the real sep token +
+        # reverse-add/truncate-oldest. Every other iKAT QR is a single query -> Retrieval_trec.
+        if args.retrieval_query_type == "full_conversation_dense":
+            test_dataset = Retrieval_topiocqa(
+                tokenizer = tokenizer,
+                retrieval_query_list = args.retrieval_query_list,
+                qid_list_string = args.qid_list_string
+                )
+        else:
+            test_dataset = Retrieval_trec(
+                tokenizer = tokenizer,
+                retrieval_query_list = args.retrieval_query_list,
+                qid_list_string = args.qid_list_string
+                )
 
     elif "topiocqa" in args.topics:
         test_dataset = Retrieval_topiocqa(

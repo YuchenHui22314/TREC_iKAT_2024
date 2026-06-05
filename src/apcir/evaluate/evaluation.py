@@ -33,7 +33,7 @@ def get_args():
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
                         choices=["ClueWeb_ikat","topiocqa_wiki"])
     parser.add_argument("--topics", type=str, default="ikat_23_test",
-                        choices = ["ikat_23_test", "ikat_24_test", "topiocqa"])
+                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa"])
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
     parser.add_argument("--output_dir_path", type=str, default="../../results")
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
@@ -45,7 +45,7 @@ def get_args():
     ###################
 
     parser.add_argument("--retrieval_model", type=str, default="BM25",
-                        choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama"])
+                        choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama", "qwen3"])
     parser.add_argument("--retrieval_top_k", type=int, default="1000")
     parser.add_argument("--personalization_group", type=str, default="a", 
                         choices=["a","b","c","all"]
@@ -163,7 +163,12 @@ def get_args():
     parser.add_argument("--run_name", type=str, default="none",
                         help="run name for trec ikat submission. If none, will use file name stem as run name.")
 
-    parser.add_argument("--retrieval_query_type", type=str, default="oracle", 
+    # NOTE on "full_conversation": it is a LOGICAL value resolved at runtime in
+    # evaluation_util.get_query_list -> "full_conversation_sparse" for BM25 (plain-text
+    # concat) or "full_conversation_dense" for ANY dense model (ance/qwen3/splade/dpr;
+    # placeholder "[SEP]" + conversational token build). ANCE-only in practice (RoBERTa
+    # 512 budget). "oracle_qwen_instruct" is qwen3-only (asserts retrieval_model==qwen3).
+    parser.add_argument("--retrieval_query_type", type=str, default="oracle",
                         choices=[
                             "none",
                             "raw", 
@@ -290,7 +295,11 @@ def get_args():
                             "result_topic_entropy",
                             "DEPS",
                             "random_weights",
-                            "full_conversation"
+                            "full_conversation",
+                            "oracle_qwen_instruct",
+                            "qwen_conversation",
+                            "qwen_conversation_ptkb",
+                            "qwen_conversation_ptkb_previous_conv_as_ptkb",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -377,9 +386,10 @@ if __name__ == "__main__":
     print("#######################################")
 
     #### WANDB initialization ####
-    topic_name_map = {  
+    topic_name_map = {
         "ikat_23_test": "TREC_iKAT_2023",
         "ikat_24_test": "TREC_iKAT_2024",
+        "ikat_25_test": "TREC_iKAT_2025",
         "topiocqa": "continual_ir"
     }
     project_name = topic_name_map[args.topics] 

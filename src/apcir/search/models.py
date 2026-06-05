@@ -1,9 +1,11 @@
 import torch
+import torch.nn.functional as F
 from torch import nn
 from transformers import (
-    RobertaConfig, 
-    RobertaForSequenceClassification, 
-    RobertaTokenizer
+    RobertaConfig,
+    RobertaForSequenceClassification,
+    RobertaTokenizer,
+    AutoModel,
                           )
 
 
@@ -68,6 +70,37 @@ def load_model(model_type, model_path):
     else:
         raise ValueError
     return tokenizer, model
+
+
+# Qwen3-Embedding model (query side for retrieval).
+# IDENTICAL to indexing/dense/models.py:QwenEmbedding so that query embeddings
+# match the corpus embeddings produced at indexing time (last-token pooling +
+# L2 normalization, dim 1024). Load the tokenizer with padding_side='left'.
+class QwenEmbedding(nn.Module):
+    def __init__(self, model_path):
+        super(QwenEmbedding, self).__init__()
+        self.model = AutoModel.from_pretrained(
+            model_path, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2")
+
+    @staticmethod
+    def last_token_pool(last_hidden_states, attention_mask):
+        """Pool the last non-padding token. Works for left- and right-padding."""
+        left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
+        if left_padding:
+            return last_hidden_states[:, -1]
+        sequence_lengths = attention_mask.sum(dim=1) - 1
+        batch_size = last_hidden_states.shape[0]
+        return last_hidden_states[
+            torch.arange(batch_size, device=last_hidden_states.device),
+            sequence_lengths
+        ]
+
+    def forward(self, input_ids, attention_mask, **kwargs):
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        embeddings = self.last_token_pool(outputs.last_hidden_state, attention_mask)
+        # L2 normalize for cosine similarity retrieval (FAISS IndexFlatIP).
+        embeddings = F.normalize(embeddings, p=2, dim=1)
+        return embeddings
 
 #############################################################
 #############################################################

@@ -1,0 +1,156 @@
+# =============================================================================
+# Task 4: Qwen3 (oracle_qwen_instruct) vs ANCE (oracle) on iKAT 23/24/25.
+# Passage ranking, RETRIEVAL ONLY (no rerank, no fusion, no generation).
+#
+# Design note (IMPORTANT): qwen3 must use `oracle_qwen_instruct` and ance must use
+# `oracle`. We therefore DO NOT iterate `retrieval_query_type` (a Cartesian product
+# would create the forbidden `ance + oracle_qwen_instruct` combo — see the assert in
+# topics.py:query_type_2_query). Instead, the per-model query type + dense index +
+# embed_dim + encoder are set in `param_mapping.retrieval_model`, which run_experiments.py
+# applies to a copy of `fixed` (iterate values are appended last; since these keys are
+# NOT in iterate, the param_mapping values stand).
+#
+# 2 models x 3 topics = 6 experiments (run sequentially).
+# GPU is required (query encoding + FAISS) -> launch is gated on user approval.
+# To run: point run_experiments.py's config_file at this file (or add a --config arg).
+#   qwen3 dense index = produced by the merge step (clueweb22b_ikat23_qwen_merged).
+# =============================================================================
+
+iterate:
+  machine: ["octal40"]
+  retrieval_model: ["qwen3"]          # qwen3 row only (computes 23/24/25). ance/BM25 for the
+                                      # iKAT-25 column run from the backbones config; 23/24
+                                      # backbone numbers come from existing results (not re-run).
+  reranker: ["none"]
+  topics: ["ikat_23_test", "ikat_24_test", "ikat_25_test"]
+
+param_mapping:
+  # Per-model: query type + dense index + embedding dim + encoder.
+  retrieval_model:
+    qwen3:
+      retrieval_query_type: "oracle_qwen_instruct"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
+      dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged"   # <- produced by merge_qwen_clueweb.py (6 blocks, dim 1024)
+      embed_dim: 1024
+      passage_block_num: 6     # qwen merged index = 6 blocks (20M docs each)
+      wandb_run_name: "qwen3_oracle_instruct"
+    ance:
+      retrieval_query_type: "oracle"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
+      dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
+      embed_dim: 768
+      passage_block_num: 12    # ance merged index = 12 blocks
+      wandb_run_name: "ance_oracle"
+
+  # Per-topic: query file + qrel + block count.
+  topics:
+    ikat_23_test:
+      input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
+      qrel_file_path: "../data/qrels/ikat_23_qrel.txt"
+    ikat_24_test:
+      input_query_path: "../data/topics/ikat24/ikat_2024_test.json"
+      qrel_file_path: "../data/qrels/ikat_24_qrel.txt"
+    ikat_25_test:
+      input_query_path: "../data/topics/ikat25/ikat_2025_test.json"
+      qrel_file_path: "../data/qrels/ikat_2025_qrel.txt"
+
+fixed:
+  ###############################################
+  ## General
+  ###############################################
+  collection: "ClueWeb_ikat"
+  topics: "ikat_23_test"                # overridden by iterate
+  input_query_path: "../data/topics/ikat23/ikat_2023_test.json"   # overridden by param_mapping.topics
+
+  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"
+  output_dir_path: "../results"
+  qrel_file_path: "../data/qrels/ikat_23_qrel.txt"                # overridden by param_mapping.topics
+  seed: 42
+
+  save_results_to_object: true
+  save_ranking_list: true
+  run_rag: true
+  run_eval: true
+
+  ###############################################
+  ## Retrieval
+  ###############################################
+  retrieval_model: "qwen3"              # overridden by iterate
+  retrieval_top_k: 1000
+  personalization_group: "all"
+  query_gpu_id: 2                       # GPU id for query encoding (gated run)
+  query_encoder_batch_size: 200
+
+  ############# Splade ############ (unused here)
+  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
+
+  ############# Dense  ############
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"   # overridden by param_mapping.retrieval_model
+  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"     # overridden by param_mapping.retrieval_model
+  faiss_n_gpu: 4
+  use_gpu_for_faiss: true
+  embed_dim: 768                        # overridden by param_mapping.retrieval_model (qwen3 -> 1024)
+  tempmem: -1
+  passage_block_num: 12                 # overridden by param_mapping.topics
+
+  ############# BM25 ############ (unused here)
+  bm25_k1: 0.9
+  bm25_b: 0.4
+
+  ############# QE ############
+  qe_type: "none"
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+
+  ###############################################
+  ## Fusion  (disabled)
+  ###############################################
+  fusion_type: 'none'
+  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  fuse_weights: [0.1, 0.4]
+  fusion_normalization: "none"
+  level_type: "gpt-3.5_judge_and_rewrite"
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: "group"
+  target_metrics: "mrr,ndcg@3,recall@10,recall@100"
+  optimize_step: 0.01
+
+  ###############################################
+  ## Reranking  (disabled)
+  ###############################################
+  reranker: "none"                      # overridden by iterate (still none)
+  rerank_top_k: 50
+  cache_dir: "/data/rech/huiyuche/huggingface"
+  rerank_batch_size: 67
+  rerank_quant: "none"
+  rankgpt_llm: "gpt-3.5-turbo"
+  window_size: 4
+  step: 1
+
+  ###############################################
+  ## Response Generation  (disabled)
+  ###############################################
+  generation_model: "none"
+  generation_prompt: "none"
+  generation_top_k: 3
+
+  ###############################################
+  ## Metrics  (default: report all; pick what you need)
+  ###############################################
+  save_to_wandb: true
+  wandb_run_name: ""                    # overridden by param_mapping.retrieval_model
+  metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "ndcg_cut_10", "recall_100", "recall_1000"]
+  given_ranking_list_path: "none"
+
+  ###############################################
+  ## iKAT Project Specific
+  ###############################################
+  run_name: "none"
+  retrieval_query_type: "none"          # overridden by param_mapping.retrieval_model
+  reranking_query_type: "none"
+  generation_query_type: "none"
+  generate_ikat_submission: false

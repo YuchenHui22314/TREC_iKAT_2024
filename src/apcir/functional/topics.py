@@ -10,7 +10,8 @@ from sympy import N
 
 from .constants import (
     IKAT_23_EVALUATED_TURNS,
-    IKAT_24_EVALUATED_TURNS
+    IKAT_24_EVALUATED_TURNS,
+    IKAT_25_EVALUATED_TURNS
 )
 
 def load_document_by_id(doc_id, searcher):
@@ -355,6 +356,72 @@ class Turn:
             final_query = self.current_utterance
         elif query_type == "oracle":
             final_query = self.oracle_utterance
+        elif query_type == "oracle_qwen_instruct":
+            # Qwen3-Embedding is instruction-aware. `oracle` is the human-resolved,
+            # standalone query, so we use the official single-query (ad-hoc) template
+            # with the SAME MSMARCO instruction continual_ir uses for BEIR/MSMARCO eval
+            # (continual_ir/src/utils.py:eval_beir_from_cache). Documents are encoded
+            # WITHOUT instruction (Qwen3-Embedding protocol). Keeping the instruction in
+            # the query string (instead of the encoder) makes it visible in the result
+            # file name (S1[oracle_qwen_instruct]) and keeps the encoder generic.
+            assert args.retrieval_model == "qwen3", \
+                ("oracle_qwen_instruct is only meaningful for the qwen3 retriever; "
+                 f"got retrieval_model={args.retrieval_model}")
+            instruction = "Given a web search query, retrieve relevant passages that answer the query"
+            final_query = f"Instruct: {instruction}\nQuery:{self.oracle_utterance}"
+        elif query_type == "qwen_conversation":
+            # qwen3-only. Conversation (interleaved user/system turns) ONLY — the no-PTKB
+            # counterpart of qwen_conversation_ptkb (everything else identical). No truncation
+            # (Qwen3 long context). fullconv_ctx = [u1, r1, u2, r2, ...] from get_query_list.
+            assert args.retrieval_model == "qwen3", \
+                f"qwen_conversation is qwen3-only; got retrieval_model={args.retrieval_model}"
+            instruction = ("Given a conversation between a user and an AI assistant, retrieve "
+                           "passages that answer the user's last question.")
+            ctx = getattr(self, "fullconv_ctx", [])
+            conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            conv_parts.append(f"User: {self.current_utterance}")
+            final_query = f"Instruct: {instruction}\nConversation: {' '.join(conv_parts)}"
+        elif query_type == "qwen_conversation_ptkb":
+            # qwen3-only. Conversation (interleaved user/system turns) + the FULL user
+            # profile (ALL PTKB statements, numbered 1. 2. 3. ...) — deliberately NOT just
+            # the oracle-relevant PTKB, to test Qwen's denoising. No truncation (Qwen3 long
+            # context). fullconv_ctx = [u1, r1, u2, r2, ...] is attached in get_query_list.
+            assert args.retrieval_model == "qwen3", \
+                f"qwen_conversation_ptkb is qwen3-only; got retrieval_model={args.retrieval_model}"
+            instruction = ("Given a conversation between a user and an AI assistant and the "
+                           "user's profile, retrieve passages that answer the user's last "
+                           "question in a way consistent with the user's profile.")
+            ctx = getattr(self, "fullconv_ctx", [])
+            conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            conv_parts.append(f"User: {self.current_utterance}")
+            profile = " ".join(f"{i}. {v}" for i, v in enumerate(self.ptkb.values(), 1))
+            final_query = (f"Instruct: {instruction}\n"
+                           f"Conversation: {' '.join(conv_parts)}\n"
+                           f"User Profile: {profile}")
+        elif query_type == "qwen_conversation_ptkb_previous_conv_as_ptkb":
+            # qwen3-only AND iKAT-2025-only: uses the SAME persona's previous conversation
+            # (e.g. current X-2 -> previous X-1) as extra context, plus current conversation
+            # and the FULL PTKB profile. 23/24 have no "previous conversation" per user, so
+            # this asserts the 2025 topics. prev_conv_ctx is attached in get_query_list.
+            assert args.retrieval_model == "qwen3", \
+                f"qwen_conversation_ptkb_previous_conv_as_ptkb is qwen3-only; got {args.retrieval_model}"
+            assert args.topics == "ikat_25_test", \
+                ("qwen_conversation_ptkb_previous_conv_as_ptkb requires iKAT 2025 (same persona has "
+                 f"a previous conversation); got topics={args.topics}")
+            instruction = ("Given a user's previous conversation, their current conversation with "
+                           "an AI assistant, and the user's profile, retrieve passages that answer "
+                           "the user's last question in a way consistent with the user's profile "
+                           "and prior conversation.")
+            prev = getattr(self, "prev_conv_ctx", [])
+            prev_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(prev)]
+            ctx = getattr(self, "fullconv_ctx", [])
+            cur_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            cur_parts.append(f"User: {self.current_utterance}")
+            profile = " ".join(f"{i}. {v}" for i, v in enumerate(self.ptkb.values(), 1))
+            final_query = (f"Instruct: {instruction}\n"
+                           f"Previous Conversation: {' '.join(prev_parts)}\n"
+                           f"Conversation: {' '.join(cur_parts)}\n"
+                           f"User Profile: {profile}")
         elif "+" in query_type:
             query_type_list = query_type.split("+")
             reformulation_list = [self.query_type_2_query(query_type,0,0.0,args) for query_type in query_type_list]
@@ -414,14 +481,25 @@ class Turn:
                 response = response.reformulated_query
                 final_query = rewrite*initial_query_weight + " " + response
         elif query_type == "full_conversation_dense":
-            # TODO, consider the difference between ance and LLM.
+            # full_conversation_dense = use the WHOLE conversation as the dense query.
+            # The "[SEP]"/"[sep]" string is a PLACEHOLDER: the dense dataset
+            # (data_format.py: Retrieval_topiocqa) splits the query on it and rebuilds the
+            # token sequence with the REAL tokenizer.sep_token_id, doing recency-priority
+            # reverse-add + truncate-oldest (build_conv_query_tokens). ANCE-only in practice
+            # (RoBERTa 512-token budget); qwen3 long-context queries do NOT go through here.
             if "topiocqa" in args.topics:
                 self.context_utterances.append(self.current_utterance)
                 final_query = "[sep]".join(self.context_utterances)
                 # [sep] is just a placeholder. we will replace it with the real sep token in the search code
             else:
-                # TODO
-                raise NotImplementedError(f"full_conversation not implemented for topic type {args.topics}")
+                # iKAT: context_utterances holds only prior USER utterances, so we use the
+                # interleaved (user, system) history attached by get_query_list as
+                # `fullconv_ctx` = [u1, r1, ..., u_{i-1}, r_{i-1}], then append the current
+                # utterance. ⚠️ join with UPPERCASE "[SEP]" to match Retrieval_topiocqa's
+                # split; the topiocqa branch above uses lowercase "[sep]" (a latent
+                # case-mismatch bug) which we leave untouched to not change topiocqa results.
+                interleaved = getattr(self, "fullconv_ctx", []) + [self.current_utterance]
+                final_query = "[SEP]".join(interleaved)
         else:
             reformulation = self.find_reformulation(query_type)
             if reformulation is not None:
@@ -673,6 +751,20 @@ def filter_ikat_24_evaluated_turns(
         filtered_turns = []
         for turn in turns:
             if turn.turn_id in IKAT_24_EVALUATED_TURNS:
+                filtered_turns.append(turn)
+        return filtered_turns
+
+def filter_ikat_25_evaluated_turns(
+    turns: List[Turn]
+    ) -> List[Turn]:
+
+        '''
+        Filter the turns to only include the evaluated (NIST-judged) turns in iKAT 25
+        '''
+
+        filtered_turns = []
+        for turn in turns:
+            if turn.turn_id in IKAT_25_EVALUATED_TURNS:
                 filtered_turns.append(turn)
         return filtered_turns
 

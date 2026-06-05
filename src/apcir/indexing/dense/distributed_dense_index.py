@@ -71,7 +71,8 @@ def distributed_index_dataset_generator(collection_path, num_doc_per_block):
             if len(docs) == num_doc_per_block:
                 yield docs
                 docs = []
-        yield docs
+        if len(docs) > 0:
+            yield docs
 
 
 def dense_indexing(args):
@@ -91,6 +92,18 @@ def dense_indexing(args):
     for cur_block_id, raw_docs in enumerate(indexing_dataset_generator):
         doc_ids = []
         doc_embeddings = []
+        emb_output_path = oj(args.output_index_dir_path, "doc_emb_block.rank_{}.{}.pb".format(dist.get_rank(), cur_block_id))
+        embid_output_path = oj(args.output_index_dir_path, "doc_embid_block.rank_{}.{}.pb".format(dist.get_rank(), cur_block_id))
+        if args.skip_existing_blocks and os.path.exists(emb_output_path) and os.path.exists(embid_output_path):
+            print(
+                "Rank {} skip existing dense block {}: {}, {}".format(
+                    dist.get_rank(), cur_block_id, emb_output_path, embid_output_path
+                ),
+                flush=True,
+            )
+            dist.barrier()
+            continue
+
         distributed_sampler = DistributedSampler(raw_docs)
         dataloader =  DataLoader(raw_docs, 
                                  sampler=distributed_sampler,
@@ -117,8 +130,6 @@ def dense_indexing(args):
         doc_embeddings = np.concatenate(doc_embeddings, axis=0)
         if id_is_int:
             doc_ids = np.array(doc_ids)
-        emb_output_path = oj(args.output_index_dir_path, "doc_emb_block.rank_{}.{}.pb".format(dist.get_rank(), cur_block_id))
-        embid_output_path = oj(args.output_index_dir_path, "doc_embid_block.rank_{}.{}.pb".format(dist.get_rank(), cur_block_id))
         pstore(doc_embeddings, emb_output_path, high_protocol=True)
         pstore(doc_ids, embid_output_path, high_protocol=True)
 
@@ -143,6 +154,7 @@ def merge_blocks_to_large_blocks(
     then we merge them into 116 blocks.
     We can also use a customized block size which is larger than the one used while indexing. This function will automatically merge smaller blocks into larger blocks. the disired block size is expected_num_doc_per_block.
     '''
+    os.makedirs(output_folder, exist_ok=True)
     embs = []
     embids = []
     new_block_id = 0
@@ -237,6 +249,8 @@ def get_args():
                         help="Run dense indexing (embed documents and save to output_index_dir_path).")
     parser.add_argument("--do_merge", action="store_true", default=False,
                         help="Run merge of per-rank/block output files into large blocks.")
+    parser.add_argument("--skip_existing_blocks", action="store_true", default=False,
+                        help="Resume dense indexing by skipping rank/block files that already exist.")
 
     args = parser.parse_args()
 

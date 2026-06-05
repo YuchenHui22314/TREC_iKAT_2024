@@ -9,6 +9,7 @@ from apcir.functional.topics import (
     load_turns_from_json,
     filter_ikat_23_evaluated_turns,
     filter_ikat_24_evaluated_turns,
+    filter_ikat_25_evaluated_turns,
     get_turn_by_qid
     )
 
@@ -61,11 +62,17 @@ def get_query_list(args):
 
     '''
 
-    # process full conversation type queries:
-    if args.retrieval_query_type == "full_conversation" and args.retrieval_model == "BM25":
-        args.retrieval_query_type = "full_conversation_sparse"
-    else: 
-        args.retrieval_query_type = "full_conversation_dense"
+    # Route the logical "full_conversation" QR to a model-appropriate variant:
+    #   BM25 (lexical retrieval)              -> full_conversation_sparse (plain-text concat)
+    #   any dense/neural model (ance, qwen3,  -> full_conversation_dense  (placeholder "[SEP]"
+    #     splade, dpr, ...)                       + conversational token build, ANCE-only today)
+    # The test is on BM25, so EVERYTHING non-BM25 falls through to dense. The outer guard is
+    # REQUIRED: without it the `else` clobbers every non-BM25 run's query type (that was a bug).
+    if args.retrieval_query_type == "full_conversation":
+        if args.retrieval_model == "BM25":
+            args.retrieval_query_type = "full_conversation_sparse"
+        else:
+            args.retrieval_query_type = "full_conversation_dense"
     
     # TODO: for reranking and generation, conceptually we use LLM readable format full conversation, right?
 
@@ -76,12 +83,57 @@ def get_query_list(args):
             range_start=0,
             range_end=-1
             )
-        
+
+        # full_conversation (iKAT/ANCE): attach each turn's interleaved (user, system)
+        # history so query_type_2_query can build the conversational query. iKAT stores
+        # only prior USER utterances on `context_utterances`, so we reconstruct the
+        # interleaved [u1, r1, u2, r2, ...] from the full turn list (grouped by
+        # conversation, ordered by turn). Each turn.fullconv_ctx = everything BEFORE it.
+        if "ikat" in args.topics:
+            from collections import defaultdict
+            conv_groups = defaultdict(list)
+            for t in turn_list:
+                conv_groups[t.conversation_id].append(t)
+            for conv_turns in conv_groups.values():
+                conv_turns.sort(key=lambda x: x.get_turn_order())
+                hist = []
+                for t in conv_turns:
+                    t.fullconv_ctx = list(hist)
+                    hist.append(t.current_utterance)
+                    hist.append(t.current_response)
+
+            # previous-conversation context (qwen_conversation_ptkb_previous_conv_as_ptkb).
+            # iKAT-2025 ONLY: only 2025 has a persona X with multiple conversations X-1, X-2
+            # (conversation_id like "1-2"); 23 uses "9-1" (single conv/persona) and 24 uses a
+            # bare int (0,1,...) — neither has a "previous conversation", and 24's int id would
+            # break .split. The "previous conversation" of a turn = the FULL interleaved
+            # [u, r, ...] of that persona's EARLIER conversation(s). str(cid) is defensive.
+            if args.topics == "ikat_25_test":
+                full_conv = {}          # conversation_id -> [u1, r1, u2, r2, ...] (whole conv)
+                persona_to_cids = defaultdict(list)
+                for cid, conv_turns in conv_groups.items():
+                    flat = []
+                    for t in conv_turns:
+                        flat.append(t.current_utterance)
+                        flat.append(t.current_response)
+                    full_conv[cid] = flat
+                    persona_to_cids[str(cid).split('-')[0]].append(cid)
+                for cid, conv_turns in conv_groups.items():
+                    siblings = sorted(persona_to_cids[str(cid).split('-')[0]],
+                                      key=lambda x: [int(p) for p in str(x).split('-') if p.isdigit()])
+                    prev_flat = []
+                    for prev_cid in siblings[:siblings.index(cid)]:
+                        prev_flat += full_conv[prev_cid]
+                    for t in conv_turns:
+                        t.prev_conv_ctx = list(prev_flat)
+
         # filter out the non-evaluated turns for ikat 23
         if args.topics == "ikat_23_test":
             evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)
         elif args.topics == "ikat_24_test":
             evaluated_turn_list = filter_ikat_24_evaluated_turns(turn_list)
+        elif args.topics == "ikat_25_test":
+            evaluated_turn_list = filter_ikat_25_evaluated_turns(turn_list)
         elif "topiocqa" in args.topics:
             evaluated_turn_list = turn_list
         
