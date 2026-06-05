@@ -65,7 +65,7 @@ encoder = BeirAsymmetricANCEEncoder(
 
 # Then plug into BEIR
 
-model = DRES(encoder, batch_size=1024) # octal40: max 1400
+model = DRES(encoder, batch_size=64) # octal40: max 1400; A5000 24GB: 64
 
 retriever = EvaluateRetrieval(model, score_function="dot")
 
@@ -245,9 +245,9 @@ for data_path in dataset_list:
             f.write("Weighted Average Metrics for cqadupstack:\n")
             for metric_name, metric_value in weighted_metrics.items():
                 f.write(f"{metric_name}: {metric_value}\n")
-            f.write("\n")   
-            
-        
+            f.write("\n")
+
+        torch.cuda.empty_cache()
         continue
 
     else: 
@@ -293,6 +293,7 @@ for data_path in dataset_list:
             f.write("Recall: {}\n".format(recall))
             f.write("Precision: {}\n".format(precision))
             f.write("MRR: {}\n\n".format(mrr))
+        torch.cuda.empty_cache()
 
 
 # python -m apcir.evaluate.evaluate_BEIR_conv_ance --split 0 &>> /data/rech/huiyuche/TREC_iKAT_2024/logs/beir_0_topiocqa_ance_eval.txt

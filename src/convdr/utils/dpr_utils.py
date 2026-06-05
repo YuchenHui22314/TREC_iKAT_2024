@@ -14,7 +14,7 @@ import torch.distributed as dist
 from torch import nn
 from torch.serialization import default_restore_location
 import regex
-from transformers import AdamW
+from torch.optim import AdamW
 # from utils.lamb import Lamb
 
 
