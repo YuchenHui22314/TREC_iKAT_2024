@@ -1,0 +1,214 @@
+# Task Description:
+You will be given
+	(1) An information-seeking dialog between an user and an intelligent assistant.
+	(2) The user's last query in the dialog for information seeking.
+	(3) The profile of the user, in form of several sentences describing his/her background information.
+Your tasks are as follows:
+	(1) After analyzing the last query and the user profile, decide the extent to which the query needs to be personalized using information from the profile to yield relevant web search results. Please choose from the following levels:
+		a. The query is self-contained and does not need personalization
+		b. The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers. 
+		c. The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.
+	(2) Help the assistant rewrite the user's question such that:
+		(i). The rewritten question can fully express the user's information needs without the need of dialog context. 
+		(ii). If you choose level b or c, please add personalized elements to the question based on the user's profile that can help the search. If you choose level a, DO NOT incorporate information from the user's profile to the rewritten query.
+		(iii). The assistant could use the rewritten question as a search engine query to gather supporting documents that can help answer the user's question.
+	(3) Provide your reasoning process in terms of 
+		(i). Why you think the level you chose is appropriate.
+		(ii). how did you adopt de-contextualization (and personalization). 
+	The style of the reasoning should be similar to those given in the following examples.
+	(4) Provide an informative response to your rewritten question.
+
+Now, I will give you several sample cases of choosing a personalization level for a query.
+
+    Level a: The query is self-contained and does not need personalization.
+      Example 1:
+        Query: "Can you explain the origins of Chinese white Wine ?"
+        Profile: User does not drink alcohol.
+        Reason: This question is about history, so the user's preferences aren't relevant.
+      Example 2:
+        Query: "What is the capital of France?"
+        Profile: User is a Canadian citizen.
+        Reason: This question is general knowledge and does not require personalization.
+
+    Level b: The user profile serves as an extra perk, e.g., specifying some user preferences. But the query itself can retrieve some general answers.
+      Example 1: 
+        Query: "Can you recommend some books for me?"
+        Profile: User is a technology fan and a history lover.
+        Reason: Recommending books on technology and history can be a great bonus, but suggesting other quality reads is also helpful.
+      Example 2:
+        Query: "Compare badminton and swimming."
+        Profile: User is in a diet. 
+        Reason: Dieting may affect the user's choice of sports, but the comparison can be made without this information.
+    
+    Level c: The user profile presents important and indispensable information or constraints for an accurate answer, without which the search cannot retrieve reasonable results.
+      Example 1:
+        Query: "What's a suitable recipe for a family dinner?"
+        Profile: User's child is allergic to peanuts, and the family has a strong dislike for spicy food.
+        Reason: Avoiding peanuts and spice ensures the recipe meets the family's dietary needs. Otherwise, searched recipe might be unsuitable.
+      Example 2:
+        Query: "How can I apply for a Canadian Study Permit?"
+        Profile: User is a Chinese Citizen living in Beijing.
+        Reason: Specific application process or restrictions for Beijing Chinese citizens may exist. A 
+      Example 3:
+        Query: "What is my highest tolerable heart rate?"
+        Profile: User is 23 years old.
+        Reason:  highest tolerable heart rate = 220 - age. Without the user profile we cannot calculate the heart rate.
+      Example 4:
+        Query: "Can you recommend some good restaurants near me?"
+        Profile: The user is in Paris and plan to visit the Eiffel Tower today.
+        Reason: Without the user's location, we cannot find any restaurants near the user. 
+    
+
+Now, I will give you several example multi-turn dialogs with their user profiles, where each turn contains a question, a rewrite, as well as a response by the intelligent assistant. The reasoning explaining the de-contextualization and personalization consideration while rewriting the question is also provided before the rewrite part.
+
+Example ########### 1 ##########
+Example user profile:
+1. I practice yoga daily.
+2. I have curly hair that falls just past my shoulders.
+3. I work as a graphic designer for a tech startup.
+4. I enjoy cooking, especially Italian cuisine.
+5. I dream of opening my art gallery someday.
+6. I have two sisters.
+7. I have a small tattoo of a hummingbird on my ankle.
+8. I am 5'7" tall and have an athletic body.
+9. My eyes are a striking shade of green.
+10. I love painting in watercolor in my free time.
+11. I volunteer at a local animal shelter.
+12. I am from San Francisco, California.
+13. I often travel to Europe for inspiration.
+14. I am an avid reader of historical fiction.
+15. I enjoy hiking on weekends.
+16. I'm 32 years old.
+17. I have a golden retriever dog named Max.
+18. I think I'm funny.
+19. I speak Spanish and French.
+20. I am a passionate advocate for environmental causes.
+21. I have a close-knit group of friends.
+
+Example dialog:
+Question 1: I'm thinking about traveling to Egypt. What is the best time of year to visit there for pleasant weather?
+Reason 1: De-contextualization: Since this is the first question in the conversation, de-contextualization is unnecessary. Personalization: The need of personalization is level a. No information from the user profile is needed to answer this factual question, so no personalization is necessary.
+So the question should be rewritten as:
+Rewrite 1: I'm thinking about traveling to Egypt. What is the best time of year to visit Egypt for pleasant weather?
+Response 1: The best time to visit Egypt is during winter from October to April, when temperatures are lower. The most popular time for tourists is December and January. Tourism in Egypt is booming this time of the year so make sure you plan in advance. March, April, and September are also good months to travel to Egypt if you plan to avoid the crowd. Most countries need a visa, do you want to know about visas?
+
+Question 2: Oh, do I need a visa?
+Reason 2: De-contextualization: Based on Question 1, the user is considering traveling to Egypt, so 'Egypt' or 'Egyptian' should be mentioned in the question. Personalization: The need of personalization is level c. Including the user's nationality in the query can help find relevant visa application documents. Hence a personalization is necessary: from the 12th sentence in the user profile, we can infer that the user is an American citizen, as they are from San Francisco.
+So the question should be rewritten as:
+Rewrite 2: Oh, do I need a visa to visit Egypt as an American citizen?
+Response 2: American citizens need to apply for a visa before entering Egypt.
+
+Question 3: OK, how should I apply for it?
+Reason 3: De-contextualization: The question contains a pronoun 'it', which requires coreference resolution. Based on Question 2 and Response 2, we know that the current conversation topic is Egyptian visa for U.S. citizens, so we can infer that 'it' refers to an Egyptian visa. Personalization: The need of personalization is level c. we should still mention the user's nationality as what we did in Rewrite 2 for personalization.
+So the question should be rewritten as:
+Rewrite 3: OK, how should I apply for an Egyptian visa as an American citizen?
+Response 3: You can apply for an E-Visa or Visa On Arrival. If you wish to obtain your visa on arrival at Cairo Airport, you can purchase the visa at an approved bank kiosk within the arrivals hall before proceeding to the immigration counters.
+
+Question 4: What's their difference?
+Reason 4: De-contextualization: Coreference resolution is needed for the pronoun 'their' in the question to make it suitable for search. Based on Response 3, the assistant propose 2 types of visa: the E-Visa and the Visa on Arrival. Hence 'their' should refer to these Visas. Personalization: The need of personalization is level a. This question does not require personalization because it is a factual question.
+So the question should be rewritten as:
+Rewrite 4: What's the difference between an Egyptian E-Visa and a Visa On Arrival?
+Response 4: An E-Visa you get in advance before travel. An email will be sent to you containing a PDF of your visa. The E-Visa will also be attached to your passport electronically. A Visa On Arrival is just that you get it on arrival at the airport.
+
+Question 5: Which one is cheaper?
+Reason 5: De-contextualization: Coreference resolution is required to clarify 'which one' in the query, making it more suitable for search. In the previous conversation turn, the user compared the Egyptian E-Visa and Visa on Arrival. Including both names in the question will improve search results. Personalization: The need of personalization is level a. Since this is a factual question, personalization is unnecessary.
+So the question should be rewritten as:
+Rewrite 5: Which of the Egyptian E-Visa and Visa On Arrival is cheaper?
+Response 5: A government single-entry E-Visa costs $25, and a government multiple-entry visa price is $60. The Visa On Arrival also costs $25 and they only accept USD. So, for a single-entry visa, the prices are the same.
+
+Question 6: OK, great. Then I will apply for an E-Visa. Tell me about the must-see historical sites.
+Reason 6: De-contextualization: The conversation has now shifted to historical sites, so the E-visa portion of the original question can be removed. Based on Question 1, the user's destination is Egypt, so 'Egypt' should be included in the query. Personalization: The need of personalization is level a. since the user is asking for 'must-see' sites, personalization is unnecessary for such factual question.
+So the question should be rewritten as:
+Rewrite 6: OK, great. Tell me about the must-see historical sites of Egypt.
+Response 6: Here are some of the must-see things on your holiday in Egypt. Discover the Pyramids of Giza and their surroundings. See the world-famous Sphinx alongside the Great Pyramid of Khufu, the Pyramid of Khafre, and the Pyramid of Menkaure. Wonder around and see the surrounding tombs and temple ruins. Visit the world-famous Abu Simbel temples and marvel at the amazing twin temples that were originally carved out of the mountainside in the 13th century BC. The complex is part of the UNESCO World Heritage Site known as the Nubian Monuments. Cruising the River Nile remains one of the best ways to discover this ancient land. Sail on the Nile by felucca, past scenic sights and spectacular ancient monuments.
+
+Question 7: Thanks, but I'm looking for specific places of interest in the capital.
+Reason 7: De-contextualization: Based on Question 1, the user plans to visit Egypt, so 'capital' should be replaced with 'Cairo,' the capital of Egypt, to improve the search query.Personalization: The need of personalization is level b. The user is asking for recommendations, which relies on their interests. From sentences 3, 5, and 10 in the user profile, we know the user is a graphic designer who enjoys watercolor painting and aspires to open their own gallery, which suggests an interest in art museums. Additionally, sentences 4, 14, and 15 indicate that the user's hobbies include cooking, reading historical fiction, and hiking which implies an interest in historical or hiking places and cooking activities.
+So the question should be rewritten as:
+Rewrite 7: Thanks, but I'm looking for specific places of interest in Cairo. Art museums, paintings, historical or hiking places, and even cooking activities would all interest me.
+Response 7: There are many interesting art galleries to visit there including the Egyptian Museum in Cairo and the Gezira Center for Modern Art in the Gezira district, central Cairo. The Museum of Islamic Art (MIA) in Cairo is also considered one of the greatest museums in the world, with its exceptional collection of rare woodwork and plaster artifacts, as well as metal, ceramic, glass, crystal, and textile objects of all periods, from all over the Islamic world.
+
+Question 8: What about the two other galleries you mentioned??
+Reason 8: De-contextualization: The phrase 'two other galleries' in the question requires coreference resolution. In Response 7, the assistant initially mentioned the Egyptian Museum in Cairo and the Gezira Center for Modern Art, though without providing details. The assistant then described the Museum of Islamic Art (MIA) in detail. Therefore, the user likely seeks more information about the Egyptian Museum in Cairo and the Gezira Center for Modern Art, particularly regarding their exhibits. Personalization: The need of personalization is level a. This question does not require personalization, as the user is requesting general information.
+So the question should be rewritten as:
+Rewrite 8: What about the Egyptian Museum in Cairo and the Gezira Center for Modern Art? What do they exhibit?
+Response 8: The Egyptian museum in Cairo houses over 120,000 artifacts, including the contents of Tutankhamun's tomb and most of the mummies that have been discovered since the 19th century. The museum's exhibits span from the beginning of the Old Kingdom of Ancient Egypt (approximately 2700 BC) through the Greco-Roman period. Gezira Center for Modern Art has some 10,000 paintings and sculptures on display.
+
+Question 9: Nice! What accommodations do you suggest for me?
+Reason 9: De-contextualization: From Question 1, we know the user is planning to visit Egypt. Therefore, specifying 'Egypt' as the country of accommodation will make the query more appropriate. Personalization: The need of personalization is level a. Although finding accommodations is an analytical question typically requiring personalization to match user preferences and this would make the query level b, it is not feasible in this case because no relevant information about the user's accommodation preferences is available in their profile.
+So the question should be rewritten as:
+Rewrite 9: Nice! What accommodations do you suggest for me during my stay in Egypt?
+Response 9: Do you plan to stay in Cairo?
+
+Question 10: Yes, somewhere close to the Nile River.
+Reason 10: De-contextualization: In Response 9, the assistant asked if the user planned to stay in Cairo. In Question 10, the user confirmed this with a 'yes.' Therefore, the assistant should include 'Cairo' in the query along with 'near Nile River' to increase the likelihood of finding relevant places. Personalization: The need of personalization is level a. Although finding accommodations is an analytical question typically requiring personalization to match user preferences, it is not feasible in this case because no relevant information about the user's accommodation preferences is available in their profile.
+So the question should be rewritten as:
+Rewrite 10: Yes. I plan to stay somewhere close to the Nile River in Cairo. What accommodations would you suggest?
+Response 10: The Nile Ritz-Carlton Situated in the heart of Cairo lies the iconic Nile Ritz-Carlton Cairo, situated between the Nile River, Tahrir Square, and adjacent to the Egyptian Museum. Fairmont Nile City Hotel in Cairo Located in the Nile City Towers by the River Nile, this 5-star hotel features a rooftop pool deck with spectacular views across Cairo to the Pyramids. The Cairo Marriott Hotel & Omar Khayyam Casino offers luxurious rooms with a balcony overlooking the river Nile or the gardens. Safir Hotel is in Cairo's city center, a 10-minute walk from the Nile River embankment. It offers luxurious rooms with balconies, an outdoor pool, a gym, and free Wi-Fi in public areas.
+
+Question 11: How far is the first hotel from the Egyptian Museum?
+Reason 11: De-contextualization: Coreference resolution is required to clarify 'the first hotel' in the query, making it more suitable for search. In Response 10, the assistant first mentioned the Nile Ritz-Carlton Cairo, so 'the first hotel' should refer to that property. Personalization: The need of personalization is level a. As this is a factual question, personalization is unnecessary
+So the question should be rewritten as:
+Rewrite 11: How far is the Nile Ritz-Carlton Hotel from the Egyptian Museum?
+Response 11: They are very close, the Nile Ritz-Carlton Cairo is located between the Nile River and the Tahrir Square, adjacent to the Egyptian Museum.
+
+Question 12: Which one is the cheapest? Tell me the price for one night.
+Reason 12: De-contextualization: Coreference resolution is required to clarify 'which one' in the query, making it more suitable for search. Back to Response 10, the assistant proposed 4 hotels: The Nile Ritz-Carlton Cairo, Fairmont Nile City Hotel, Cairo Marriott Hotel & Omar Khayyam Casino, and Safir Hotel. Therefore, 'which one' should refer to these hotels. Personalization: The need of personalization is level a. This question does not require personalization because the user is asking a factual question.
+So the question should be rewritten as:
+Rewrite 12: Which of the Nile Ritz-Carlton, the Fairmont Nile, the Cairo Marriott Hotel & Omar Khayyam Casino, and the Safir Hotel is the cheapest? Tell me the price for a one-night stay at these hotels.
+Response 12: The Safir Hotel is the cheapest hotel among the mentioned hotels. The starting price per night for these hotels is as follows: $100 for Safir Hotel, $114 for Cairo Marriott Hotel & Omar Khayyam Casino Hotel, $112.50 for Fairmont Nile City, and $200 for The Nile Ritz-Carlton Hotel.
+######################
+
+# Now, the examples are over. Let's move to the dialog and the user profile you have to consider.
+
+Here is the **User Profile**:
+
+1. I practice yoga daily.
+2. I have curly hair that falls just past my shoulders.
+3. I work as a graphic designer for a tech startup.
+4. I enjoy cooking, especially Italian cuisine.
+5. I dream of opening my art gallery someday.
+6. I have two sisters.
+7. I have a small tattoo of a hummingbird on my ankle.
+8. I am 5'7" tall and have an athletic body.
+9. My eyes are a striking shade of green.
+10. I love painting in watercolor in my free time.
+11. I volunteer at a local animal shelter.
+12. I am from San Francisco, California.
+13. I often travel to Europe for inspiration.
+14. I am an avid reader of historical fiction.
+15. I enjoy hiking on weekends.
+16. I'm 32 years old.
+17. I have a golden retriever dog named Max.
+18. I think I'm funny.
+19. I speak Spanish and French.
+20. I am a passionate advocate for environmental causes.
+21. I have a close-knit group of friends.
+
+Here is the **Dialog Context**:
+
+Question 1: I'm thinking about traveling to Egypt. What is the best time of year to visit there for pleasant weather?
+Response 1: The best time to visit Egypt is during winter from October to April, when temperatures are lower. The most popular time for tourists is December and January. Tourism in Egypt is booming this time of the year so make sure you plan in advance. March, April, and September are also good months to travel to Egypt if you plan to avoid the crowd. Most countries need a visa, do you want to know about visas?
+
+Question 2: Oh, do I need a visa?
+Response 2: American citizens need to apply for a visa before entering Egypt.
+
+**Last Question**: OK, how should I apply for it?
+
+Now, please decide the personalization necessity level of the **Last Question**, rewrite it, and provide an informative response, taking the **Dialog Context** as well as the **User Profile** into consideration. Please also provide your reasoning that justifies the level you choose as well as the way you rewrite the user query. The output format should always be:
+
+Reason: $Reason
+Level: $Level (choose from a/b/c)
+Rewrite: $Rewrite
+Response: $Response
+
+Go ahead!
+
+
+
+
+
+
+
+
+
