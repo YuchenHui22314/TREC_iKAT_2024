@@ -100,7 +100,8 @@ def run_group(group, merge_fn=merge_compat):
         # restore the per-spec query fields search()/save expect
         a.retrieval_query_list = a.retrieval_query_list  # already set in phase A
         hits = get_dense_ranking_list(qids, merged_D[lo:hi], merged_I[lo:hi], int(a.retrieval_top_k))
-        run = get_run_object_and_save_ranking_list(hits, a)   # builds TREC run + writes ranking file
+        # returns (hits, run); search() unpacks it the same way (search.py:517, evaluation.py:488)
+        _hits2, run = get_run_object_and_save_ranking_list(hits, a)   # builds TREC run + writes ranking file
         if a.run_eval:
             metrics_list = a.metrics.split(",")
             key_form = [m.replace(".", "_") for m in metrics_list]
