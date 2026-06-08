@@ -1,0 +1,162 @@
+# =============================================================================
+# Experiment: continual_ir FINE-TUNED query encoders on iKAT 23/24/25.
+#   - conv-ance : ance_topiocqa_nosched/checkpoint-step-1900   (no-schedule ConvDR ANCE)
+#   - qwen-instr: instruct2_qwen_nosched/checkpoint-step-1880  (no-schedule instruct2 Qwen3)
+#
+# Both were trained ConvDR-style: QUERY encoder fine-tuned, DOC encoder FROZEN. So the
+# EXISTING base ClueWeb22-B indexes (encoded with base ANCE / base Qwen3-Embedding) are
+# REUSED as-is -- only the query encoder path changes vs the base-model runs.
+#
+# These are registered as NEW retrieval models (conv-ance / conv-qwen3) so the results
+# filename stem carries [conv-ance]/[conv-qwen3] and does NOT collide with the base-model
+# runs -- both write into the same ../results and can be compared side by side.
+#
+# Query type = full conversation, NO PTKB:
+#   conv-ance  -> full_conversation   (routes to full_conversation_dense; ConvDR token build,
+#                                       matches training: per-turn 64/64, total 512)
+#   conv-qwen3 -> qwen_conversation   (v2 instruct template; instruction string kept as-is)
+# We DON'T iterate retrieval_query_type (avoids the forbidden conv-ance+qwen_conversation
+# combo); per-model query type + encoder + index are set in param_mapping.retrieval_model.
+#
+# 2 models x 3 topics = 6 experiments (sequential). GPU required.
+# Caveat: the qwen template has NO per-turn truncation (full conv) while the checkpoint
+# trained on 64/64/512 caps -> mildly OOD (per continual_ir memory). Accepted ("差不多就行").
+# =============================================================================
+
+iterate:
+  machine: ["octal40"]
+  # conv-qwen3 DEFERRED: its checkpoint was fine-tuned on the OLD qwen template; the template
+  # changed (User's last question + profile-first), so it must be re-fine-tuned before eval.
+  # Only conv-ance runs now (its ConvDR token build is unaffected by the qwen-template change).
+  retrieval_model: ["conv-ance"]
+  reranker: ["none"]
+  topics: ["ikat_23_test", "ikat_24_test", "ikat_25_test"]
+
+param_mapping:
+  retrieval_model:
+    conv-qwen3:
+      retrieval_query_type: "qwen_conversation"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/continual_ir/instruct2_qwen_nosched/checkpoint-step-1880"
+      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024 (base qwen index, reused)
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: "conv_qwen3"
+    conv-ance:
+      retrieval_query_type: "full_conversation"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/continual_ir/ance_topiocqa_nosched/checkpoint-step-1900"
+      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"  # 12 blocks, dim 768 (base ance index, reused)
+      embed_dim: 768
+      passage_block_num: 12
+      wandb_run_name: "conv_ance"
+
+  topics:
+    ikat_23_test:
+      input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
+      qrel_file_path: "../data/qrels/ikat_23_qrel.txt"
+    ikat_24_test:
+      input_query_path: "../data/topics/ikat24/ikat_2024_test.json"
+      qrel_file_path: "../data/qrels/ikat_24_qrel.txt"
+    ikat_25_test:
+      input_query_path: "../data/topics/ikat25/ikat_2025_test.json"
+      qrel_file_path: "../data/qrels/ikat_2025_qrel.txt"
+
+fixed:
+  ###############################################
+  ## General
+  ###############################################
+  collection: "ClueWeb_ikat"
+  topics: "ikat_23_test"                # overridden by iterate
+  input_query_path: "../data/topics/ikat23/ikat_2023_test.json"   # overridden by param_mapping.topics
+
+  sparse_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/indexes/clueweb22b_ikat23_fengran_sparse_index_2/"
+  output_dir_path: "/tmp/g2_validation"   # G2: write OUTSIDE the paper results tree (no overwrite)
+  qrel_file_path: "../data/qrels/ikat_23_qrel.txt"                # overridden by param_mapping.topics
+  seed: 42
+
+  save_results_to_object: false   # G2: do NOT mutate the topic json
+  save_ranking_list: true
+  run_rag: true
+  run_eval: true
+
+  ###############################################
+  ## Retrieval
+  ###############################################
+  retrieval_model: "conv-qwen3"         # overridden by iterate
+  retrieval_top_k: 1000
+  personalization_group: "all"
+  query_gpu_id: 2
+  query_encoder_batch_size: 16   # qwen conv queries are long (no truncation) -> small batch
+
+  ############# Splade ############ (unused)
+  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
+
+  ############# Dense  ############
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"   # overridden by param_mapping
+  dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"     # overridden by param_mapping
+  faiss_n_gpu: 4
+  use_gpu_for_faiss: true
+  embed_dim: 768                        # overridden by param_mapping.retrieval_model
+  tempmem: -1
+  passage_block_num: 12                 # overridden by param_mapping.retrieval_model
+
+  ############# BM25 ############ (unused)
+  bm25_k1: 0.9
+  bm25_b: 0.4
+
+  ############# QE ############
+  qe_type: "none"
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+
+  ###############################################
+  ## Fusion  (disabled)
+  ###############################################
+  fusion_type: 'none'
+  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  fuse_weights: [0.1, 0.4]
+  fusion_normalization: "none"
+  level_type: "gpt-3.5_judge_and_rewrite"
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: "group"
+  target_metrics: "mrr,ndcg@3,recall@10,recall@100"
+  optimize_step: 0.01
+
+  ###############################################
+  ## Reranking  (disabled)
+  ###############################################
+  reranker: "none"
+  rerank_top_k: 50
+  cache_dir: "/data/rech/huiyuche/huggingface"
+  rerank_batch_size: 67
+  rerank_quant: "none"
+  rankgpt_llm: "gpt-3.5-turbo"
+  window_size: 4
+  step: 1
+
+  ###############################################
+  ## Response Generation  (disabled)
+  ###############################################
+  generation_model: "none"
+  generation_prompt: "none"
+  generation_top_k: 3
+
+  ###############################################
+  ## Metrics
+  ###############################################
+  save_to_wandb: false   # G2: no wandb auth/noise
+  wandb_run_name: ""                    # overridden by param_mapping.retrieval_model
+  metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "ndcg_cut_10", "recall_100", "recall_1000"]
+  given_ranking_list_path: "none"
+
+  ###############################################
+  ## iKAT Project Specific
+  ###############################################
+  run_name: "none"
+  retrieval_query_type: "none"          # overridden by param_mapping.retrieval_model
+  reranking_query_type: "none"
+  generation_query_type: "none"
+  generate_ikat_submission: false

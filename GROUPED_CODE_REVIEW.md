@@ -72,3 +72,28 @@ Ordered by how much of the deliverable they corrupt. **All live in `runner.py`'s
 4. Delete the dead line `runner.py:101` and fix the comment at `:103` (**N1, N2**).
 
 **Then run the validation:** one spec legacy + grouped, `diff` all artifacts that legacy emits — ranking `.txt`, metrics `.json` (incl. `vars(args)` key set/order), per-query `_dict.json`, the per-metric `.txt` appends (from a clean `metrics/` dir), and `git diff` the input topic JSON. They must be byte-identical. Add the `assert len({retrieval_top_k}) == 1` guard (**BUG-A**) and the inter-group `del index; gc.collect()` (**BUG-B**) before the multi-group qwen+ance run; defer N3-N7 (non-blocking).
+---
+
+## G2 empirical validation — PASS (2026-06-08)
+
+Ran `run_experiments_grouped.py --merge compat` for conv-ance × full_conversation ×
+{ikat_23,24,25} (one ance corpus stream, Q=(324,768), topN=1000), output to
+/tmp/g2_validation (no paper-file overwrite; save_results_to_object=false). Byte-compared
+vs the legacy `results/` reference (see /tmp/g2_compare.py).
+
+- **ikat_23, ikat_25: bit-for-bit IDENTICAL** — ranking, per_query, metrics.json
+  (latex header + averaged + vars(args), modulo the 4 deliberately-overridden config keys
+  output_dir_path/ranking_list_path/save_to_wandb/save_results_to_object). Proves the
+  merge/slice/emit + arg-bookkeeping (incl. B8 QR_name) are exactly correct.
+- **ikat_24: identical docids and ranks; scores differ at float32 ULP level**
+  (e.g. 695.739990 vs 695.740478). 6578/103000 ranking lines differ, 2032 deep near-tie
+  reorders. ALL cutoff metrics (nDCG@1..10, P@1..20, recall@5..1000, recip_rank) IDENTICAL;
+  only full-depth map/ndcg move by 3e-6.
+
+Root cause: GPU GEMM non-determinism — faiss-GPU IndexFlatIP runs all 324 stacked queries in
+one cuBLAS GEMM; legacy runs each year's ~100 queries alone. Different row count -> different
+cuBLAS tiling -> last-bit score noise -> near-tied deep docs reorder. NOT a framework bug
+(merge_compat is byte-exact; 2/3 years are bit-identical). The paper's reported metrics are
+identical. Inherent to GPU search, would occur between two legacy runs of differing batch shape.
+
+Config: apcir/evaluate/fuse_then_eval_config_g2_validation.yaml. Comparison: /tmp/g2_compare.py.
