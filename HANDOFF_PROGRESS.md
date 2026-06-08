@@ -52,11 +52,43 @@ DIFFERENT physical disks AND if still disk-bound after stacking (marginal; Phase
 
 Savepoint before refactor: **tag `avant_refactoration`** (commit c59942e, pushed to `yuchen`).
 
-### Done
-- `src/apcir/search/grouped/__init__.py`
-- `src/apcir/search/grouped/merge.py` — `merge_compat` (byte-identical to legacy two-pointer,
-  deepcopy removed as proven-noop) + `merge_topk` (fast numpy running top-K, ~100x; FAISS-pipeline opt).
-- `src/apcir/search/grouped/test_merge.py` — **GATE 1 PASSED** (compat==legacy byte-identical; topk matches).
+### Done (committed on `yuchen`)
+- `evaluation.py`: factored `build_parser()` (rename get_args→build_parser + thin get_args wrapper; behavior preserved).
+- `grouped/__init__.py`.
+- `grouped/merge.py` — `merge_compat` (byte-identical to legacy two-pointer, deepcopy removed as proven-noop)
+  + `merge_topk` (fast numpy running top-K, ~100x; FAISS-pipeline opt). `test_merge.py` — **GATE 1 PASSED**.
+- `grouped/spec.py` — `CorpusKey`(index_dir,embed_dim,block_num; encoder EXCLUDED), `ExperimentSpec`,
+  `expand_specs(config)` (reuses build_parser via parse_known_args; mirrors run_experiments:78-99),
+  `make_file_name_stem` (exact replica of evaluation.py:372-382), `partition_by_corpus`.
+  **VALIDATED**: qwen_conv → 12 specs/1 group (qwen3+conv-qwen3 stack, dim1024/6blk); continual_ir_ft → 3/1
+  (dim768/12blk); stems byte-match legacy result files.
+- `grouped/block_source.py` — `PickleBlockSource(index_dir,num_blocks).iter_blocks()` → (block_id, emb, ids);
+  `.validate()`. Lifts dense_search.py:98-113.
+
+### RUNNER RECIPE (exact orchestration to replicate — evaluation.py:455-564 per spec)
+Legacy per-spec flow (the runner must reproduce its outputs byte-identically):
+1. `(rql,_,_,_,qids,plvl,wts,turns)=get_query_list(args)` (evaluation.py:455). **MUTATES** args.retrieval_query_type
+   full_conversation→full_conversation_dense (AFTER stem already saved — good).
+2. set on args: `ranking_list_path` (output stem path), `file_name_stem`, `retrieval_query_list=rql`,
+   `qid_list_string=qids` (+ reranking/fusion/level/weights). (evaluation.py:472-481)
+3. `hits, run = search(args)` (search.py): dense → `hits = dense_search(args)` (search.py:614) which =
+   get_test_query_embedding (encode) → build_faiss_index → search_one_by_one_with_faiss (STREAM) →
+   get_dense_ranking_list(qids, D, I, top_k); the outer `search` wraps to `(hits, run)` via
+   `get_run_object_and_save_ranking_list(hits,args)` (search.py:45) which builds the TREC `run` dict AND
+   writes the ranking-list file to args.ranking_list_path.
+4. `evaluate(run, args.qrel_file_path, ranking_list_path, metrics_list, metrics_list_key_form)`
+   (evaluation_util.py:191) where metrics_list=args.metrics.split(","), key_form=[m.replace(".","_")].
+   (evaluation.py:548-558) → (query_metrics_dic, averaged_metrics).
+5. save metrics JSON (evaluation.py:560+; read that block) + append to topic-object json (save_results_to_object).
+
+**Grouped runner** = do steps 1-2 + ENCODE for ALL specs in the group up front → stack Q (record per-spec
+row-slice + qids); ONE PickleBlockSource stream: build_faiss_index ONCE, per block `index.add` →
+`index.search(Q,topN)` (topN=retrieval_top_k) → map ids via block ids → `merge_compat` accumulate →
+`index.reset()` ONCE/block; then per spec slice `D[lo:hi],I[lo:hi]` → `get_dense_ranking_list` → build run via
+`get_run_object_and_save_ranking_list` (set args.ranking_list_path/file_name_stem per spec first) → `evaluate`
+→ save metrics (replicate step 5). **NEED TO READ**: search.py get_run_object_and_save_ranking_list:45 body,
+dense_search:614 exact (how hits is built from D,I via get_dense_ranking_list), and evaluation.py:560-590 metrics-save.
+**Validate G2** (single-job group byte-identical to legacy ranking file) before trusting.
 
 ### Next (Phase 0/1 of the design)
 1. `grouped/spec.py`: `CorpusKey(index_dir, embed_dim, block_num)` (encoder EXCLUDED → diff encoders same
