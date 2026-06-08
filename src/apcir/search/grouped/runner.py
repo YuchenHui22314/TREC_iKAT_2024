@@ -102,6 +102,11 @@ def run_group(group, merge_fn=merge_compat):
         a.file_name_stem = spec.file_name_stem
         a.file_name_stem_without_group = spec.file_name_stem   # B3 (== stem for personalization_group "all")
         a.save_ranking_list = True                             # B6: guarantee ranking is written
+        # B8: legacy search() (no-fusion branch, search.py:211) sets QR_name = the *routed*
+        # retrieval_query_type (get_query_list already rewrote full_conversation->_dense in
+        # PHASE A) and never deletes it, so it lands LAST in vars(args). 64 argparse keys +
+        # [ranking_list_path, file_name_stem, file_name_stem_without_group, QR_name] = 68, exact.
+        a.QR_name = a.retrieval_query_type
 
         hits = get_dense_ranking_list(qids, merged_D[lo:hi], merged_I[lo:hi], int(a.retrieval_top_k))
         _hits2, run = get_run_object_and_save_ranking_list(hits, a)   # (hits, run); writes ranking .txt
