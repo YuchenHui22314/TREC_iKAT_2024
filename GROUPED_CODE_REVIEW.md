@@ -97,3 +97,32 @@ cuBLAS tiling -> last-bit score noise -> near-tied deep docs reorder. NOT a fram
 identical. Inherent to GPU search, would occur between two legacy runs of differing batch shape.
 
 Config: apcir/evaluate/fuse_then_eval_config_g2_validation.yaml. Comparison: /tmp/g2_compare.py.
+
+---
+
+## G2 empirical validation — PASSED (2026-06-08)
+
+Ran `run_experiments_grouped.py --merge compat` for conv-ance × full_conversation ×
+{ikat_23,24,25} (one shared ance corpus stream, Q=(324,768), topN=1000) into
+`/tmp/g2_validation` (no overwrite of paper results; save_results_to_object=false).
+Byte-compared ranking + per_query + metrics.json vs the legacy results.
+
+- **ikat_23, ikat_25: FULLY byte-identical** (ranking md5, per_query md5, averaged metrics, latex header).
+- **ikat_24: differs only by GPU float non-determinism.** 103000 ranking lines:
+  4546 are same-qid/docid/rank with score differing in the float32 LSB (max |Δ|=0.00122);
+  2032 are near-tie reorderings (two ~equal-score docs swap). Averaged metrics:
+  recip_rank/ndcg_cut_3/recall_10/recall_100/ndcg_cut_10 Δ=0; only MAP Δ=3.09e-6
+  (0.042784→0.042780) — rounds to the same reported number.
+- `vars(args)` diffs only in the 4 keys we deliberately overrode for the validation
+  (output_dir_path, ranking_list_path, save_to_wandb, save_results_to_object); key
+  ORDER identical, QR_name present (B8 fix confirmed live: value `full_conversation_dense`).
+
+**Root cause of the ikat_24 delta:** stacking all 3 query-sets into one FAISS-GPU GEMM
+changes the reduction/tiling order vs legacy's per-year search → float32 LSB jitter →
+near-tie swaps. NOT a logic bug (merge_compat is byte-identical per GATE 1; 23/25 prove
+the pipeline). Byte-exact reproduction is unattainable for stacked GPU search in general.
+
+**Verdict:** the grouped "stream once, fan out" framework is numerically equivalent to the
+legacy path within GPU float noise; reported metrics are unaffected. Safe for the paper and
+for future shared-corpus experiments. (Validation artifacts: /tmp/g2_validation,
+/tmp/g2_compare.py, config fuse_then_eval_config_g2_validation.yaml.)
