@@ -7,11 +7,12 @@ import copy
 import pickle
 import torch
 import numpy as np
+import json
 from transformers import RobertaConfig, RobertaTokenizer, AutoTokenizer
 
 from .models import ANCE, QwenEmbedding
 from .utils import  set_seed
-from .data_format import  Retrieval_trec, Retrieval_topiocqa
+from .data_format import  Retrieval_trec, pad_and_mask
 
 
 
@@ -211,6 +212,61 @@ def search_one_by_one_with_faiss(passage_block_num, passge_embeddings_dir, index
     return merged_D, merged_I
 
 
+def build_ance_conv_query_tokens(tokenizer, query_json,
+                                 max_query_length=64, max_response_length=64,
+                                 max_concat_length=512):
+    """Build the ConvDR conversational query token ids for ANCE.
+
+    `query_json` is a JSON-serialized turn list [u1, r1, u2, r2, ..., u_current]
+    (produced by topics.py `full_conversation_dense`). This reproduces
+    continual_ir's training `build_conv_query_tokens` EXACTLY:
+      - add the current utterance first (most recent), drop its [CLS], keep [SEP];
+      - walk history backward (odd=response cap max_response_length, even=query cap
+        max_query_length), drop each segment's [CLS], budget-truncate oldest-first;
+      - reverse back to chronological order;
+      - prepend a SINGLE [CLS].
+    Result: [CLS] u1 [SEP] r1 [SEP] ... u_current [SEP]. Caps 64/64/512 match the
+    ANCE training defaults (train_continually_ddp_cl.py).
+    """
+    turns = json.loads(query_json)
+    cur_utt_text, ctx_utts_text = turns[-1], turns[:-1]
+    max_context_len = max_concat_length - 1
+    flat, total = [], 0
+
+    # 1. current utterance first; drop [CLS], keep trailing [SEP]
+    cur = tokenizer.encode(cur_utt_text, add_special_tokens=True,
+                           max_length=max_query_length, truncation=True)[1:]
+    if len(cur) > max_context_len:
+        cur = cur[:max_context_len]
+        cur[-1] = tokenizer.sep_token_id
+    flat.append(cur)
+    total += len(cur)
+
+    # 2. history backward, oldest-first truncation
+    for j in range(len(ctx_utts_text) - 1, -1, -1):
+        cap = max_response_length if j % 2 == 1 else max_query_length
+        tok = tokenizer.encode(ctx_utts_text[j], add_special_tokens=True,
+                               max_length=cap, truncation=True)[1:]   # drop [CLS]
+        remaining = max_context_len - total
+        if remaining <= 0:
+            break
+        if len(tok) <= remaining:
+            flat.append(tok)
+            total += len(tok)
+        else:
+            tok = tok[:remaining]
+            tok[-1] = tokenizer.sep_token_id   # must end with [SEP]
+            flat.append(tok)
+            total += len(tok)
+            break
+
+    # 3. restore chronological order; 4. flatten + prepend single [CLS]
+    flat = flat[::-1]
+    ids = [tokenizer.cls_token_id] + [t for seg in flat for t in seg]
+    assert len(ids) <= max_concat_length
+    return ids
+
+
 def get_test_query_embedding(args):
     '''
     Load the model, build the test query dataset/dataloader, and get the query embeddings.
@@ -240,7 +296,7 @@ def get_test_query_embedding(args):
     # query and document embeddings are directly comparable. The instruction is
     # already baked into the query string by the `oracle_qwen_instruct` query type;
     # documents carry NO instruction (Qwen3-Embedding protocol).
-    if args.retrieval_model == "qwen3":
+    if args.retrieval_model in ("qwen3", "conv-qwen3"):
         query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu"
         tokenizer = AutoTokenizer.from_pretrained(args.dense_query_encoder_path, padding_side="left")
         model = QwenEmbedding(args.dense_query_encoder_path).to(query_device)
@@ -266,71 +322,42 @@ def get_test_query_embedding(args):
         torch.cuda.empty_cache()
         return embeddings, embedding2id
 
-    # laod query encoder and tokenizer
-    if args.retrieval_model == "ance":
+    # ---- ANCE / conv-ANCE query encoding ------------------------------------
+    # Symmetric with the qwen branch above: load encoder, then inline batched encoding
+    # (no Dataset/DataLoader). For full_conversation_dense the query is a JSON turn list
+    # -> build_ance_conv_query_tokens (ConvDR build, matches continual_ir training); every
+    # other ANCE query type is a single query -> plain tokenizer.encode. Works for both
+    # iKAT and topiocqa topics (the distinction is the query type, not the corpus).
+    if args.retrieval_model in ("ance", "conv-ance"):
+        query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu"
         config = RobertaConfig.from_pretrained(args.dense_query_encoder_path)
         tokenizer = RobertaTokenizer.from_pretrained(args.dense_query_encoder_path, do_lower_case=True)
-        query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0  else "cpu"
         model = ANCE.from_pretrained(args.dense_query_encoder_path, config=config).to(query_device)
+        model.eval()
 
-    # test dataset/dataloader
-    print("Buidling test dataset...")
-    if "ikat" in args.topics:
-        # full_conversation_dense needs the CONVERSATIONAL dataset: it splits the query on
-        # the "[SEP]" placeholder and rebuilds the tokens with the real sep token +
-        # reverse-add/truncate-oldest. Every other iKAT QR is a single query -> Retrieval_trec.
-        if args.retrieval_query_type == "full_conversation_dense":
-            test_dataset = Retrieval_topiocqa(
-                tokenizer = tokenizer,
-                retrieval_query_list = args.retrieval_query_list,
-                qid_list_string = args.qid_list_string
-                )
-        else:
-            test_dataset = Retrieval_trec(
-                tokenizer = tokenizer,
-                retrieval_query_list = args.retrieval_query_list,
-                qid_list_string = args.qid_list_string
-                )
+        is_conv = (args.retrieval_query_type == "full_conversation_dense")
+        embeddings, embedding2id = [], []
+        bs = args.query_encoder_batch_size
+        with torch.no_grad():
+            for i in trange(0, len(args.retrieval_query_list), bs,
+                            desc="generating ance query embeddings"):
+                batch_q  = args.retrieval_query_list[i:i + bs]
+                batch_id = args.qid_list_string[i:i + bs]
+                if is_conv:
+                    seqs = [build_ance_conv_query_tokens(tokenizer, q) for q in batch_q]
+                else:
+                    seqs = [tokenizer.encode(q, add_special_tokens=True,
+                                             max_length=512, truncation=True) for q in batch_q]
+                input_ids, input_masks = pad_and_mask(seqs, tokenizer.pad_token_id)
+                query_embs = model(input_ids.to(query_device), input_masks.to(query_device))
+                embeddings.append(query_embs.detach().cpu().numpy())
+                embedding2id.extend(batch_id)
+        embeddings = np.concatenate(embeddings, axis=0)
+        torch.cuda.empty_cache()
+        return embeddings, embedding2id
 
-    elif "topiocqa" in args.topics:
-        test_dataset = Retrieval_topiocqa(
-            tokenizer = tokenizer,
-            retrieval_query_list = args.retrieval_query_list,
-            qid_list_string = args.qid_list_string
-            )
-    else:
-        raise NotImplementedError(f"Dataset building not implemented for topic type {args.topics}")
-    
-    test_loader = DataLoader(
-        test_dataset, 
-        batch_size = args.query_encoder_batch_size, 
-        shuffle=False, 
-        collate_fn=test_dataset.get_collate_fn(tokenizer.pad_token_id)
-        )
-
-    print("Generating query embeddings for testing...")
-    model.zero_grad()
-    model.eval()
-
-    embeddings = []
-    embedding2id = []
-
-    with torch.no_grad():
-        for batch in tqdm(test_loader, desc="generating query embeddings"):
-            #model.eval()
-            bt_sample_ids = batch["qid"] # question id
-            input_ids = batch["input_ids"].to(query_device)
-            input_masks = batch["attention_mask"].to(query_device)
-            
-            query_embs = model(input_ids, input_masks)
-            query_embs = query_embs.detach().cpu().numpy()
-            embeddings.append(query_embs)
-            embedding2id.extend(bt_sample_ids)
-
-    embeddings = np.concatenate(embeddings, axis = 0)
-    torch.cuda.empty_cache()
-
-    return embeddings, embedding2id
+    raise NotImplementedError(
+        f"query encoding not implemented for retrieval_model={args.retrieval_model}")
 
 
 def get_dense_ranking_list(

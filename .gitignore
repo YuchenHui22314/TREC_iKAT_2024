@@ -196,3 +196,4 @@ src/evaluate/wandb/*
 **/wandb/*
 #
 /data/topics/ikat23/fengran_10_qr_GRF_mistral.json
+results_oldprompt_archive/

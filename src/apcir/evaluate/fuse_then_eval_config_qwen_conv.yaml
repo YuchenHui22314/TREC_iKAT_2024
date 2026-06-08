@@ -18,25 +18,32 @@
 
 iterate:
   machine: ["octal40"]
-  retrieval_model: ["qwen3"]
+  retrieval_model: ["qwen3", "conv-qwen3"]   # base Qwen3-Embedding + continual_ir v3 FT (instruct3)
   retrieval_query_type: ["qwen_conversation", "qwen_conversation_ptkb"]   # both run on all 3 years
   reranker: ["none"]
   topics: ["ikat_23_test", "ikat_24_test", "ikat_25_test"]
 
 param_mapping:
   # Per-model: query type + dense index + embedding dim + encoder.
+  # Both qwen3 and conv-qwen3 use the SAME base-qwen3 ClueWeb index (doc encoder frozen).
   retrieval_model:
     qwen3:
       # retrieval_query_type is iterated (qwen_conversation / qwen_conversation_ptkb)
       dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
-      dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024
+      dense_index_dir_path: "/part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024 (local SSD)
       embed_dim: 1024
       passage_block_num: 6
       wandb_run_name: "qwen3_conv"
+    conv-qwen3:
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/continual_ir/instruct3_qwen_nosched/checkpoint-step-1880"   # v3 FT (User's last question + profile-first)
+      dense_index_dir_path: "/part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024 (base qwen index, reused)
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: "conv_qwen3"
     ance:
       retrieval_query_type: "oracle"
       dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
-      dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
+      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"
       embed_dim: 768
       passage_block_num: 12    # ance merged index = 12 blocks
       wandb_run_name: "ance_oracle"
@@ -61,7 +68,7 @@ fixed:
   topics: "ikat_23_test"                # overridden by iterate
   input_query_path: "../data/topics/ikat23/ikat_2023_test.json"   # overridden by param_mapping.topics
 
-  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"
+  sparse_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/indexes/clueweb22b_ikat23_fengran_sparse_index_2/"
   output_dir_path: "../results"
   qrel_file_path: "../data/qrels/ikat_23_qrel.txt"                # overridden by param_mapping.topics
   seed: 42
@@ -88,7 +95,7 @@ fixed:
   ############# Dense  ############
   use_pyserini_dense_search: false
   dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"   # overridden by param_mapping.retrieval_model
-  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"     # overridden by param_mapping.retrieval_model
+  dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"     # overridden by param_mapping.retrieval_model
   faiss_n_gpu: 4
   use_gpu_for_faiss: true
   embed_dim: 768                        # overridden by param_mapping.retrieval_model (qwen3 -> 1024)

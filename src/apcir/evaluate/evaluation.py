@@ -45,7 +45,7 @@ def get_args():
     ###################
 
     parser.add_argument("--retrieval_model", type=str, default="BM25",
-                        choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama", "qwen3"])
+                        choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama", "qwen3", "conv-qwen3", "conv-ance"])
     parser.add_argument("--retrieval_top_k", type=int, default="1000")
     parser.add_argument("--personalization_group", type=str, default="a", 
                         choices=["a","b","c","all"]

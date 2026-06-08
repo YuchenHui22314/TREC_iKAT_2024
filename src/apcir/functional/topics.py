@@ -373,38 +373,38 @@ class Turn:
             # qwen3-only. Conversation (interleaved user/system turns) ONLY — the no-PTKB
             # counterpart of qwen_conversation_ptkb (everything else identical). No truncation
             # (Qwen3 long context). fullconv_ctx = [u1, r1, u2, r2, ...] from get_query_list.
-            assert args.retrieval_model == "qwen3", \
-                f"qwen_conversation is qwen3-only; got retrieval_model={args.retrieval_model}"
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                f"qwen_conversation is qwen3/conv-qwen3 only; got retrieval_model={args.retrieval_model}"
             instruction = ("Given a conversation between a user and an AI assistant, retrieve "
                            "passages that answer the user's last question.")
             ctx = getattr(self, "fullconv_ctx", [])
             conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
-            conv_parts.append(f"User: {self.current_utterance}")
+            conv_parts.append(f"User's last question: {self.current_utterance}")
             final_query = f"Instruct: {instruction}\nConversation: {' '.join(conv_parts)}"
         elif query_type == "qwen_conversation_ptkb":
             # qwen3-only. Conversation (interleaved user/system turns) + the FULL user
             # profile (ALL PTKB statements, numbered 1. 2. 3. ...) — deliberately NOT just
             # the oracle-relevant PTKB, to test Qwen's denoising. No truncation (Qwen3 long
             # context). fullconv_ctx = [u1, r1, u2, r2, ...] is attached in get_query_list.
-            assert args.retrieval_model == "qwen3", \
-                f"qwen_conversation_ptkb is qwen3-only; got retrieval_model={args.retrieval_model}"
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                f"qwen_conversation_ptkb is qwen3/conv-qwen3 only; got retrieval_model={args.retrieval_model}"
             instruction = ("Given a conversation between a user and an AI assistant and the "
                            "user's profile, retrieve passages that answer the user's last "
                            "question in a way consistent with the user's profile.")
             ctx = getattr(self, "fullconv_ctx", [])
             conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
-            conv_parts.append(f"User: {self.current_utterance}")
+            conv_parts.append(f"User's last question: {self.current_utterance}")
             profile = " ".join(f"{i}. {v}" for i, v in enumerate(self.ptkb.values(), 1))
             final_query = (f"Instruct: {instruction}\n"
-                           f"Conversation: {' '.join(conv_parts)}\n"
-                           f"User Profile: {profile}")
+                           f"User Profile: {profile}\n"
+                           f"Conversation: {' '.join(conv_parts)}")
         elif query_type == "qwen_conversation_ptkb_previous_conv_as_ptkb":
             # qwen3-only AND iKAT-2025-only: uses the SAME persona's previous conversation
             # (e.g. current X-2 -> previous X-1) as extra context, plus current conversation
             # and the FULL PTKB profile. 23/24 have no "previous conversation" per user, so
             # this asserts the 2025 topics. prev_conv_ctx is attached in get_query_list.
-            assert args.retrieval_model == "qwen3", \
-                f"qwen_conversation_ptkb_previous_conv_as_ptkb is qwen3-only; got {args.retrieval_model}"
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                f"qwen_conversation_ptkb_previous_conv_as_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
             assert args.topics == "ikat_25_test", \
                 ("qwen_conversation_ptkb_previous_conv_as_ptkb requires iKAT 2025 (same persona has "
                  f"a previous conversation); got topics={args.topics}")
@@ -416,12 +416,12 @@ class Turn:
             prev_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(prev)]
             ctx = getattr(self, "fullconv_ctx", [])
             cur_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
-            cur_parts.append(f"User: {self.current_utterance}")
+            cur_parts.append(f"User's last question: {self.current_utterance}")
             profile = " ".join(f"{i}. {v}" for i, v in enumerate(self.ptkb.values(), 1))
             final_query = (f"Instruct: {instruction}\n"
+                           f"User Profile: {profile}\n"
                            f"Previous Conversation: {' '.join(prev_parts)}\n"
-                           f"Conversation: {' '.join(cur_parts)}\n"
-                           f"User Profile: {profile}")
+                           f"Conversation: {' '.join(cur_parts)}")
         elif "+" in query_type:
             query_type_list = query_type.split("+")
             reformulation_list = [self.query_type_2_query(query_type,0,0.0,args) for query_type in query_type_list]
@@ -482,24 +482,21 @@ class Turn:
                 final_query = rewrite*initial_query_weight + " " + response
         elif query_type == "full_conversation_dense":
             # full_conversation_dense = use the WHOLE conversation as the dense query.
-            # The "[SEP]"/"[sep]" string is a PLACEHOLDER: the dense dataset
-            # (data_format.py: Retrieval_topiocqa) splits the query on it and rebuilds the
-            # token sequence with the REAL tokenizer.sep_token_id, doing recency-priority
-            # reverse-add + truncate-oldest (build_conv_query_tokens). ANCE-only in practice
+            # We pass the turn list [u1, r1, u2, r2, ..., u_current] as a JSON string; the
+            # ANCE dense encoder (dense_search.build_ance_conv_query_tokens) json.loads it
+            # and builds the ConvDR token sequence ([CLS] u1 [SEP] r1 [SEP] ... u_current
+            # [SEP]) with per-turn truncation + recency-priority reverse-add. JSON replaces
+            # the old "[SEP]"-string placeholder hack (which collided with the real sep-token
+            # surface form and had a [SEP]/[sep] case-mismatch bug). ANCE-only in practice
             # (RoBERTa 512-token budget); qwen3 long-context queries do NOT go through here.
             if "topiocqa" in args.topics:
-                self.context_utterances.append(self.current_utterance)
-                final_query = "[sep]".join(self.context_utterances)
-                # [sep] is just a placeholder. we will replace it with the real sep token in the search code
+                interleaved = self.context_utterances + [self.current_utterance]
             else:
-                # iKAT: context_utterances holds only prior USER utterances, so we use the
+                # iKAT: context_utterances holds only prior USER utterances, so use the
                 # interleaved (user, system) history attached by get_query_list as
-                # `fullconv_ctx` = [u1, r1, ..., u_{i-1}, r_{i-1}], then append the current
-                # utterance. ⚠️ join with UPPERCASE "[SEP]" to match Retrieval_topiocqa's
-                # split; the topiocqa branch above uses lowercase "[sep]" (a latent
-                # case-mismatch bug) which we leave untouched to not change topiocqa results.
+                # `fullconv_ctx` = [u1, r1, ..., u_{i-1}, r_{i-1}], then the current utterance.
                 interleaved = getattr(self, "fullconv_ctx", []) + [self.current_utterance]
-                final_query = "[SEP]".join(interleaved)
+            final_query = json.dumps(interleaved, ensure_ascii=False)
         else:
             reformulation = self.find_reformulation(query_type)
             if reformulation is not None:

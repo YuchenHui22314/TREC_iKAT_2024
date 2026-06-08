@@ -1,53 +1,54 @@
 # =============================================================================
-# Task 4: Qwen3 (oracle_qwen_instruct) vs ANCE (oracle) on iKAT 23/24/25.
-# Passage ranking, RETRIEVAL ONLY (no rerank, no fusion, no generation).
+# Experiment: continual_ir FINE-TUNED query encoders on iKAT 23/24/25.
+#   - conv-ance : ance_topiocqa_nosched/checkpoint-step-1900   (no-schedule ConvDR ANCE)
+#   - qwen-instr: instruct2_qwen_nosched/checkpoint-step-1880  (no-schedule instruct2 Qwen3)
 #
-# Design note (IMPORTANT): qwen3 must use `oracle_qwen_instruct` and ance must use
-# `oracle`. We therefore DO NOT iterate `retrieval_query_type` (a Cartesian product
-# would create the forbidden `ance + oracle_qwen_instruct` combo — see the assert in
-# topics.py:query_type_2_query). Instead, the per-model query type + dense index +
-# embed_dim + encoder are set in `param_mapping.retrieval_model`, which run_experiments.py
-# applies to a copy of `fixed` (iterate values are appended last; since these keys are
-# NOT in iterate, the param_mapping values stand).
+# Both were trained ConvDR-style: QUERY encoder fine-tuned, DOC encoder FROZEN. So the
+# EXISTING base ClueWeb22-B indexes (encoded with base ANCE / base Qwen3-Embedding) are
+# REUSED as-is -- only the query encoder path changes vs the base-model runs.
 #
-# 2 models x 3 topics = 6 experiments (run sequentially).
-# GPU is required (query encoding + FAISS) -> launch is gated on user approval.
-# To run: point run_experiments.py's config_file at this file (or add a --config arg).
-#   qwen3 dense index = produced by the merge step (clueweb22b_ikat23_qwen_merged).
+# These are registered as NEW retrieval models (conv-ance / conv-qwen3) so the results
+# filename stem carries [conv-ance]/[conv-qwen3] and does NOT collide with the base-model
+# runs -- both write into the same ../results and can be compared side by side.
+#
+# Query type = full conversation, NO PTKB:
+#   conv-ance  -> full_conversation   (routes to full_conversation_dense; ConvDR token build,
+#                                       matches training: per-turn 64/64, total 512)
+#   conv-qwen3 -> qwen_conversation   (v2 instruct template; instruction string kept as-is)
+# We DON'T iterate retrieval_query_type (avoids the forbidden conv-ance+qwen_conversation
+# combo); per-model query type + encoder + index are set in param_mapping.retrieval_model.
+#
+# 2 models x 3 topics = 6 experiments (sequential). GPU required.
+# Caveat: the qwen template has NO per-turn truncation (full conv) while the checkpoint
+# trained on 64/64/512 caps -> mildly OOD (per continual_ir memory). Accepted ("差不多就行").
 # =============================================================================
 
 iterate:
   machine: ["octal40"]
-  retrieval_model: ["qwen3", "conv-qwen3"]   # base Qwen3-Embedding + continual_ir v3 FT (instruct3)
-  retrieval_query_type: ["qwen_conversation_ptkb_previous_conv_as_ptkb"]   # asserts ikat_25 only
+  # conv-qwen3 DEFERRED: its checkpoint was fine-tuned on the OLD qwen template; the template
+  # changed (User's last question + profile-first), so it must be re-fine-tuned before eval.
+  # Only conv-ance runs now (its ConvDR token build is unaffected by the qwen-template change).
+  retrieval_model: ["conv-ance"]
   reranker: ["none"]
-  topics: ["ikat_25_test"]            # previous-conversation exists only in iKAT-2025
+  topics: ["ikat_23_test", "ikat_24_test", "ikat_25_test"]
 
 param_mapping:
-  # Per-model: query type + dense index + embedding dim + encoder.
   retrieval_model:
-    qwen3:
-      # retrieval_query_type is iterated (qwen_conversation_ptkb_previous_conv_as_ptkb)
-      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
-      dense_index_dir_path: "/part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024 (local SSD)
-      embed_dim: 1024
-      passage_block_num: 6
-      wandb_run_name: "qwen3_prevconv"
     conv-qwen3:
-      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/continual_ir/instruct3_qwen_nosched/checkpoint-step-1880"   # v3 FT (User's last question + profile-first)
-      dense_index_dir_path: "/part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024 (base qwen index, reused)
+      retrieval_query_type: "qwen_conversation"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/continual_ir/instruct2_qwen_nosched/checkpoint-step-1880"
+      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_qwen_merged"   # 6 blocks, dim 1024 (base qwen index, reused)
       embed_dim: 1024
       passage_block_num: 6
       wandb_run_name: "conv_qwen3"
-    ance:
-      retrieval_query_type: "oracle"
-      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
-      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"
+    conv-ance:
+      retrieval_query_type: "full_conversation"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/continual_ir/ance_topiocqa_nosched/checkpoint-step-1900"
+      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"  # 12 blocks, dim 768 (base ance index, reused)
       embed_dim: 768
-      passage_block_num: 12    # ance merged index = 12 blocks
-      wandb_run_name: "ance_oracle"
+      passage_block_num: 12
+      wandb_run_name: "conv_ance"
 
-  # Per-topic: query file + qrel + block count.
   topics:
     ikat_23_test:
       input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
@@ -68,7 +69,7 @@ fixed:
   input_query_path: "../data/topics/ikat23/ikat_2023_test.json"   # overridden by param_mapping.topics
 
   sparse_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/indexes/clueweb22b_ikat23_fengran_sparse_index_2/"
-  output_dir_path: "../results"
+  output_dir_path: "../results"   # filenames carry [conv-ance]/[conv-qwen3] -> no collision with base runs
   qrel_file_path: "../data/qrels/ikat_23_qrel.txt"                # overridden by param_mapping.topics
   seed: 42
 
@@ -80,28 +81,27 @@ fixed:
   ###############################################
   ## Retrieval
   ###############################################
-  retrieval_model: "qwen3"              # overridden by iterate
+  retrieval_model: "conv-qwen3"         # overridden by iterate
   retrieval_top_k: 1000
   personalization_group: "all"
-  query_gpu_id: 2                       # GPU id for query encoding (gated run)
-  query_encoder_batch_size: 8    # prev-conv queries are the LONGEST (two full conversations +
-                                 # PTKB); keep the batch tiny to avoid OOM (padding to longest)
+  query_gpu_id: 2
+  query_encoder_batch_size: 16   # qwen conv queries are long (no truncation) -> small batch
 
-  ############# Splade ############ (unused here)
+  ############# Splade ############ (unused)
   splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
   splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
 
   ############# Dense  ############
   use_pyserini_dense_search: false
-  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"   # overridden by param_mapping.retrieval_model
-  dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"     # overridden by param_mapping.retrieval_model
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"   # overridden by param_mapping
+  dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged"     # overridden by param_mapping
   faiss_n_gpu: 4
   use_gpu_for_faiss: true
-  embed_dim: 768                        # overridden by param_mapping.retrieval_model (qwen3 -> 1024)
+  embed_dim: 768                        # overridden by param_mapping.retrieval_model
   tempmem: -1
-  passage_block_num: 12                 # overridden by param_mapping.topics
+  passage_block_num: 12                 # overridden by param_mapping.retrieval_model
 
-  ############# BM25 ############ (unused here)
+  ############# BM25 ############ (unused)
   bm25_k1: 0.9
   bm25_b: 0.4
 
@@ -127,7 +127,7 @@ fixed:
   ###############################################
   ## Reranking  (disabled)
   ###############################################
-  reranker: "none"                      # overridden by iterate (still none)
+  reranker: "none"
   rerank_top_k: 50
   cache_dir: "/data/rech/huiyuche/huggingface"
   rerank_batch_size: 67
@@ -144,7 +144,7 @@ fixed:
   generation_top_k: 3
 
   ###############################################
-  ## Metrics  (default: report all; pick what you need)
+  ## Metrics
   ###############################################
   save_to_wandb: true
   wandb_run_name: ""                    # overridden by param_mapping.retrieval_model
