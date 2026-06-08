@@ -23,7 +23,7 @@ from .evaluation_util import (
 )
 
 
-def get_args():
+def build_parser():
     parser = argparse.ArgumentParser()
 
     #########################
@@ -337,8 +337,11 @@ def get_args():
                             ],)
 
 
-    args = parser.parse_args()
-    return args
+    return parser
+
+
+def get_args():
+    return build_parser().parse_args()
 
     
 
