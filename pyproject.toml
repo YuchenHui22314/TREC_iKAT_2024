@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apcir"
+version = "0.1.0"
+description = "Adaptive Personalized Conversational Information Retrieval (TREC iKAT) research pipeline"
+requires-python = ">=3.10"
+# NOTE: the dependency list is documentation / best-effort. The canonical environment is the
+# conda env at /data/rech/huiyuche/envs/trec_ikat (Python 3.12); install this package into it
+# with `pip install -e . --no-deps` (additive — does not touch the existing deps).
+# Several backbones must be installed via conda/special flags and are NOT listed here (see README):
+#   torch/torchvision/torchaudio (+pytorch-cuda=12.1), faiss-gpu, cbor (laura-dietz), flash-attn (--no-build-isolation)
+dependencies = [
+    "transformers",
+    "pyserini",
+    "peft",
+    "accelerate",
+    "bitsandbytes",
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "numba",
+    "h5py",
+    "pytrec-eval",
+    "ranx",
+    "trec-car-tools",
+    "nltk",
+    "regex",
+    "beautifulsoup4",
+    "lxml",
+    "tqdm",
+    "p-tqdm",
+    "wandb",
+    "progressbar",
+    "pyjnius",
+    "einops",
+    "safetensors",
+    "pandas",
+    "PyYAML",
+    "openai",
+]
+
+[project.optional-dependencies]
+generation = ["vllm"]
+beir = ["beir", "sentence-transformers"]
+dev = ["ipykernel", "jupyter"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["apcir*"]
+
+[project.scripts]
+# apcir-run is added in a later step once run_experiments.py gets a main() wrapper.
+apcir-run-grouped = "apcir.evaluate.run_experiments_grouped:main"
