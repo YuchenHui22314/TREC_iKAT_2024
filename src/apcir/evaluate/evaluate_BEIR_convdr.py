@@ -12,7 +12,7 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
 from convdr.drivers.gen_passage_embeddings import load_model
-from apcir.functional.llm import BeirConvdrEncoder
+from apcir.functional.encoders import BeirConvdrEncoder
 
 parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with ConvDR model")
 parser.add_argument(

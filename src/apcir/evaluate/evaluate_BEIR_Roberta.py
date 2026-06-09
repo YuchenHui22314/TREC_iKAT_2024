@@ -14,7 +14,7 @@ from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 from beir.retrieval import models
 
 from convdr.drivers.gen_passage_embeddings import load_model
-from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder
+from apcir.functional.encoders import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder
 
 parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with roberta model")
 parser.add_argument(

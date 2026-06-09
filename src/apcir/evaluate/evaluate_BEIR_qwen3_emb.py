@@ -18,7 +18,7 @@ from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
-from apcir.functional.llm import BEIRQwenEncoder
+from apcir.functional.encoders import BEIRQwenEncoder
 
 
 BASE_PATH = "/data/rech/huiyuche/beir"

@@ -15,7 +15,7 @@ from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 from beir.retrieval import models
 
 from convdr.drivers.gen_passage_embeddings import load_model
-from apcir.functional.llm import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder, BeirANCEEncoder, BeirAsymmetricANCEEncoder
+from apcir.functional.encoders import BeirConvdrEncoder,BeirCLSEncoder, BeirMPoolingEncoder, BeirANCEEncoder, BeirAsymmetricANCEEncoder
 
 parser = argparse.ArgumentParser(description="Evaluate BEIR datasets with ance model")
 parser.add_argument(
