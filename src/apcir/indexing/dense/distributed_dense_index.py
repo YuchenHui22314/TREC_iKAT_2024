@@ -22,7 +22,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 from apcir.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, pstore, pload
 
-from models import load_model
+from apcir.models import load_model
 
 from apcir.utils import CollateClass
 

@@ -6,7 +6,7 @@ from transformers import  AutoTokenizer
 
 from apcir.utils import set_seed 
 from apcir.splade_index import SparseRetrieval
-from .models import Splade
+from apcir.models import Splade
 from .data_format import Retrieval_trec
 
 def splade_search(args):

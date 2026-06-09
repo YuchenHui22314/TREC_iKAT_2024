@@ -23,7 +23,7 @@ from nltk.stem import WordNetLemmatizer
 from vllm import LLM, SamplingParams
 from .personalized_weight_topic_entropy import calculate_topic_entrop
 from .personalized_weight_DEPS import calculate_std_top_k_list
-from apcir.search.models import ANCE
+from apcir.models import ANCE
 
 # Initialize the WordNet lemmatizer
 lemmatizer = WordNetLemmatizer()

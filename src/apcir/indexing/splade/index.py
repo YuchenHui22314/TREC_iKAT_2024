@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader, IterableDataset
 
 from apcir.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments
 
-from splade_models import Splade
+from apcir.models import Splade
 
 from apcir.utils import StreamIndexDataset, CollateClass
 from apcir.splade_index import IndexDictOfArray

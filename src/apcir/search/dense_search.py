@@ -10,7 +10,7 @@ import numpy as np
 import json
 from transformers import RobertaConfig, RobertaTokenizer, AutoTokenizer
 
-from .models import ANCE, QwenEmbedding
+from apcir.models import ANCE, QwenEmbedding
 from apcir.utils import set_seed
 from .data_format import  Retrieval_trec, pad_and_mask
 

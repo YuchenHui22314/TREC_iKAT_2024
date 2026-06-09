@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from apcir.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, pstore
 
-from models import load_model
+from apcir.models import load_model
 
 from apcir.utils import StreamIndexDataset, CollateClass
 

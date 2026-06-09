@@ -57,7 +57,7 @@ try:
 except Exception:
     PeftModel = None
     PeftConfig = None
-from apcir.search.models import ANCE
+from apcir.models import ANCE
 
 logger = logging.get_logger(__name__)
 
