@@ -20,11 +20,11 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
 
-from utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, pstore, pload
+from apcir.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, pstore, pload
 
 from models import load_model
 
-from libs import CollateClass
+from apcir.utils import CollateClass
 
 
 def distributed_index_dataset_generator(collection_path, num_doc_per_block):
@@ -285,7 +285,7 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    set_seed(args)
+    set_seed(args.seed, multi_gpu=True)
 
     if args.do_dense_indexing:
         # Embed all documents and save per-rank/block output files

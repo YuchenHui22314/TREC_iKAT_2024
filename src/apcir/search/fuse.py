@@ -17,7 +17,7 @@ from ranx import (
 from ranx.meta import evaluate
 from ranx.fusion import fusion_switch
 
-from .utils import PyScoredDoc
+from apcir.utils import PyScoredDoc
 
 
 def get_possible_weights(step):

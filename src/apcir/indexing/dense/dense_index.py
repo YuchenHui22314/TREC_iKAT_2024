@@ -19,11 +19,11 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import DataLoader
 
-from utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, pstore
+from apcir.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments, pstore
 
 from models import load_model
 
-from libs import StreamIndexDataset, CollateClass
+from apcir.utils import StreamIndexDataset, CollateClass
 
 def dense_indexing(args):
     tokenizer, model = load_model(args.model_type, "doc", args.pretrained_doc_encoder_path)
@@ -122,6 +122,6 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    set_seed(args)
+    set_seed(args.seed, multi_gpu=True)
 
     dense_indexing(args)

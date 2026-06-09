@@ -14,7 +14,7 @@ import pytrec_eval
 from .rerank import rerank
 from .dense_search import dense_search
 from .splade_search import splade_search
-from .utils import PyScoredDoc
+from apcir.utils import PyScoredDoc
 from .fuse import (
     normalize_scores,
     optimize_fusion_weights,

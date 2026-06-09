@@ -20,11 +20,12 @@ from collections import defaultdict
 import torch
 from torch.utils.data import DataLoader, IterableDataset
 
-from utils import set_seed, check_dir_exist_or_build, json_dumps_arguments
+from apcir.utils import set_seed, check_dir_exist_or_build, json_dumps_arguments
 
 from splade_models import Splade
 
-from libs import StreamIndexDataset, CollateClass, IndexDictOfArray
+from apcir.utils import StreamIndexDataset, CollateClass
+from apcir.splade_index import IndexDictOfArray
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3,5,6,7'
 
 def indexing(args):
@@ -108,7 +109,7 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    set_seed(args)
+    set_seed(args.seed, multi_gpu=True)
 
     indexing(args)
     

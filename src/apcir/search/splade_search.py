@@ -4,8 +4,8 @@ import torch
 from torch.utils.data import DataLoader
 from transformers import  AutoTokenizer
 
-from .utils import set_seed 
-from .libs import SparseRetrieval
+from apcir.utils import set_seed 
+from apcir.splade_index import SparseRetrieval
 from .models import Splade
 from .data_format import Retrieval_trec
 
