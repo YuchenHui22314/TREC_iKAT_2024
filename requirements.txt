@@ -7,7 +7,6 @@ tqdm
 ipykernel
 p_tqdm
 pytrec_eval
-dataclasses
 nltk
 pyjnius
 progressbar

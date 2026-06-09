@@ -52,5 +52,5 @@ where = ["src"]
 include = ["apcir*"]
 
 [project.scripts]
-# apcir-run is added in a later step once run_experiments.py gets a main() wrapper.
+apcir-run = "apcir.evaluate.run_experiments:main"
 apcir-run-grouped = "apcir.evaluate.run_experiments_grouped:main"

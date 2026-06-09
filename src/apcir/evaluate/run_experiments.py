@@ -54,7 +54,7 @@ def extend_command(config, command):
     return command
 
 
-if __name__ == "__main__":
+def main():
     # Load configuration (override the default with --config <path>)
     import argparse
     _ap = argparse.ArgumentParser()
@@ -112,8 +112,7 @@ if __name__ == "__main__":
             if process and process.poll() is None:  # Check if process is still running
                 os.kill(process.pid, signal.SIGKILL)  # Forcefully kill the process
                 process.wait()  # Wait for it to terminate
-            
-            
 
 
-
+if __name__ == "__main__":
+    main()

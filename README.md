@@ -117,7 +117,19 @@ conda install -c laura-dietz cbor=1.0.0
 # Install other packages with pip
 pip install -r requirements.txt
 pip install flash-attn --no-build-isolation
+# Finally, install this repo as an editable package ("apcir").
+# This registers the package so `import apcir...` works from any directory (no more
+# sys.path hacks / "must cd to src"); --no-deps because the deps are already installed above.
+pip install -e . --no-deps
 ```
+
+> **Package layout.** The source lives as the `apcir` package under `src/apcir/`. Shared code is
+> consolidated into single homes: `apcir/utils.py` (general utilities + dataloaders),
+> `apcir/splade_index.py` (SPLADE inverted index + sparse retrieval), `apcir/models/`
+> (dense/SPLADE architectures + `load_model`), and `apcir/functional/encoders.py` (BEIR
+> encoders). After `pip install -e .` you also get the `apcir-run` and `apcir-run-grouped`
+> console commands (equivalent to `python -m apcir.evaluate.run_experiments[_grouped]`).
+
 ### Index Building
 
 #### 1. Sparse index building
