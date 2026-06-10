@@ -12,6 +12,7 @@ The generic indexing dataloaders StreamIndexDataset / CollateClass also live her
 """
 import os
 import json
+import logging
 import pickle
 import random
 import shutil
@@ -25,6 +26,13 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, Dataset, TensorDataset, IterableDataset
 from torch.optim import AdamW
 torch.multiprocessing.set_sharing_strategy('file_system')
+
+logger = logging.getLogger(__name__)
+
+
+def is_first_worker():
+    """True on the rank-0 process (or in non-distributed runs). Used by barrier_array_merge."""
+    return (not dist.is_available()) or (not dist.is_initialized()) or (dist.get_rank() == 0)
 
 
 
