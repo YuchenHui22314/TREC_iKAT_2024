@@ -18,7 +18,7 @@ import argparse
 import sys
 
 sys.path.append('/data/rech/huiyuche/TREC_iKAT_2024/src/')
-from llm import RepllamaDocumentEncoder
+from apcir.functional.llm import RepllamaDocumentEncoder
 
 from pyserini.encode import JsonlRepresentationWriter, FaissRepresentationWriter, JsonlCollectionIterator
 from pyserini.encode import DprDocumentEncoder, TctColBertDocumentEncoder, AnceDocumentEncoder, AggretrieverDocumentEncoder, AutoDocumentEncoder, CosDprDocumentEncoder, ClipDocumentEncoder

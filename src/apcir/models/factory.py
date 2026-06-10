@@ -1,5 +1,5 @@
 """Model factory (the indexing-side richer load_model; the search-side ANCE-only one was dead)."""
-from transformers import (RobertaConfig, AutoTokenizer,
+from transformers import (RobertaConfig, RobertaTokenizer, AutoTokenizer,
                           DPRQuestionEncoderTokenizer, DPRContextEncoderTokenizer,
                           DPRContextEncoder, DPRQuestionEncoder)
 from apcir.models.architectures import ANCE, TCTColBERT, QwenEmbedding
