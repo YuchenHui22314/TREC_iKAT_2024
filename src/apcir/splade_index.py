@@ -213,13 +213,23 @@ class SparseRetrieval:
         self.top_k = top_k
         self.retrieval_output_path = retrieval_output_path
 
-        # convert to numba
+        # Convert the python inverted index (~235 GB) to numba typed dicts. MEMORY: build
+        # by POPPING each posting list out of the python dict as it is moved into the numba
+        # dict, so we never hold two full copies at once. The old code iterated .items()
+        # leaving the python dict fully alive alongside the numba copy -> ~470 GB peak (it
+        # OOMs near the 503 GB box). Popping caps the peak at ~235 GB. The numba dict
+        # CONTENTS are identical (same keys -> same arrays), so retrieval is byte-identical.
         self.numba_index_doc_ids = numba.typed.Dict()
         self.numba_index_doc_values = numba.typed.Dict()
-        for key, value in self.sparse_index.index_doc_id.items():
-            self.numba_index_doc_ids[key] = value
-        for key, value in self.sparse_index.index_doc_value.items():
-            self.numba_index_doc_values[key] = value
+        _ids = self.sparse_index.index_doc_id
+        for key in list(_ids.keys()):
+            self.numba_index_doc_ids[key] = _ids.pop(key)
+        _vals = self.sparse_index.index_doc_value
+        for key in list(_vals.keys()):
+            self.numba_index_doc_values[key] = _vals.pop(key)
+        # the python dicts are now empty; drop the references
+        self.sparse_index.index_doc_id = None
+        self.sparse_index.index_doc_value = None
         
     
     def retrieve(self, qid2emb):
