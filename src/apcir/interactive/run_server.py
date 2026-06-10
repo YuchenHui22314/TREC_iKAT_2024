@@ -1,0 +1,101 @@
+"""CLI: launch the interactive search server (uvicorn, 1 worker).
+
+    python -m apcir.interactive.run_server \
+        --retrievers BM25 ance \
+        --retrieval_query_types raw full_conversation_dense \
+        --fusion_type RRF --host 127.0.0.1 --port 8000
+
+Defaults target octal40 /part/01 (fast SSD) ANCE + the official BM25 sparse index.
+Run under tmux (long-running, big resident state). Use the trec_ikat py3.12 env.
+"""
+
+from __future__ import annotations
+
+import argparse
+
+import uvicorn
+
+from .pipeline import PipelineConfig, RetrieverSpec
+from .search_server import create_app
+
+
+def build_parser() -> argparse.ArgumentParser:
+    c = PipelineConfig()
+    p = argparse.ArgumentParser(description="apcir interactive search server")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=8000)
+    # retrievers (parallel lists)
+    p.add_argument("--retrievers", nargs="+", default=["BM25", "ance"])
+    p.add_argument("--retrieval_query_types", nargs="+",
+                   default=["raw", "full_conversation_dense"])
+    # fusion
+    p.add_argument("--fusion_type", default="RRF",
+                   choices=["RRF", "linear_combination", "round_robin", "concat"])
+    p.add_argument("--fusion_normalization", default="min-max")
+    p.add_argument("--fuse_weights", nargs="*", type=float, default=None)
+    p.add_argument("--rrf_k", type=int, default=60)
+    p.add_argument("--retrieval_top_k", type=int, default=c.retrieval_top_k)
+    # generation
+    p.add_argument("--generation", default="extractive")
+    p.add_argument("--response_max_tokens", type=int, default=c.response_max_tokens)
+    p.add_argument("--citations_max", type=int, default=c.citations_max)
+    p.add_argument("--generation_top_k", type=int, default=c.generation_top_k)
+    # dense index
+    p.add_argument("--dense_index_dir_path", default=c.dense_index_dir_path)
+    p.add_argument("--dense_query_encoder_path", default=c.dense_query_encoder_path)
+    p.add_argument("--embed_dim", type=int, default=c.embed_dim)
+    p.add_argument("--passage_block_num", type=int, default=c.passage_block_num)
+    p.add_argument("--faiss_n_gpu", type=int, default=c.faiss_n_gpu)
+    p.add_argument("--query_gpu_id", type=int, default=c.query_gpu_id)
+    p.add_argument("--query_encoder_batch_size", type=int, default=c.query_encoder_batch_size)
+    # sparse index (also doc-fetch)
+    p.add_argument("--sparse_index_dir_path", default=c.sparse_index_dir_path)
+    p.add_argument("--bm25_k1", type=float, default=c.bm25_k1)
+    p.add_argument("--bm25_b", type=float, default=c.bm25_b)
+    p.add_argument("--topics", default=c.topics)
+    return p
+
+
+def config_from_args(args) -> PipelineConfig:
+    if len(args.retrievers) != len(args.retrieval_query_types):
+        raise SystemExit(
+            f"--retrievers ({len(args.retrievers)}) and --retrieval_query_types "
+            f"({len(args.retrieval_query_types)}) must have the same length")
+    retrievers = [RetrieverSpec(n, qt)
+                  for n, qt in zip(args.retrievers, args.retrieval_query_types)]
+    return PipelineConfig(
+        retrievers=retrievers,
+        fusion_type=args.fusion_type,
+        fusion_normalization=args.fusion_normalization,
+        fuse_weights=args.fuse_weights,
+        rrf_k=args.rrf_k,
+        retrieval_top_k=args.retrieval_top_k,
+        generation=args.generation,
+        response_max_tokens=args.response_max_tokens,
+        citations_max=args.citations_max,
+        generation_top_k=args.generation_top_k,
+        dense_index_dir_path=args.dense_index_dir_path,
+        dense_query_encoder_path=args.dense_query_encoder_path,
+        embed_dim=args.embed_dim,
+        passage_block_num=args.passage_block_num,
+        faiss_n_gpu=args.faiss_n_gpu,
+        query_gpu_id=args.query_gpu_id,
+        query_encoder_batch_size=args.query_encoder_batch_size,
+        sparse_index_dir_path=args.sparse_index_dir_path,
+        bm25_k1=args.bm25_k1,
+        bm25_b=args.bm25_b,
+        topics=args.topics,
+    )
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    config = config_from_args(args)
+    app = create_app(config)
+    # single worker: huge resident state + serialized GPU search
+    uvicorn.run(app, host=args.host, port=args.port, workers=1, log_level="info")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
