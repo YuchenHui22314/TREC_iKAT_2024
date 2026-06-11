@@ -203,7 +203,16 @@ class SparseRetrieval:
         
         # filter the documents with score > threshold
         # filtered_indexes = [3,5,8,...,] (all the indexes where the score > threshold)
-        filtered_indexes = np.argwhere(scores > threshold)[:, 0]  
+        # PROFILE (ikat25 oracle, 45 q, single 235G load, 2026-06-10): do NOT try to replace
+        # this full-collection scan with a "touched-set" (union of the query terms' posting
+        # lists). splade oracle queries are DENSE (~89% of the 116.8M collection scores > 0),
+        # so the union ~= the whole collection: np.unique(concatenate(posting_lists)) measured
+        # 7351 ms/q vs 721 ms for this argwhere -> a 10x SLOWDOWN (byte-identical but useless).
+        # Per-query cost is inherently O(collection) here: scatter 132ms, argwhere 721ms,
+        # select_topk 1088ms. No byte-identical speedup exists for these dense queries; the
+        # only real lever is LOSSY (query-term pruning / WAND early-termination). The
+        # touched-set idea CAN help for SHORT/sparse queries (small union) -- not these.
+        filtered_indexes = np.argwhere(scores > threshold)[:, 0]
         # unused documents => this should be tuned, currently it is set to 0
         return filtered_indexes, -scores[filtered_indexes]
 
