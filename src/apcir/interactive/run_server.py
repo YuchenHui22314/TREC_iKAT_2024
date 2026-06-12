@@ -45,6 +45,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--rerank_top_k", type=int, default=c.rerank_top_k)
     p.add_argument("--rerank_batch_size", type=int, default=c.rerank_batch_size)
     p.add_argument("--rerank_quant", default=c.rerank_quant, choices=["none", "8b", "4b"])
+    p.add_argument("--rerank_remote_url", default=None,
+                   help="e.g. http://octal31:8200 — score via a remote rerank_server.py "
+                        "(zero local VRAM) instead of co-hosting the model")
     p.add_argument("--qwen3_reranker_path", default=c.qwen3_reranker_path)
     p.add_argument("--reranking_query_type", default=c.reranking_query_type,
                    help="qwen_3_rerank_instruct_full (conversational instruction + "
@@ -108,7 +111,7 @@ def config_from_args(args) -> PipelineConfig:
     # this — that server's util was fixed at its own launch.
     vllm_util = 0.90
     if (args.reranker == "qwen3_reranker" and args.llm_backend == "local_vllm"
-            and not args.llm_base_url):
+            and not args.llm_base_url and not args.rerank_remote_url):
         vllm_util = 0.72
         print(f"[run_server] reranker co-hosted with local vLLM -> gpu_mem_util {vllm_util}")
     return PipelineConfig(
@@ -140,6 +143,7 @@ def config_from_args(args) -> PipelineConfig:
         rerank_top_k=args.rerank_top_k,
         rerank_batch_size=args.rerank_batch_size,
         rerank_quant=args.rerank_quant,
+        rerank_remote_url=args.rerank_remote_url,
         qwen3_reranker_path=args.qwen3_reranker_path,
         reranking_query_type=args.reranking_query_type,
         dense_index_dir_path=args.dense_index_dir_path,

@@ -115,6 +115,10 @@ def build_parser():
     parser.add_argument("--qwen3_reranker_path", type=str, default="Qwen/Qwen3-Reranker-4B")
     parser.add_argument("--rerank_gpu_id", type=int, default=0,
                         help="GPU for qwen3_reranker (other rerankers keep their own device logic)")
+    parser.add_argument("--rerank_remote_url", type=str, default="none",
+                        help="if set (e.g. http://octal31:8200), score via a remote "
+                             "rerank_server.py instead of loading the model locally — "
+                             "use when local VRAM is tight")
     # hugging_face cache_dir
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
 

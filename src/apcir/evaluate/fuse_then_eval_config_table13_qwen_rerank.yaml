@@ -104,6 +104,11 @@ fixed:
   rerank_top_k: 50
   qwen3_reranker_path: "Qwen/Qwen3-Reranker-4B"
   rerank_gpu_id: 0
+  # if octal40 VRAM is tight, host the model on octal31 instead:
+  #   ssh octal31, then: cd /data/rech/huiyuche/TREC_iKAT_2024/src &&
+  #   PATH=/data/rech/huiyuche/envs/trec_ikat/bin:$PATH python -m apcir.search.rerank_server --gpu_id 0 --port 8200
+  # and set:  rerank_remote_url: "http://octal31:8200"
+  rerank_remote_url: "none"
   cache_dir: "/data/rech/huiyuche/huggingface"
   # (instruction + profile + conversation + doc) pairs are long -> conservative batch
   rerank_batch_size: 8

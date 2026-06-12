@@ -124,6 +124,33 @@ class QwenReranker:
             scores.extend(self._score_batch(list(part)))
         return scores
 
+
+class RemoteReranker:
+    """Same .score() interface as QwenReranker, but the model lives on ANOTHER machine
+    (a rerank_server.py instance, e.g. on octal31). Use when the local GPUs are full —
+    the LAN round-trip is negligible (~100KB per 50-doc request, 0.37ms RTT measured
+    octal40<->octal31)."""
+
+    def __init__(self, base_url: str, timeout: float = 600.0):
+        import requests as _requests
+        self._requests = _requests
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        # fail fast with a clear message if the remote server isn't up
+        r = self._requests.get(f"{self.base_url}/health", timeout=10)
+        r.raise_for_status()
+        info = r.json()
+        print(f"[RemoteReranker] connected: {info}")
+
+    def score(self, instruction, query, docs, batch_size):
+        r = self._requests.post(
+            f"{self.base_url}/rerank",
+            json={"instruction": instruction, "query": query,
+                  "docs": list(docs), "batch_size": batch_size},
+            timeout=self.timeout)
+        r.raise_for_status()
+        return r.json()["scores"]
+
 def get_model(
     peft_model_name, 
     cache_dir,
@@ -625,13 +652,20 @@ def rerank(hits, args):
             instruction = QWEN3_RERANK_DEFAULT_INSTRUCTION
         print(f"qwen3 reranker instruction: {instruction!r}")
 
-        print("loading qwen3 reranker")
-        reranker = QwenReranker(
-            model_path=getattr(args, "qwen3_reranker_path", "Qwen/Qwen3-Reranker-4B"),
-            cache_dir=args.cache_dir,
-            quant=args.rerank_quant,
-            device=f"cuda:{getattr(args, 'rerank_gpu_id', 0)}" if torch.cuda.is_available() else "cpu",
-        )
+        remote_url = getattr(args, "rerank_remote_url", "none")
+        if remote_url and remote_url != "none":
+            # model hosted on another machine (rerank_server.py, e.g. octal31) —
+            # no local VRAM used at all
+            print(f"using REMOTE qwen3 reranker at {remote_url}")
+            reranker = RemoteReranker(remote_url)
+        else:
+            print("loading qwen3 reranker")
+            reranker = QwenReranker(
+                model_path=getattr(args, "qwen3_reranker_path", "Qwen/Qwen3-Reranker-4B"),
+                cache_dir=args.cache_dir,
+                quant=args.rerank_quant,
+                device=f"cuda:{getattr(args, 'rerank_gpu_id', 0)}" if torch.cuda.is_available() else "cpu",
+            )
 
         print("reranking")
         for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):

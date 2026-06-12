@@ -69,6 +69,7 @@ class PipelineConfig:
     rerank_top_k: int = 50
     rerank_batch_size: int = 8             # (instruction+profile+conv+doc) pairs are long
     rerank_quant: str = "none"             # none -> bf16 (~9G) | 8b | 4b (bitsandbytes)
+    rerank_remote_url: Optional[str] = None  # e.g. http://octal31:8200 -> RemoteReranker (0 local VRAM)
     qwen3_reranker_path: str = "Qwen/Qwen3-Reranker-4B"
     reranking_query_type: str = "qwen_3_rerank_instruct_full"
     #   qwen_3_rerank_instruct_full -> conversational instruction + profile-first query
@@ -172,15 +173,21 @@ class InteractivePipeline:
         # doc-fetch: passage text is stored in the lucene (sparse) index
         self._docfetch = LuceneSearcher(c.sparse_index_dir_path)
         if c.reranker == "qwen3_reranker":
-            # co-hosted on the gen-LLM GPU (cuda:llm_gpu_id). VRAM: openai backend ->
-            # GPU 3 is free (bf16 ~9G trivially fits); local_vllm backend -> run_server
-            # lowers vllm_gpu_mem_util to ~0.72 so ~13G stays free (or use rerank_quant=8b).
-            from apcir.search.rerank import QwenReranker
-            import torch as _torch
-            dev = (f"cuda:{c.llm_gpu_id}" if _torch.cuda.is_available() else "cpu")
-            print(f"[pipeline] loading qwen3 reranker on {dev} (quant={c.rerank_quant})...")
-            self._reranker = QwenReranker(
-                model_path=c.qwen3_reranker_path, quant=c.rerank_quant, device=dev)
+            if c.rerank_remote_url:
+                # model hosted on another machine (rerank_server.py, e.g. octal31's
+                # A5000) — zero local VRAM; LAN round-trip is negligible
+                from apcir.search.rerank import RemoteReranker
+                self._reranker = RemoteReranker(c.rerank_remote_url)
+            else:
+                # co-hosted on the gen-LLM GPU (cuda:llm_gpu_id). VRAM: openai backend ->
+                # GPU 3 is free (bf16 ~9G trivially fits); local_vllm backend -> run_server
+                # lowers vllm_gpu_mem_util to ~0.72 so ~13G stays free (or rerank_quant=8b).
+                from apcir.search.rerank import QwenReranker
+                import torch as _torch
+                dev = (f"cuda:{c.llm_gpu_id}" if _torch.cuda.is_available() else "cpu")
+                print(f"[pipeline] loading qwen3 reranker on {dev} (quant={c.rerank_quant})...")
+                self._reranker = QwenReranker(
+                    model_path=c.qwen3_reranker_path, quant=c.rerank_quant, device=dev)
 
     def _setup_llm(self):
         """Build the shared LLM client (+ rewriter). For local_vllm, boot the vLLM
