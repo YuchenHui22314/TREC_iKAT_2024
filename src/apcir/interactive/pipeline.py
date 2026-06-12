@@ -64,6 +64,16 @@ class PipelineConfig:
     fuse_weights: Optional[List[float]] = None
     rrf_k: int = 60
     retrieval_top_k: int = 1000
+    # reranking (between fusion and generation; co-hosted on the gen-LLM GPU)
+    reranker: str = "none"                 # "none" | "qwen3_reranker"
+    rerank_top_k: int = 50
+    rerank_batch_size: int = 8             # (instruction+profile+conv+doc) pairs are long
+    rerank_quant: str = "none"             # none -> bf16 (~9G) | 8b | 4b (bitsandbytes)
+    qwen3_reranker_path: str = "Qwen/Qwen3-Reranker-4B"
+    reranking_query_type: str = "qwen_3_rerank_instruct_full"
+    #   qwen_3_rerank_instruct_full -> conversational instruction + profile-first query
+    #   (built from the live Turn); any *_rw reformulation name (e.g. MQ4CS_persq_rw)
+    #   -> NATIVE default instruction + that online-QR rewrite as the query.
     # generation
     generation: str = "rag"                # "rag" (LLM, shared) | "extractive" (no-LLM fallback)
     response_max_tokens: int = 512
@@ -140,6 +150,7 @@ class InteractivePipeline:
         self._llm: Optional[SharedLLMClient] = None
         self._rewriter: Optional[OnlineRewriter] = None
         self._vllm = None                  # VLLMServer (local_vllm backend only)
+        self._reranker = None              # QwenReranker (co-hosted on the LLM GPU)
         self._needs_dense = any(r.name in ("ance", "conv-ance", "qwen3", "conv-qwen3")
                                 for r in config.retrievers)
         self._needs_sparse = any(r.name == "BM25" for r in config.retrievers)
@@ -160,6 +171,16 @@ class InteractivePipeline:
             self._bm25.set_bm25(c.bm25_k1, c.bm25_b)
         # doc-fetch: passage text is stored in the lucene (sparse) index
         self._docfetch = LuceneSearcher(c.sparse_index_dir_path)
+        if c.reranker == "qwen3_reranker":
+            # co-hosted on the gen-LLM GPU (cuda:llm_gpu_id). VRAM: openai backend ->
+            # GPU 3 is free (bf16 ~9G trivially fits); local_vllm backend -> run_server
+            # lowers vllm_gpu_mem_util to ~0.72 so ~13G stays free (or use rerank_quant=8b).
+            from apcir.search.rerank import QwenReranker
+            import torch as _torch
+            dev = (f"cuda:{c.llm_gpu_id}" if _torch.cuda.is_available() else "cpu")
+            print(f"[pipeline] loading qwen3 reranker on {dev} (quant={c.rerank_quant})...")
+            self._reranker = QwenReranker(
+                model_path=c.qwen3_reranker_path, quant=c.rerank_quant, device=dev)
 
     def _setup_llm(self):
         """Build the shared LLM client (+ rewriter). For local_vllm, boot the vLLM
@@ -204,6 +225,9 @@ class InteractivePipeline:
             "llm_backend": self.config.llm_backend if self._needs_llm else None,
             "llm_ready": (self._llm.health() if self._llm is not None else None),
             "vllm_pid": (self._vllm.pid() if self._vllm is not None else None),
+            "reranker": (self.config.reranker if self._reranker is not None else "none"),
+            "reranking_query_type": (self.config.reranking_query_type
+                                     if self._reranker is not None else None),
         }
 
     # --- per-turn ---------------------------------------------------------- #
@@ -233,6 +257,10 @@ class InteractivePipeline:
         # 2) fuse
         fused = self._fuse(hits_list, qid)
         ranked = fused[qid]
+
+        # 2.5) rerank the fused top-k (tail [k:] keeps its original order behind it)
+        if self._reranker is not None and len(ranked) > 1:
+            ranked = self._rerank(ranked, turn)
 
         # 3) generate + citations
         response = None
@@ -318,6 +346,37 @@ class InteractivePipeline:
                 out.append(get_dense_ranking_list(emb2id, D, I, c.retrieval_top_k))
             else:
                 raise NotImplementedError(f"retriever {spec.name} not wired in interactive pipeline")
+        return out
+
+    def _rerank(self, ranked: List[Any], turn) -> List[Any]:
+        """Step 2.5: Qwen3-Reranker over the fused top rerank_top_k; the tail [k:] keeps
+        its original order behind the reranked head. Instruction routing mirrors
+        rerank.py: the conversational field -> custom instruction + profile-first query
+        built live from the Turn; any other reranking_query_type is treated as a
+        reformulation name (e.g. an online-QR '_rw') -> NATIVE instruction + that rewrite."""
+        from apcir.search.rerank import (
+            QWEN3_RERANK_CONV_INSTRUCTION, QWEN3_RERANK_DEFAULT_INSTRUCTION)
+        c = self.config
+        rqt = c.reranking_query_type
+        if rqt == "qwen_3_rerank_instruct_full":
+            instruction = QWEN3_RERANK_CONV_INSTRUCTION
+            query = turn.query_type_2_query(rqt, 0, 0.0, self._make_args(
+                retrieval_model="none", retrieval_query_type=rqt))
+        else:
+            instruction = QWEN3_RERANK_DEFAULT_INSTRUCTION
+            ref = turn.find_reformulation(rqt)
+            query = ref.reformulated_query if ref is not None else turn.current_utterance
+
+        head = ranked[:c.rerank_top_k]
+        docs = [self._passage_text(d.docid) for d in head]
+        scores = self._reranker.score(instruction, query, docs, c.rerank_batch_size)
+        order = sorted(range(len(head)), key=lambda i: scores[i], reverse=True)
+        reranked_head = [head[i] for i in order]
+        # rewrite scores as 1/rank so head/tail stay consistently ordered (same
+        # convention as rerank.py) without inventing comparable raw scores
+        out = reranked_head + ranked[c.rerank_top_k:]
+        for rank, d in enumerate(out):
+            d.score = 1.0 / (rank + 1)
         return out
 
     def _fuse(self, hits_list: List[Dict[str, List[Any]]], qid: str) -> Dict[str, List[Any]]:

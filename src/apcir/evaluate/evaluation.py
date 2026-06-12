@@ -108,8 +108,13 @@ def build_parser():
                         choices=['none', 'rankllama', 'rankgpt', 'monot5_base','monot5_base_10k', 'monot5_large', 'monot5_large_10k',
                         "monot5_3b",
                         "monot5_3b_10k",
+                        "qwen3_reranker",
                         ])
     parser.add_argument("--rerank_top_k", type=int, default="50")
+    # qwen3_reranker (yes/no-logit CausalLM; quant via --rerank_quant, same as rankllama)
+    parser.add_argument("--qwen3_reranker_path", type=str, default="Qwen/Qwen3-Reranker-4B")
+    parser.add_argument("--rerank_gpu_id", type=int, default=0,
+                        help="GPU for qwen3_reranker (other rerankers keep their own device logic)")
     # hugging_face cache_dir
     parser.add_argument("--cache_dir", type=str, default="/data/rech/huiyuche/huggingface", help="cache directory for huggingface models")
 
@@ -319,7 +324,11 @@ def build_parser():
                             "gpt-4o_rar_personalized_cot1_rw",
                             'gpt-4o_rar_non_personalized_cot1_rw',
                             'gpt-4o_judge_and_rewrite_rw',
-                            "gpt-4o_MQ4CS_persq_rw"
+                            "gpt-4o_MQ4CS_persq_rw",
+                            # qwen3_reranker conversational field: profile-first + full
+                            # conversation (NO Instruct: header — the instruction rides in
+                            # the reranker template's <Instruct>: slot)
+                            "qwen_3_rerank_instruct_full",
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 

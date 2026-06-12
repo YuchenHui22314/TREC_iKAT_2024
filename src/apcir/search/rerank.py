@@ -13,7 +13,8 @@ from peft import PeftModel, PeftConfig
 from typing import List, Tuple, Any, Dict
 import numpy as np
 from transformers import (
-    AutoModelForSequenceClassification, 
+    AutoModelForCausalLM,
+    AutoModelForSequenceClassification,
     AutoTokenizer,
     T5ForConditionalGeneration,
     PreTrainedTokenizer,
@@ -23,6 +24,105 @@ from pyserini.search.lucene import LuceneSearcher
 
 from apcir.functional.llm import monoT5
 from .rank_gpt import  sliding_windows
+
+
+# ----------------------------------------------------------------------------- #
+# Qwen3-Reranker instructions (the model card recommends customizing `instruct`
+# per task, +1-5%). Routing: reranking_query_type == "qwen_3_rerank_instruct_full"
+# -> the conversational instruction (query text = profile-first + conversation,
+# built by topics.query_type_2_query); any other reranking_query_type (e.g. a
+# personalized rewrite like gpt-4o_rar_personalized_cot1_rw) -> the NATIVE default
+# instruction from the model card.
+# ----------------------------------------------------------------------------- #
+QWEN3_RERANK_DEFAULT_INSTRUCTION = (
+    "Given a web search query, retrieve relevant passages that answer the query")
+QWEN3_RERANK_CONV_INSTRUCTION = (
+    "Given a conversation between a user and an AI assistant and the user's profile, "
+    "judge whether the document helps answer the user's last question in a way "
+    "consistent with the user's profile.")
+
+
+def _fetch_contents_cached(searcher, docid, _cache):
+    """docid -> passage contents with a per-rerank-call dict cache. The same doc often
+    appears in many queries' top-k; the lucene fetch is mmap-cheap but the raw()+json
+    parse is not — cache it once per rerank() call."""
+    c = _cache.get(docid)
+    if c is None:
+        c = json.loads(searcher.doc(docid).raw())["contents"]
+        _cache[docid] = c
+    return c
+
+
+class QwenReranker:
+    """Qwen3-Reranker (0.6B/4B/8B): a CausalLM scored by P("yes") at the last position.
+
+    Input format is VERBATIM from the model card (Qwen/Qwen3-Reranker-4B):
+        system: Judge whether the Document meets the requirements based on the Query
+                and the Instruct provided. Note that the answer can only be "yes" or "no".
+        user:   <Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}
+        assistant prefix: <think>\n\n</think>\n\n   (no thinking content)
+    Score = softmax over the ("yes","no") token logits at the LAST position -> P(yes).
+    LEFT padding so position -1 is the real last token for every row in the batch.
+
+    Shared by evaluation.py (offline batch) and the interactive server (co-hosted on
+    the gen-LLM GPU). Quantization: none -> bf16 (~9G for 4B); 8b/4b -> bitsandbytes
+    (same interface as rankllama's rerank_quant).
+    """
+
+    PREFIX = ("<|im_start|>system\nJudge whether the Document meets the requirements "
+              "based on the Query and the Instruct provided. Note that the answer can "
+              "only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n")
+    SUFFIX = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+
+    def __init__(self, model_path="Qwen/Qwen3-Reranker-4B", cache_dir=None,
+                 quant="none", device="cuda", max_length=8192):
+        self.max_length = max_length
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_path, cache_dir=cache_dir, padding_side="left")
+        model_kwargs = {"cache_dir": cache_dir, "torch_dtype": torch.bfloat16}
+        if quant in ("8b", "4b"):
+            from transformers import BitsAndBytesConfig
+            model_kwargs["quantization_config"] = BitsAndBytesConfig(
+                load_in_8bit=(quant == "8b"), load_in_4bit=(quant == "4b"))
+            model_kwargs["device_map"] = {"": device}
+        else:
+            model_kwargs["device_map"] = {"": device}
+        self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
+        self.model.eval()
+        self.device = device
+        self.token_yes = self.tokenizer.convert_tokens_to_ids("yes")
+        self.token_no = self.tokenizer.convert_tokens_to_ids("no")
+        self.prefix_tokens = self.tokenizer.encode(self.PREFIX, add_special_tokens=False)
+        self.suffix_tokens = self.tokenizer.encode(self.SUFFIX, add_special_tokens=False)
+
+    @staticmethod
+    def format_pair(instruction, query, doc):
+        return f"<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}"
+
+    def _score_batch(self, pairs):
+        """pairs: list[str] (already format_pair'ed). Returns list[float] P(yes)."""
+        body_max = self.max_length - len(self.prefix_tokens) - len(self.suffix_tokens)
+        enc = self.tokenizer(pairs, padding=False, truncation="longest_first",
+                             max_length=body_max, add_special_tokens=False)
+        input_ids = [self.prefix_tokens + ids + self.suffix_tokens
+                     for ids in enc["input_ids"]]
+        batch = self.tokenizer.pad({"input_ids": input_ids}, padding=True,
+                                   return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            logits = self.model(**batch).logits[:, -1, :]
+            pair_logits = torch.stack(
+                [logits[:, self.token_no], logits[:, self.token_yes]], dim=1)
+            scores = torch.nn.functional.log_softmax(pair_logits, dim=1)[:, 1].exp()
+        return scores.float().cpu().tolist()
+
+    def score(self, instruction, query, docs, batch_size):
+        """One query vs many docs -> list[float], batched by rerank_batch_size."""
+        pairs = [self.format_pair(instruction, query, d) for d in docs]
+        num_to_split = get_split_num(len(pairs), batch_size)
+        scores = []
+        for part in np.array_split(np.array(pairs, dtype=object), num_to_split):
+            scores.extend(self._score_batch(list(part)))
+        return scores
 
 def get_model(
     peft_model_name, 
@@ -159,11 +259,9 @@ def rerank_rankllama(
             outputs = model(**inputs)
             logits = outputs.logits
             part_scores = logits[:,0]
-            scores.extend(list(part_scores))
-        
-        # transform to torch float32
-        scores = [float(score) for score in scores]
-        
+            # one batched GPU->CPU transfer (the old per-element float(tensor) forced a
+            # cuda sync per score, and re-converted the whole accumulated list each batch)
+            scores.extend(part_scores.float().cpu().tolist())
 
     return scores
 
@@ -280,12 +378,13 @@ def rerank_t5_DDP(
 def hits_2_rankgpt_list(
     searcher: Any,
     query_dict: Dict[str, str],
-    hits_dict: Dict[str, List[Any]]
+    hits_dict: Dict[str, List[Any]],
+    rank_end: int = None,
     ) -> Tuple[Dict[str, List[Dict[str, Any]]], Dict[str, List[Dict[str, Any]]]]:
-
 
     rankgpt_list = []
     new_hits_dict = {}
+    doc_cache = {}
 
     for qid, query in query_dict.items():
         hits = hits_dict[qid]
@@ -294,20 +393,25 @@ def hits_2_rankgpt_list(
 
         # assuming that hits are sorted by rank
         for rank, hit in enumerate(hits):
-            # get passage text
-            content = json.loads(searcher.doc(hit.docid).raw())
-            content = content['contents']
-            content = ' '.join(content.split())
+            # get passage text — ONLY for ranks the sliding window will actually look at
+            # (rank < rank_end == rerank_top_k). Beyond that, sliding_windows never reads
+            # `content` and the final reassignment uses docid only, so skip the fetch+parse
+            # (the old code fetched all 1000 hits to rerank 50).
+            if rank_end is None or rank < rank_end:
+                content = _fetch_contents_cached(searcher, hit.docid, doc_cache)
+                content = ' '.join(content.split())
+            else:
+                content = ''
 
             document_hit_dict = {
                 'content': content,
-                'qid': qid, 
-                'docid': hit.docid, 
-                'rank': rank, 
+                'qid': qid,
+                'docid': hit.docid,
+                'rank': rank,
                 'score': hit.score}
 
             rankgpt_list[-1]['hits'].append(document_hit_dict)
-            
+
             new_hits_dict[qid].append(document_hit_dict)
 
     return rankgpt_list, new_hits_dict
@@ -354,10 +458,15 @@ def rerank(hits, args):
 
     searcher = LuceneSearcher(args.sparse_index_dir_path)
 
+    # per-call docid->contents cache shared by all queries (same doc appears in many
+    # queries' top-k; saves the repeated raw()+json.loads)
+    doc_cache = {}
+
     if args.reranker == "rankgpt":
 
         # generate input format required by rankgpt
-        rank_gpt_list, _ = hits_2_rankgpt_list(searcher, reranking_query_dic, hits)
+        rank_gpt_list, _ = hits_2_rankgpt_list(searcher, reranking_query_dic, hits,
+                                               rank_end=args.rerank_top_k)
 
         # get hyperparameters
         llm_name = args.rankgpt_llm
@@ -424,7 +533,8 @@ def rerank(hits, args):
             reranking_query = reranking_query_dic[qid]
             reranked_scores = rerank_rankllama(
                 reranking_query,
-                [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in hit[0:args.rerank_top_k]],
+                [_fetch_contents_cached(searcher, doc_object.docid, doc_cache)
+                 for doc_object in hit[0:args.rerank_top_k]],
                 tokenizer,
                 model,
                 args.rerank_batch_size
@@ -475,7 +585,8 @@ def rerank(hits, args):
             reranking_query = reranking_query_dic[qid]
 
             new_hits = hit[0:args.rerank_top_k]
-            doc_contents = [json.loads(searcher.doc(doc_object.docid).raw())["contents"] for doc_object in new_hits]
+            doc_contents = [_fetch_contents_cached(searcher, doc_object.docid, doc_cache)
+                            for doc_object in new_hits]
 
             reranked_scores = rerank_t5_DP(
                 reranking_query,
@@ -499,8 +610,55 @@ def rerank(hits, args):
                     doc_object.score = 1/(doc_object.rank + 1)
                 else:
                     doc_object.score = 1/(rank + 1)
-            
+
             # sort the hits by score
             hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
-        
+
+    elif args.reranker == "qwen3_reranker":
+
+        # instruction routing: the conversational query field carries profile+conversation
+        # (judge if the doc helps answer the last question); any other reranking_query_type
+        # (e.g. a personalized rewrite) uses the model's NATIVE default instruction.
+        if args.reranking_query_type == "qwen_3_rerank_instruct_full":
+            instruction = QWEN3_RERANK_CONV_INSTRUCTION
+        else:
+            instruction = QWEN3_RERANK_DEFAULT_INSTRUCTION
+        print(f"qwen3 reranker instruction: {instruction!r}")
+
+        print("loading qwen3 reranker")
+        reranker = QwenReranker(
+            model_path=getattr(args, "qwen3_reranker_path", "Qwen/Qwen3-Reranker-4B"),
+            cache_dir=args.cache_dir,
+            quant=args.rerank_quant,
+            device=f"cuda:{getattr(args, 'rerank_gpu_id', 0)}" if torch.cuda.is_available() else "cpu",
+        )
+
+        print("reranking")
+        for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
+
+            reranking_query = reranking_query_dic[qid]
+
+            new_hits = hit[0:args.rerank_top_k]
+            doc_contents = [_fetch_contents_cached(searcher, doc_object.docid, doc_cache)
+                            for doc_object in new_hits]
+
+            reranked_scores = reranker.score(
+                instruction, reranking_query, doc_contents, args.rerank_batch_size)
+
+            np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
+
+            indexes = np.argsort(np_reranked_scores)[::-1]
+            for rank, index in enumerate(indexes):
+                hit[index].rank = rank
+
+            # change the score according to the rank (same convention as the others)
+            for rank, doc_object in enumerate(hit):
+                if rank < args.rerank_top_k:
+                    doc_object.score = 1/(doc_object.rank + 1)
+                else:
+                    doc_object.score = 1/(rank + 1)
+
+            # sort the hits by score
+            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+
     return hits

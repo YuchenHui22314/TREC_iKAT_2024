@@ -40,6 +40,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--fuse_weights", nargs="*", type=float, default=None)
     p.add_argument("--rrf_k", type=int, default=60)
     p.add_argument("--retrieval_top_k", type=int, default=c.retrieval_top_k)
+    # reranking (between fusion and generation; co-hosted on the gen-LLM GPU)
+    p.add_argument("--reranker", default=c.reranker, choices=["none", "qwen3_reranker"])
+    p.add_argument("--rerank_top_k", type=int, default=c.rerank_top_k)
+    p.add_argument("--rerank_batch_size", type=int, default=c.rerank_batch_size)
+    p.add_argument("--rerank_quant", default=c.rerank_quant, choices=["none", "8b", "4b"])
+    p.add_argument("--qwen3_reranker_path", default=c.qwen3_reranker_path)
+    p.add_argument("--reranking_query_type", default=c.reranking_query_type,
+                   help="qwen_3_rerank_instruct_full (conversational instruction + "
+                        "profile-first query) OR an online-QR reformulation name like "
+                        "MQ4CS_persq_rw (native instruction + that rewrite)")
     # generation
     p.add_argument("--generation", default=c.generation, choices=["rag", "extractive"])
     p.add_argument("--response_max_tokens", type=int, default=c.response_max_tokens)
@@ -92,6 +102,15 @@ def config_from_args(args) -> PipelineConfig:
                   for n, qt, qr in zip(args.retrievers, args.retrieval_query_types, qr_list)]
     # default LLM model by backend (local vLLM -> qwen3-32b ; OpenAI -> gpt-5-mini)
     llm_model = args.llm_model or ("gpt-5-mini" if args.llm_backend == "openai" else "qwen3-32b")
+    # co-hosting VRAM: when the qwen3 reranker shares the LLM GPU with a local vLLM we
+    # boot ourselves, shrink vLLM's reservation 0.90 -> 0.72 (~33G) so the reranker's
+    # bf16 ~9G fits on the 46G card. Reusing an EXTERNAL vLLM (--llm_base_url) skips
+    # this — that server's util was fixed at its own launch.
+    vllm_util = 0.90
+    if (args.reranker == "qwen3_reranker" and args.llm_backend == "local_vllm"
+            and not args.llm_base_url):
+        vllm_util = 0.72
+        print(f"[run_server] reranker co-hosted with local vLLM -> gpu_mem_util {vllm_util}")
     return PipelineConfig(
         retrievers=retrievers,
         fusion_type=args.fusion_type,
@@ -116,6 +135,13 @@ def config_from_args(args) -> PipelineConfig:
         vllm_hf_model=args.vllm_hf_model,
         vllm_port=args.vllm_port,
         vllm_max_model_len=args.vllm_max_model_len,
+        vllm_gpu_mem_util=vllm_util,
+        reranker=args.reranker,
+        rerank_top_k=args.rerank_top_k,
+        rerank_batch_size=args.rerank_batch_size,
+        rerank_quant=args.rerank_quant,
+        qwen3_reranker_path=args.qwen3_reranker_path,
+        reranking_query_type=args.reranking_query_type,
         dense_index_dir_path=args.dense_index_dir_path,
         dense_query_encoder_path=args.dense_query_encoder_path,
         embed_dim=args.embed_dim,

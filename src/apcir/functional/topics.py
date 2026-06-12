@@ -398,6 +398,21 @@ class Turn:
             final_query = (f"Instruct: {instruction}\n"
                            f"User Profile: {profile}\n"
                            f"Conversation: {' '.join(conv_parts)}")
+        elif query_type == "qwen_3_rerank_instruct_full":
+            # Qwen3-Reranker conversational RERANKING query: the <Query> slot content for
+            # the reranker template. Mirrors qwen_conversation_ptkb's profile-FIRST +
+            # interleaved-conversation structure, but with NO "Instruct:" header — the
+            # instruction (judge whether the document helps answer the user's last
+            # question consistently with the profile) rides in the reranker template's
+            # <Instruct>: slot (rerank.QWEN3_RERANK_CONV_INSTRUCTION); a double
+            # instruction would confuse the model. Retriever-agnostic (no retrieval_model
+            # assert — reranking applies to whatever retriever produced the hits).
+            ctx = getattr(self, "fullconv_ctx", [])
+            conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            conv_parts.append(f"User's last question: {self.current_utterance}")
+            profile = " ".join(f"{i}. {v}" for i, v in enumerate(self.ptkb.values(), 1))
+            final_query = (f"User Profile: {profile}\n"
+                           f"Conversation: {' '.join(conv_parts)}")
         elif query_type == "qwen_conversation_ptkb_previous_conv_as_ptkb":
             # qwen3-only AND iKAT-2025-only: uses the SAME persona's previous conversation
             # (e.g. current X-2 -> previous X-1) as extra context, plus current conversation
