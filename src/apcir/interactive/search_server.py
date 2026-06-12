@@ -47,11 +47,15 @@ def create_app(config: PipelineConfig) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        print("[search_server] loading resident index state (this can take 2-3 min)...")
+        print("[search_server] startup: booting LLM (if any) + loading index "
+              "(vLLM cold pull can take ~20 min; the 336G index ~2-3 min)...")
         pipeline.load()
         print("[search_server] ready:", pipeline.health())
-        yield
-        print("[search_server] shutting down.")
+        try:
+            yield
+        finally:
+            print("[search_server] shutting down (stopping vLLM server if running).")
+            pipeline.shutdown()
 
     app = FastAPI(title="apcir interactive search server", lifespan=lifespan)
 

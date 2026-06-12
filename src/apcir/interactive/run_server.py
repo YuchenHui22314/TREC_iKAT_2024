@@ -28,6 +28,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--retrievers", nargs="+", default=["BM25", "ance"])
     p.add_argument("--retrieval_query_types", nargs="+",
                    default=["raw", "full_conversation_dense"])
+    # online QR per retriever leg (parallel to --retrievers; "" or "none" = no QR).
+    # e.g. --qr rar none  -> BM25 uses the rar rewrite, ANCE uses full_conversation_dense.
+    p.add_argument("--qr", nargs="+", default=None,
+                   help="QR name per retriever leg (rar / rar_personalized_cot1 / "
+                        "rar_non_personalized_cot1 / MQ4CS_persq / GtR / ptkb_sum / none)")
     # fusion
     p.add_argument("--fusion_type", default="RRF",
                    choices=["RRF", "linear_combination", "round_robin", "concat"])
@@ -36,10 +41,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--rrf_k", type=int, default=60)
     p.add_argument("--retrieval_top_k", type=int, default=c.retrieval_top_k)
     # generation
-    p.add_argument("--generation", default="extractive")
+    p.add_argument("--generation", default=c.generation, choices=["rag", "extractive"])
     p.add_argument("--response_max_tokens", type=int, default=c.response_max_tokens)
     p.add_argument("--citations_max", type=int, default=c.citations_max)
     p.add_argument("--generation_top_k", type=int, default=c.generation_top_k)
+    # shared LLM (QR + RAG generation)
+    p.add_argument("--llm_backend", default=c.llm_backend, choices=["local_vllm", "openai"])
+    p.add_argument("--llm_model", default=None,
+                   help="LLM model id. If unset, defaults by backend: local_vllm->qwen3-32b, "
+                        "openai->gpt-5-mini.")
+    p.add_argument("--llm_base_url", default=c.llm_base_url)
+    p.add_argument("--llm_gpu_id", type=int, default=c.llm_gpu_id)
+    p.add_argument("--llm_max_tokens", type=int, default=c.llm_max_tokens)
+    p.add_argument("--gtr_phi", type=int, default=c.gtr_phi)
+    p.add_argument("--demo_file", default=c.demo_file)
+    p.add_argument("--personalized_demo_file", default=c.personalized_demo_file)
+    p.add_argument("--non_personalized_demo_file", default=c.non_personalized_demo_file)
+    p.add_argument("--vllm_bin", default=c.vllm_bin)
+    p.add_argument("--vllm_hf_model", default=c.vllm_hf_model)
+    p.add_argument("--vllm_port", type=int, default=c.vllm_port)
+    p.add_argument("--vllm_max_model_len", type=int, default=c.vllm_max_model_len)
     # dense index
     p.add_argument("--dense_index_dir_path", default=c.dense_index_dir_path)
     p.add_argument("--dense_query_encoder_path", default=c.dense_query_encoder_path)
@@ -61,8 +82,16 @@ def config_from_args(args) -> PipelineConfig:
         raise SystemExit(
             f"--retrievers ({len(args.retrievers)}) and --retrieval_query_types "
             f"({len(args.retrieval_query_types)}) must have the same length")
-    retrievers = [RetrieverSpec(n, qt)
-                  for n, qt in zip(args.retrievers, args.retrieval_query_types)]
+    qr_list = args.qr if args.qr is not None else [""] * len(args.retrievers)
+    if len(qr_list) != len(args.retrievers):
+        raise SystemExit(
+            f"--qr ({len(qr_list)}) must have the same length as --retrievers "
+            f"({len(args.retrievers)})")
+    qr_list = ["" if q in ("none", "None") else q for q in qr_list]
+    retrievers = [RetrieverSpec(n, qt, qr)
+                  for n, qt, qr in zip(args.retrievers, args.retrieval_query_types, qr_list)]
+    # default LLM model by backend (local vLLM -> qwen3-32b ; OpenAI -> gpt-5-mini)
+    llm_model = args.llm_model or ("gpt-5-mini" if args.llm_backend == "openai" else "qwen3-32b")
     return PipelineConfig(
         retrievers=retrievers,
         fusion_type=args.fusion_type,
@@ -74,6 +103,19 @@ def config_from_args(args) -> PipelineConfig:
         response_max_tokens=args.response_max_tokens,
         citations_max=args.citations_max,
         generation_top_k=args.generation_top_k,
+        llm_backend=args.llm_backend,
+        llm_model=llm_model,
+        llm_base_url=args.llm_base_url,
+        llm_gpu_id=args.llm_gpu_id,
+        llm_max_tokens=args.llm_max_tokens,
+        gtr_phi=args.gtr_phi,
+        demo_file=args.demo_file,
+        personalized_demo_file=args.personalized_demo_file,
+        non_personalized_demo_file=args.non_personalized_demo_file,
+        vllm_bin=args.vllm_bin,
+        vllm_hf_model=args.vllm_hf_model,
+        vllm_port=args.vllm_port,
+        vllm_max_model_len=args.vllm_max_model_len,
         dense_index_dir_path=args.dense_index_dir_path,
         dense_query_encoder_path=args.dense_query_encoder_path,
         embed_dim=args.embed_dim,

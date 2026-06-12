@@ -35,6 +35,9 @@ from apcir.search.dense_search import (
 from apcir.search import fuse as fuse_mod
 from .ram_index import RamBlockSource, search_query_against_ram
 from .ptkb_store import PTKBStore
+from .llm_client import SharedLLMClient
+from .rewriter import OnlineRewriter, RewriterConfig, context_turns_from_history
+from .generation import rag_response
 
 
 # --------------------------------------------------------------------------- #
@@ -44,7 +47,9 @@ from .ptkb_store import PTKBStore
 class RetrieverSpec:
     """One configured retriever leg of the fusion."""
     name: str                 # "BM25" | "ance" | "qwen3" | "splade_v3" ...
-    query_type: str           # online-safe QR: "raw" | "full_conversation_dense" | "qwen_conversation"[_ptkb]
+    query_type: str           # used when qr=="": "raw" | "full_conversation_dense" | "qwen_conversation"[_ptkb]
+    qr: str = ""              # online QR name (rar / rar_personalized_cot1 / MQ4CS_persq / GtR / ptkb_sum);
+                              # "" or "none" = no QR, use query_type. A QR may emit MULTIPLE queries (GtR) -> fused.
 
 
 @dataclass
@@ -60,10 +65,31 @@ class PipelineConfig:
     rrf_k: int = 60
     retrieval_top_k: int = 1000
     # generation
-    generation: str = "extractive"
+    generation: str = "rag"                # "rag" (LLM, shared) | "extractive" (no-LLM fallback)
     response_max_tokens: int = 512
     citations_max: int = 10
     generation_top_k: int = 3
+    # shared LLM (QR + RAG generation) — OpenAI-compatible client
+    llm_backend: str = "local_vllm"        # "local_vllm" | "openai"
+    llm_model: str = "qwen3-32b"           # served-model-name (local) or e.g. gpt-4o-mini (openai)
+    llm_base_url: Optional[str] = None     # local default http://127.0.0.1:8100/v1 ; openai default None
+    llm_gpu_id: int = 3                    # vLLM server pinned here (CUDA_VISIBLE_DEVICES=3); faiss uses 0..n-1
+    llm_max_tokens: int = 2048
+    llm_temperature: float = 0.0
+    # online-QR promptor demos + GtR fan-out
+    demo_file: str = ("/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/"
+                      "original_demonstration.json")                       # rar (no ptkb)
+    personalized_demo_file: str = ("/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/"
+                                   "demonstration_using_ikat23.json")      # personalized_cot (has ptkb)
+    non_personalized_demo_file: str = ("/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/"
+                                       "non_personalized_demonstration_using_ikat23.json")
+    gtr_phi: int = 2
+    # local vLLM server (used only when llm_backend=="local_vllm"); see vllm_server.py
+    vllm_bin: str = "/data/rech/huiyuche/envs/vllm_qwen3/bin/vllm"
+    vllm_hf_model: str = "Qwen/Qwen3-32B-AWQ"
+    vllm_port: int = 8100
+    vllm_max_model_len: int = 16384
+    vllm_gpu_mem_util: float = 0.90
     # dense (ANCE) index
     dense_index_dir_path: str = "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
     dense_query_encoder_path: str = (
@@ -71,7 +97,7 @@ class PipelineConfig:
         "snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234")
     embed_dim: int = 768
     passage_block_num: int = 12
-    faiss_n_gpu: int = 4
+    faiss_n_gpu: int = 3                    # GPUs 0,1,2 (GPU 3 reserved for the vLLM server)
     use_gpu_for_faiss: bool = True
     tempmem: int = -1
     query_gpu_id: int = 0
@@ -111,21 +137,60 @@ class InteractivePipeline:
         self._faiss = None
         self._bm25: Optional[LuceneSearcher] = None
         self._docfetch: Optional[LuceneSearcher] = None
+        self._llm: Optional[SharedLLMClient] = None
+        self._rewriter: Optional[OnlineRewriter] = None
+        self._vllm = None                  # VLLMServer (local_vllm backend only)
         self._needs_dense = any(r.name in ("ance", "conv-ance", "qwen3", "conv-qwen3")
                                 for r in config.retrievers)
         self._needs_sparse = any(r.name == "BM25" for r in config.retrievers)
+        self._needs_llm = (config.generation == "rag"
+                           or any(r.qr and r.qr != "none" for r in config.retrievers))
 
     # --- startup: load resident state once --------------------------------- #
     def load(self):
         c = self.config
+        # LLM first: if local vLLM fails to boot, fail fast BEFORE the 336G index load.
+        if self._needs_llm:
+            self._setup_llm()
         if self._needs_dense:
             self._ram = RamBlockSource(c.dense_index_dir_path, c.passage_block_num, c.embed_dim)
-            self._faiss = build_faiss_index(self._make_args())
+            self._faiss = build_faiss_index(self._make_args())   # GPUs 0..faiss_n_gpu-1 (NOT GPU 3)
         if self._needs_sparse:
             self._bm25 = LuceneSearcher(c.sparse_index_dir_path)
             self._bm25.set_bm25(c.bm25_k1, c.bm25_b)
         # doc-fetch: passage text is stored in the lucene (sparse) index
         self._docfetch = LuceneSearcher(c.sparse_index_dir_path)
+
+    def _setup_llm(self):
+        """Build the shared LLM client (+ rewriter). For local_vllm, boot the vLLM
+        OpenAI server on GPU 3 in a SEPARATE process (CUDA_VISIBLE_DEVICES=3) so it can
+        never collide with FAISS on GPUs 0-2."""
+        c = self.config
+        base_url = c.llm_base_url
+        if c.llm_backend == "local_vllm" and base_url:
+            # an EXTERNAL vLLM server was given (e.g. a persistent one already on GPU 3):
+            # reuse it, do NOT boot a second engine (it would fight for the same GPU/port).
+            print(f"[pipeline] reusing external vLLM server at {base_url}")
+        elif c.llm_backend == "local_vllm":
+            from .vllm_server import VLLMServer, VLLMServerConfig
+            self._vllm = VLLMServer(VLLMServerConfig(
+                vllm_bin=c.vllm_bin, hf_model=c.vllm_hf_model, served_model_name=c.llm_model,
+                gpu_id=c.llm_gpu_id, port=c.vllm_port, max_model_len=c.vllm_max_model_len,
+                gpu_memory_utilization=c.vllm_gpu_mem_util))
+            self._vllm.start()
+            self._vllm.wait_until_ready()
+            base_url = self._vllm.base_url()
+        self._llm = SharedLLMClient(
+            backend=c.llm_backend, model=c.llm_model, base_url=base_url,
+            max_tokens=c.llm_max_tokens, temperature=c.llm_temperature)
+        self._rewriter = OnlineRewriter(self._llm, RewriterConfig(
+            demo_file=c.demo_file, personalized_demo_file=c.personalized_demo_file,
+            non_personalized_demo_file=c.non_personalized_demo_file, gtr_phi=c.gtr_phi))
+        print(f"[pipeline] LLM ready: {self._llm}")
+
+    def shutdown(self):
+        if self._vllm is not None:
+            self._vllm.stop()
 
     def health(self) -> Dict[str, Any]:
         return {
@@ -133,8 +198,12 @@ class InteractivePipeline:
             "dense_vectors": getattr(self._ram, "total_vecs", None),
             "sparse_loaded": self._bm25 is not None,
             "docfetch_loaded": self._docfetch is not None,
-            "retrievers": [(r.name, r.query_type) for r in self.config.retrievers],
+            "retrievers": [(r.name, r.query_type, r.qr) for r in self.config.retrievers],
             "fusion_type": self.config.fusion_type,
+            "generation": self.config.generation,
+            "llm_backend": self.config.llm_backend if self._needs_llm else None,
+            "llm_ready": (self._llm.health() if self._llm is not None else None),
+            "vllm_pid": (self._vllm.pid() if self._vllm is not None else None),
         }
 
     # --- per-turn ---------------------------------------------------------- #
@@ -150,21 +219,29 @@ class InteractivePipeline:
         c = self.config
         qid = f"{topic_id}-{user_id}-{turn_index}"
         turn = self._build_turn(utterance, history, qid, topic_id, user_id, ptkb_store)
+        context_turns = context_turns_from_history(history)
 
-        # 1) retrieve per leg
+        # 1) retrieve per leg. A QR leg may emit MULTIPLE queries -> multiple hits dicts;
+        #    they all join hits_list and get fused together (multi-query + cross-retriever).
         hits_list: List[Dict[str, List[Any]]] = []
         for spec in c.retrievers:
-            hits = self._retrieve_one(spec, turn, qid)
-            if c.fusion_type == "linear_combination":
-                hits = fuse_mod.normalize_scores(hits, c.fusion_normalization)
-            hits_list.append(hits)
+            for hits in self._retrieve_one(spec, turn, qid, context_turns):
+                if c.fusion_type == "linear_combination":
+                    hits = fuse_mod.normalize_scores(hits, c.fusion_normalization)
+                hits_list.append(hits)
 
         # 2) fuse
         fused = self._fuse(hits_list, qid)
         ranked = fused[qid]
 
         # 3) generate + citations
-        response = self._extractive_response(ranked)
+        response = None
+        if c.generation == "rag" and self._llm is not None:
+            response = rag_response(
+                self._llm, self._docfetch, ranked, context_turns, turn.ptkb,
+                utterance, c.generation_top_k, _truncate_tokens, c.response_max_tokens)
+        if response is None:                       # extractive fallback (also the no-LLM path)
+            response = self._extractive_response(ranked)
         citations = {d.docid: float(d.score) for d in ranked[:c.citations_max]}
         hits_out = [(d.docid, float(d.score)) for d in ranked]
 
@@ -211,23 +288,37 @@ class InteractivePipeline:
             turn.ptkb = {i: s for i, s in enumerate(ptkb_store.base, 1)}
         return turn
 
-    def _retrieve_one(self, spec: RetrieverSpec, turn: Turn, qid: str) -> Dict[str, List[Any]]:
+    def _retrieve_one(self, spec: RetrieverSpec, turn: Turn, qid: str,
+                      context_turns: List[Turn]) -> List[Dict[str, List[Any]]]:
+        """Return a LIST of hits dicts (one per query). Non-QR leg -> 1 query; a QR leg ->
+        the rewriter's query list (>=1; GtR returns phi)."""
         c = self.config
-        a = self._make_args(retrieval_model=spec.name, retrieval_query_type=spec.query_type)
-        query = turn.query_type_2_query(spec.query_type, 0, 0.0, a)
+        if spec.qr and spec.qr != "none":
+            queries = self._rewriter.rewrite(turn, spec.qr, context_turns, turn.ptkb or {})
+            is_conv = False                      # QR rewrites are plain query strings
+        else:
+            a0 = self._make_args(retrieval_model=spec.name, retrieval_query_type=spec.query_type)
+            queries = [turn.query_type_2_query(spec.query_type, 0, 0.0, a0)]
+            is_conv = (spec.query_type == "full_conversation_dense")
 
-        if spec.name == "BM25":
-            res = self._bm25.batch_search([query], [qid], k=c.retrieval_top_k, threads=40)
-            return {qid: list(res.get(qid, []))}
-
-        if spec.name in ("ance", "conv-ance", "qwen3", "conv-qwen3"):
-            a.retrieval_query_list = [query]
-            a.qid_list_string = [qid]
-            emb, emb2id = get_test_query_embedding(a)
-            D, I = search_query_against_ram(emb, self._ram, self._faiss, c.retrieval_top_k)
-            return get_dense_ranking_list(emb2id, D, I, c.retrieval_top_k)
-
-        raise NotImplementedError(f"retriever {spec.name} not wired in the interactive pipeline")
+        out: List[Dict[str, List[Any]]] = []
+        for q in queries:
+            if spec.name == "BM25":
+                res = self._bm25.batch_search([q], [qid], k=c.retrieval_top_k, threads=40)
+                out.append({qid: list(res.get(qid, []))})
+            elif spec.name in ("ance", "conv-ance", "qwen3", "conv-qwen3"):
+                # a QR rewrite is a plain string -> plain encode path (NOT full_conversation_dense,
+                # which expects a JSON turn-list). Keep the conv type only for non-QR conv legs.
+                a = self._make_args(retrieval_model=spec.name,
+                                    retrieval_query_type=(spec.query_type if is_conv else "raw"))
+                a.retrieval_query_list = [q]
+                a.qid_list_string = [qid]
+                emb, emb2id = get_test_query_embedding(a)
+                D, I = search_query_against_ram(emb, self._ram, self._faiss, c.retrieval_top_k)
+                out.append(get_dense_ranking_list(emb2id, D, I, c.retrieval_top_k))
+            else:
+                raise NotImplementedError(f"retriever {spec.name} not wired in interactive pipeline")
+        return out
 
     def _fuse(self, hits_list: List[Dict[str, List[Any]]], qid: str) -> Dict[str, List[Any]]:
         c = self.config
