@@ -65,8 +65,18 @@ class QwenReranker:
     LEFT padding so position -1 is the real last token for every row in the batch.
 
     Shared by evaluation.py (offline batch) and the interactive server (co-hosted on
-    the gen-LLM GPU). Quantization: none -> bf16 (~9G for 4B); 8b/4b -> bitsandbytes
-    (same interface as rankllama's rerank_quant).
+    the gen-LLM GPU).
+
+    Quantization (computed VRAM, NOT measured; quality NOT yet validated on iKAT):
+      none -> bf16, ~8G weights (~9-9.5G with activations) — DEFAULT, safest.
+      8b   -> bitsandbytes int8, ~4G weights (~4.5-5G). Near-lossless for Qwen3 in
+              general, BUT a reranker scores the yes/no LOGIT DIFFERENCE, which is more
+              quantization-sensitive than generation — the field consensus (IntelLabs
+              fastRAG, sentence-transformers) is to VALIDATE NDCG/MRR before trusting it.
+      4b   -> bitsandbytes nf4, ~2G. EXPERIMENTAL for reranking — int4 on cross-encoder
+              rerankers is under-documented; not recommended without an ablation.
+    Given the remote-reranker option (octal31) and the 0.72 co-host headroom, bf16 fits
+    everywhere — quantization is a convenience, not a necessity.
     """
 
     PREFIX = ("<|im_start|>system\nJudge whether the Document meets the requirements "

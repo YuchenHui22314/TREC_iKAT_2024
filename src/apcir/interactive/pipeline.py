@@ -180,8 +180,10 @@ class InteractivePipeline:
                 self._reranker = RemoteReranker(c.rerank_remote_url)
             else:
                 # co-hosted on the gen-LLM GPU (cuda:llm_gpu_id). VRAM: openai backend ->
-                # GPU 3 is free (bf16 ~9G trivially fits); local_vllm backend -> run_server
-                # lowers vllm_gpu_mem_util to ~0.72 so ~13G stays free (or rerank_quant=8b).
+                # GPU 3 is free (bf16 ~9G fits trivially); local_vllm backend -> run_server
+                # lowers vllm_gpu_mem_util to ~0.72 so ~13G stays free. rerank_quant 8b/4b
+                # is available but its RANKING quality on iKAT is NOT yet validated (see
+                # QwenReranker docstring) — prefer bf16 or the remote reranker.
                 from apcir.search.rerank import QwenReranker
                 import torch as _torch
                 dev = (f"cuda:{c.llm_gpu_id}" if _torch.cuda.is_available() else "cpu")
