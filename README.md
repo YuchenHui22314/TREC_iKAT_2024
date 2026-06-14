@@ -43,6 +43,8 @@ Let us get started!
     - [5. Response Generation parameters](#5-response-generation-parameters)
     - [6. Metrics parameters](#6-metrics-parameters)
     - [7. iKAT Project Specific parameters](#7-ikat-project-specific-parameters)
+- [🔁 Reranking with a multi-GPU server pool](#-reranking-with-a-multi-gpu-server-pool)
+- [💬 iKAT'26 Interactive Submission (Sim.API)](#-ikat26-interactive-submission-simapi)
 - [⚡ Shared-Corpus Evaluation (stream once, fan out)](#-shared-corpus-evaluation-stream-once-fan-out)
 - [📄 Citation](#citation)
 - [🙏 Acknowledgement](#acknowledgement)
@@ -448,6 +450,97 @@ Now let us continue with all the parameters~
 -   `reranking_query_type`: The type of query used for reranking. (See evaluation.py for all possible values)
 -   `generation_query_type`: The type of query used for generation. (See evaluation.py for all possible values)
 
+
+## 🔁 Reranking with a multi-GPU server pool
+
+> Extension beyond the paper. Lets one reranker (qwen3 / monot5 / rankllama) serve **all**
+> experiments without reloading the model per run, and fan the per-query work across N GPUs.
+
+**Why.** `run_experiments.py` spawns one `evaluation.py` subprocess **per (retriever × dataset ×
+reranking-query) combo**. If each subprocess loads the reranker (e.g. the 8 GB Qwen3-Reranker-4B
+or 7B RankLLaMA) from disk, a 24-combo sweep pays that load 24× — and a single GPU underuses the
+other three. The fix is process-level **data parallelism realized as resident servers**: load the
+model **once per GPU**, keep it warm, and let a thread-pool client fan a config's queries across
+the servers round-robin.
+
+```
+                         eval driver (run_experiments → evaluation.py → search.py → rerank())
+                                              │  rerank_remote_url = "url0,url1,url2"
+                                              ▼
+                                  RemoteRerankerPool  (ThreadPool, round-robin)
+                ┌─────────────────────────────┼─────────────────────────────┐
+                ▼                              ▼                              ▼
+        rerank_server (GPU1)          rerank_server (GPU2)          rerank_server (GPU3)
+        model loaded ONCE             model loaded ONCE             model loaded ONCE
+        POST /rerank {instr,          (CUDA_VISIBLE_DEVICES=g per server; --reranker_type
+         query, docs}→scores           selects qwen3_reranker | monot5_* | rankllama)
+```
+The **interactive search server uses the same `rerank_server`** — it is just **N = 1** of this.
+
+**How to run (manual, no Claude needed).** From `src/`, in the `trec_ikat` py3.12 env:
+```bash
+# 1) start one reranker server per GPU (prints RERANK_URLS=...). 3rd arg = reranker type.
+bash scripts/start_rerank_servers.sh "1,2,3" 8200 qwen3_reranker      # or monot5_3b / rankllama / ...
+
+# 2) put the printed comma-list into the yaml (or pass --rerank_remote_url):
+#    rerank_remote_url: "http://127.0.0.1:8200,http://127.0.0.1:8201,http://127.0.0.1:8202"
+#    reranker: ["qwen3_reranker"]      reranking_query_type: ["oracle"]   rerank_top_k: 50
+PATH=/data/rech/huiyuche/envs/trec_ikat/bin:$PATH \
+  python -m apcir.evaluate.run_experiments --config ./apcir/evaluate/fuse_then_eval_config_<name>.yaml
+
+# 3) stop the servers when done
+pkill -f apcir.search.rerank_server
+```
+Notes: **rerank-only** runs reuse the existing no-rerank rankings via the disk-load shortcut
+(`search.py`, matches stem `(retrieval_query_type, retriever, none)`) → no index load, only the
+reranker GPUs work. A single URL → `RemoteReranker`; no URL → in-process load. Reranker code:
+`apcir/search/rerank.py` (`QwenReranker` / `MonoT5Scorer` / `RankLlamaScorer` + `build_local_reranker`),
+server `apcir/search/rerank_server.py`. **One-shot alternative** (no resident servers, one launch
+reranks all combos sharded by `accelerate`): `accelerate launch --num_processes K --multi_gpu -m
+apcir.search.rerank_accel --config <yaml>` — byte-identical to 1-GPU, but no per-combo checkpoint;
+prefer the server pool for sweeps. Reranking numbers carry ~±0.5 GPU-GEMM batch noise.
+
+## 💬 iKAT'26 Interactive Submission (Sim.API)
+
+> Extension beyond the paper — the 2026 track is **interactive only** (no offline run file; the
+> Sim.API assembles the run from per-turn payloads). Code in `apcir/interactive/`.
+
+Two long-running processes + a thin driver, deliberately split so the 336 GB index loads once:
+```
+   ┌────────────────────────── octal40 ──────────────────────────┐         ┌──────────────┐
+   │  search_server.py  (FastAPI, 1 worker)        POST /search   │  per    │   Sim.API    │
+   │   GPU0,1,2  RAM ANCE index(336G)+GPU faiss+BM25 lucene        │ ◄─turn─ │ (user simul.)│
+   │   GPU3      [shared LLM] vLLM Qwen3-32B  (online QR + RAG)    │  call   │  /debug/*    │
+   │   GPU3      [optional]  Qwen3-Reranker  (step-2.5 rerank)     │         │  /run/*      │
+   └───────────────────────────────▲──────────────────────────────┘         └──────▲───────┘
+                                    │ POST /search {utterance,history,ptkb}          │ start/continue
+                                    └──────────────  driver.py (run_driver) ─────────┘
+```
+Per turn: build a `Turn` → **online QR** (`rewriter.py`, any rewrite.py prompt: rar /
+MQ4CS_persq / GtR / ptkb_sum …) → retrieve (BM25 + ANCE) → RRF fuse → **[optional rerank]** →
+**RAG answer** (`generation.py`, ≤512 tok) + top-10 citations. The shared LLM (`llm_client.py`)
+runs on **OpenAI** (`gpt-5-mini`; uses `max_completion_tokens`) **or local vLLM** (`Qwen3-32B-AWQ`
+on GPU3). The Sim.API submission body is `{run_id, response, citations, meta}` (PTKB rides in
+free-form `meta`); token is read **only** from env `IKAT_SIM_TOKEN`.
+
+**How to run (manual).** From `src/`, env `trec_ikat`:
+```bash
+# 0) preflight (read-only, no budget): team + remaining budget
+IKAT_SIM_TOKEN=<tok> python -m apcir.interactive.run_driver --preflight --mode debug
+
+# 1) start the search server (OpenAI backend = GPUs free for faiss; ~2-3 min to load the index)
+python -m apcir.interactive.run_server --port 8000 \
+   --retrievers ance --retrieval_query_types full_conversation_dense \
+   --qr MQ4CS_persq --generation rag --llm_backend openai --llm_model gpt-5-mini --faiss_n_gpu 3
+#   curl localhost:8000/health   # wait for dense_loaded:true
+
+# 2) drive ONE debug conversation (costs 1 of 100 debug sessions)
+IKAT_SIM_TOKEN=<tok> python -m apcir.interactive.run_driver --mode debug --max_conversations 1 \
+   --server_url http://127.0.0.1:8000 --run_id rali_debug_v1 --description "RALI debug"
+```
+Records land in `results/ClueWeb_ikat/ikat_26_sim_debug/{ranking,interactive}/`. Official
+`--mode run` requires `--i_understand_run_is_scored` (protects the scored runs). See the
+`ikat-interactive-submission` skill for the full option matrix + gotchas.
 
 ## ⚡ Shared-Corpus Evaluation (stream once, fan out)
 
