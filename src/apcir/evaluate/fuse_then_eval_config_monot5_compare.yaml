@@ -1,45 +1,21 @@
-# Table 13 ("Performance of Backbone Retrieval Models using Human Query Rewrite")
-# restructure: col1 Retriever, col2 Reranker. These runs add the qwen3_reranker rows:
-# 4 retrievers x 3 datasets x 2 reranking-query modes = 24 RERANK-ONLY experiments,
-# rerank top-50 (user-confirmed).
-#
-# RERANK-ONLY trick: the human-QR no-rerank rankings already exist for all 12
-# (retriever, dataset) pairs in ../results/.../ranking/ (S1[oracle*]-S2[none]-...-[X]-
-# [none_...]). The Retrieval() disk-load shortcut (search.py:566) finds them by
-# (QR_name, retriever, reranker==none) and loads instead of retrieving -> NO index
-# load, NO retrieval GPU. Only the qwen3 reranker (bf16 ~9G, rerank_gpu_id) runs.
-#
-# Reranking query modes:
-#   oracle                       -> NATIVE default instruction + human rewrite as query
-#   qwen_3_rerank_instruct_full  -> conversational instruction + profile-first query
-# No-rerank baseline rows of the table = the existing Table-13 numbers (not re-run).
+# Head-to-head: monot5-3b vs qwen3_reranker on the SAME human-QR backbone (oracle),
+# BM25 first stage, rerank top-50. Apples-to-apples with the Table-13 qwen3 rows.
+# Rerank-only (disk-load shortcut loads the existing BM25 oracle ranking; no index).
+# monot5 runs on GPUs 1,2,3 (DataParallel) — launch with CUDA_VISIBLE_DEVICES=1,2,3
+# so it never touches GPU 0 (the resident qwen3 rerank server).
 
 iterate:
   machine: ["octal40"]
-  retrieval_model: ["BM25", "splade_v3", "ance", "qwen3"]
-  reranker: ["qwen3_reranker"]
-  reranking_query_type: ["oracle", "qwen_3_rerank_instruct_full"]
+  retrieval_model: ["BM25"]
+  reranker: ["monot5_3b"]
+  reranking_query_type: ["oracle"]
   topics: ["ikat_23_test", "ikat_24_test", "ikat_25_test"]
 
 param_mapping:
   retrieval_model:
     BM25:
       retrieval_query_type: "oracle"
-      wandb_run_name: "t13_bm25"
-    splade_v3:
-      retrieval_query_type: "oracle"
-      wandb_run_name: "t13_splade"
-    ance:
-      retrieval_query_type: "oracle"
-      wandb_run_name: "t13_ance"
-    qwen3:
-      # must match the existing ranking stem S1[oracle_qwen_instruct]-...-[qwen3]-...
-      retrieval_query_type: "oracle_qwen_instruct"
-      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
-      dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_qwen_merged"
-      embed_dim: 1024
-      passage_block_num: 6
-      wandb_run_name: "t13_qwen3"
+      wandb_run_name: "monot5cmp_bm25"
   topics:
     ikat_23_test:
       input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
@@ -76,7 +52,7 @@ fixed:
   use_pyserini_dense_search: false
   dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
   dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
-  faiss_n_gpu: 4
+  faiss_n_gpu: 3
   use_gpu_for_faiss: true
   embed_dim: 768
   tempmem: -1
@@ -91,7 +67,7 @@ fixed:
   original_query_weight: 0.5
 
   fusion_type: 'none'
-  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  QRs_to_rank: ["mistral_rar_rw"]
   fuse_weights: [0.1, 0.4]
   fusion_normalization: "none"
   level_type: "gpt-3.5_judge_and_rewrite"
@@ -100,18 +76,13 @@ fixed:
   target_metrics: "mrr,ndcg@3,recall@10,recall@100"
   optimize_step: 0.01
 
-  reranker: "qwen3_reranker"
+  reranker: "monot5_3b"
   rerank_top_k: 50
   qwen3_reranker_path: "Qwen/Qwen3-Reranker-4B"
   rerank_gpu_id: 0
-  # if octal40 VRAM is tight, host the model on octal31 instead:
-  #   ssh octal31, then: cd /data/rech/huiyuche/TREC_iKAT_2024/src &&
-  #   PATH=/data/rech/huiyuche/envs/trec_ikat/bin:$PATH python -m apcir.search.rerank_server --gpu_id 0 --port 8200
-  # and set:  rerank_remote_url: "http://octal31:8200"
-  rerank_remote_url: "http://127.0.0.1:8200"
+  rerank_remote_url: "none"
   cache_dir: "/data/rech/huiyuche/huggingface"
-  # (instruction + profile + conversation + doc) pairs are long -> conservative batch
-  rerank_batch_size: 8
+  rerank_batch_size: 30
   rerank_quant: "none"
   rankgpt_llm: "gpt-3.5-turbo"
   window_size: 4

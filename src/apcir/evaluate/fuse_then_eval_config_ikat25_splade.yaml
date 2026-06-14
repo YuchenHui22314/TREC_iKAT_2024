@@ -1,0 +1,103 @@
+# Side-task: SPLADE_v3 with HUMAN query rewrite (oracle == resolved_utterance) on
+# iKAT-2025 -> fills the ONLY missing cell of paper Table "human_performance" (main.tex
+# line 877): the SPLADE row's iKAT-25 columns (MRR / NDCG@3 / Recall@10 / Recall@100).
+# ance/BM25/qwen3 iKAT-25 are already in that table; this completes it.
+#
+# Retrieval-only (no fusion/rerank/generation). Goes through splade_search ->
+# SparseRetrieval (apcir/splade_index.py) -> validates the DRY refactor on the sparse
+# path AND is the profiling vehicle for the SPLADE speed optimization.
+#
+# IMPORTANT: splade_index_dir_path points at the POPULATED index splade_v3_clueweb22B
+# (235 GB h5py). The old configs' clueweb22b_ikat23_splade_v3 dir is EMPTY (wiped).
+# G2-style safety: save_results_to_object=false (do NOT mutate the topic json),
+# output to a scratch dir, no wandb.
+
+iterate:
+  machine: ["octal40"]
+  retrieval_model: ["splade_v3"]
+  retrieval_query_type: ["oracle"]
+  reranker: ["none"]
+  topics: ["ikat_25_test"]
+
+param_mapping:
+  retrieval_model:
+    splade_v3:
+      wandb_run_name: "splade_v3_oracle_ikat25"
+  topics:
+    ikat_25_test:
+      input_query_path: "../data/topics/ikat25/ikat_2025_test.json"
+      qrel_file_path: "../data/qrels/ikat_2025_qrel.txt"
+
+fixed:
+  collection: "ClueWeb_ikat"
+  topics: "ikat_25_test"
+  input_query_path: "../data/topics/ikat25/ikat_2025_test.json"
+  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2/"
+  output_dir_path: "/part/01/Tmp/yuchen/splade_ikat25_out"
+  qrel_file_path: "../data/qrels/ikat_2025_qrel.txt"
+  seed: 42
+  save_results_to_object: false
+  save_ranking_list: true
+  run_rag: true
+  run_eval: true
+
+  retrieval_model: "splade_v3"
+  retrieval_top_k: 1000
+  personalization_group: "all"
+  query_gpu_id: 0
+  query_encoder_batch_size: 45
+
+  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/splade_v3_clueweb22B"
+
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
+  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2"
+  faiss_n_gpu: 4
+  use_gpu_for_faiss: true
+  embed_dim: 768
+  tempmem: -1
+  passage_block_num: 12
+
+  bm25_k1: 0.9
+  bm25_b: 0.4
+
+  qe_type: "none"
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+
+  fusion_type: 'none'
+  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  fuse_weights: [0.1, 0.4]
+  fusion_normalization: "none"
+  level_type: "gpt-3.5_judge_and_rewrite"
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: "group"
+  target_metrics: "mrr,ndcg@3,recall@10,recall@100"
+  optimize_step: 0.01
+
+  reranker: "none"
+  rerank_top_k: 50
+  cache_dir: "/data/rech/huiyuche/huggingface"
+  rerank_batch_size: 67
+  rerank_quant: "none"
+  rankgpt_llm: "gpt-3.5-turbo"
+  window_size: 4
+  step: 1
+
+  generation_model: "none"
+  generation_prompt: "none"
+  generation_top_k: 3
+
+  save_to_wandb: false
+  wandb_run_name: ""
+  metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
+  given_ranking_list_path: "none"
+
+  run_name: "none"
+  retrieval_query_type: "oracle"
+  reranking_query_type: "none"
+  generation_query_type: "none"
+  generate_ikat_submission: false

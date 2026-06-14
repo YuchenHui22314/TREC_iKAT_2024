@@ -125,13 +125,41 @@ class QwenReranker:
             scores = torch.nn.functional.log_softmax(pair_logits, dim=1)[:, 1].exp()
         return scores.float().cpu().tolist()
 
-    def score(self, instruction, query, docs, batch_size):
-        """One query vs many docs -> list[float], batched by rerank_batch_size."""
+    def score(self, instruction, query, docs, batch_size, max_batch_tokens=24000):
+        """One query vs many docs -> list[float].
+
+        TOKEN-BUDGET batching (the fixed `batch_size` is only a hard cap): tokenize each
+        pair once, sort by length, and greedily pack each forward batch up to
+        ~max_batch_tokens PADDED tokens (rows_in_batch * longest_in_batch). Short pairs
+        (oracle mode, ~280 tok) pack ~50/batch -> 1 forward instead of 7; long pairs
+        (instruct_full, full conversation per pair) pack few/batch -> no OOM. Sorting by
+        length also minimises padding waste. Original order is restored for the scores.
+        """
         pairs = [self.format_pair(instruction, query, d) for d in docs]
-        num_to_split = get_split_num(len(pairs), batch_size)
-        scores = []
-        for part in np.array_split(np.array(pairs, dtype=object), num_to_split):
-            scores.extend(self._score_batch(list(part)))
+        body_max = self.max_length - len(self.prefix_tokens) - len(self.suffix_tokens)
+        enc = self.tokenizer(pairs, padding=False, truncation="longest_first",
+                             max_length=body_max, add_special_tokens=False)["input_ids"]
+        n_extra = len(self.prefix_tokens) + len(self.suffix_tokens)
+        lens = [len(ids) + n_extra for ids in enc]
+        order = sorted(range(len(pairs)), key=lambda i: lens[i])   # short -> long
+
+        scores = [0.0] * len(pairs)
+        i = 0
+        while i < len(order):
+            # grow a batch while it fits the token budget and the hard count cap
+            j = i
+            longest = 0
+            while j < len(order):
+                cand = max(longest, lens[order[j]])
+                if j > i and (cand * (j - i + 1) > max_batch_tokens or (j - i) >= max(batch_size, 1) * 8):
+                    break
+                longest = cand
+                j += 1
+            idxs = order[i:j]
+            batch_scores = self._score_batch([pairs[k] for k in idxs])
+            for k, s in zip(idxs, batch_scores):
+                scores[k] = s
+            i = j
         return scores
 
 
