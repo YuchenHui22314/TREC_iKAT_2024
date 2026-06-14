@@ -189,6 +189,52 @@ class RemoteReranker:
         r.raise_for_status()
         return r.json()["scores"]
 
+
+class RemoteRerankerPool:
+    """N resident rerank servers (one per GPU) + a thread pool that fires queries
+    CONCURRENTLY round-robin → data parallelism across N GPUs, realized as persistent
+    servers instead of an accelerate one-shot launch. Each server loads the model ONCE
+    and stays resident (warm across configs AND sessions). The interactive single-server
+    is just N=1 of this. `score()` = one query (server 0); `score_many()` = a list of
+    queries reranked concurrently (the multi-GPU win for a config's many queries)."""
+
+    def __init__(self, urls, timeout: float = 600.0):
+        import requests as _requests
+        self._requests = _requests
+        self.urls = [u.rstrip("/") for u in urls]
+        self.timeout = timeout
+        for u in self.urls:
+            self._requests.get(f"{u}/health", timeout=10).raise_for_status()
+        print(f"[RemoteRerankerPool] {len(self.urls)} servers: {self.urls}")
+
+    def _one(self, url, instruction, query, docs, batch_size):
+        r = self._requests.post(
+            f"{url}/rerank",
+            json={"instruction": instruction, "query": query,
+                  "docs": list(docs), "batch_size": batch_size},
+            timeout=self.timeout)
+        r.raise_for_status()
+        return r.json()["scores"]
+
+    def score(self, instruction, query, docs, batch_size):
+        return self._one(self.urls[0], instruction, query, docs, batch_size)
+
+    def score_many(self, jobs, batch_size):
+        """jobs: list of (instruction, query, docs) -> list of score-lists IN ORDER,
+        scored concurrently across the N servers (round-robin by index)."""
+        from concurrent.futures import ThreadPoolExecutor
+        results = [None] * len(jobs)
+
+        def run(i):
+            inst, q, docs = jobs[i]
+            return i, self._one(self.urls[i % len(self.urls)], inst, q, docs, batch_size)
+
+        with ThreadPoolExecutor(max_workers=len(self.urls)) as ex:
+            for i, sc in ex.map(run, range(len(jobs))):
+                results[i] = sc
+        return results
+
+
 def get_model(
     peft_model_name, 
     cache_dir,
@@ -690,12 +736,17 @@ def rerank(hits, args):
             instruction = QWEN3_RERANK_DEFAULT_INSTRUCTION
         print(f"qwen3 reranker instruction: {instruction!r}")
 
+        # rerank_remote_url may be a single URL or a COMMA-LIST of N server URLs.
+        # >1 URL -> RemoteRerankerPool (concurrent, multi-GPU via N resident servers);
+        # 1 URL -> RemoteReranker; none -> load QwenReranker in-process.
         remote_url = getattr(args, "rerank_remote_url", "none")
-        if remote_url and remote_url != "none":
-            # model hosted on another machine (rerank_server.py, e.g. octal31) —
-            # no local VRAM used at all
-            print(f"using REMOTE qwen3 reranker at {remote_url}")
-            reranker = RemoteReranker(remote_url)
+        urls = [u.strip() for u in str(remote_url).split(",") if u.strip() and u.strip() != "none"]
+        if len(urls) > 1:
+            print(f"using {len(urls)} REMOTE qwen3 rerank servers (data-parallel): {urls}")
+            reranker = RemoteRerankerPool(urls)
+        elif len(urls) == 1:
+            print(f"using REMOTE qwen3 reranker at {urls[0]}")
+            reranker = RemoteReranker(urls[0])
         else:
             print("loading qwen3 reranker")
             reranker = QwenReranker(
@@ -706,31 +757,28 @@ def rerank(hits, args):
             )
 
         print("reranking")
-        for qid, hit in tqdm(hits.items(), total=len(hits), desc="Reranking"):
-
-            reranking_query = reranking_query_dic[qid]
-
-            new_hits = hit[0:args.rerank_top_k]
-            doc_contents = [_fetch_contents_cached(searcher, doc_object.docid, doc_cache)
-                            for doc_object in new_hits]
-
-            reranked_scores = reranker.score(
-                instruction, reranking_query, doc_contents, args.rerank_batch_size)
-
-            np_reranked_scores = np.array(reranked_scores, dtype=np.float32)
-
-            indexes = np.argsort(np_reranked_scores)[::-1]
+        # 1) build jobs (fetch doc text per query; CPU, fast, cached)
+        qid_order = list(hits.keys())
+        jobs = []
+        for qid in qid_order:
+            new_hits = hits[qid][0:args.rerank_top_k]
+            docs = [_fetch_contents_cached(searcher, d.docid, doc_cache) for d in new_hits]
+            jobs.append((instruction, reranking_query_dic[qid], docs))
+        # 2) score — pool fans the queries out concurrently across N GPUs; single = sequential
+        if isinstance(reranker, RemoteRerankerPool):
+            all_scores = reranker.score_many(jobs, args.rerank_batch_size)
+        else:
+            all_scores = [reranker.score(inst, q, docs, args.rerank_batch_size)
+                          for inst, q, docs in tqdm(jobs, desc="Reranking")]
+        # 3) writeback per query (same rank->1/rank convention as the other rerankers)
+        for qid, scores in zip(qid_order, all_scores):
+            hit = hits[qid]
+            indexes = np.argsort(np.array(scores, dtype=np.float32))[::-1]
             for rank, index in enumerate(indexes):
                 hit[index].rank = rank
-
-            # change the score according to the rank (same convention as the others)
             for rank, doc_object in enumerate(hit):
-                if rank < args.rerank_top_k:
-                    doc_object.score = 1/(doc_object.rank + 1)
-                else:
-                    doc_object.score = 1/(rank + 1)
-
-            # sort the hits by score
+                doc_object.score = (1/(doc_object.rank + 1) if rank < args.rerank_top_k
+                                    else 1/(rank + 1))
             hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     return hits
