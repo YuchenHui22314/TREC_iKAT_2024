@@ -365,6 +365,11 @@ def rerank_rankllama(
             truncation = True
             )
 
+        # move inputs to the model's device (the old DataParallel path auto-scattered to
+        # GPU; the single-GPU server path needs this explicitly, else cuda-vs-cpu mismatch)
+        model_device = next(model.parameters()).device
+        inputs = {k: v.to(model_device) for k, v in inputs.items()}
+
         # Run the model forward
         with torch.no_grad():
             outputs = model(**inputs)
