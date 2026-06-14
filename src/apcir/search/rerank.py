@@ -529,6 +529,95 @@ def hits_2_rankgpt_list(
 
 
 
+# ----------------------------------------------------------------------------- #
+# Model-agnostic local scorers: each exposes .score(instruction, query, docs, bs)
+# so rerank_server.py can serve ANY HF reranker and the RemoteReranker(Pool) client
+# is reranker-agnostic. (monot5/rankllama ignore `instruction`; qwen3 uses it.)
+# ----------------------------------------------------------------------------- #
+MONOT5_NAMES = {
+    "monot5_base": "castorini/monot5-base-msmarco",
+    "monot5_base_10k": "castorini/monot5-base-msmarco-10k",
+    "monot5_large": "castorini/monot5-large-msmarco",
+    "monot5_large_10k": "castorini/monot5-large-msmarco-10k",
+    "monot5_3b": "castorini/monot5-3b-msmarco",
+    "monot5_3b_10k": "castorini/monot5-3b-msmarco-10k",
+}
+
+
+class MonoT5Scorer:
+    """Single-GPU monoT5 reranker with the unified .score() signature. Under the
+    per-GPU server (CUDA_VISIBLE_DEVICES=<g>), the one visible GPU is 'cuda'."""
+
+    def __init__(self, model_name, cache_dir, device="cuda"):
+        self.model = monoT5.from_pretrained(model_name, cache_dir=cache_dir)
+        self.model.set_tokenizer()
+        self.model.set_targets(["true", "false"])
+        self.tokenizer = self.model.tokenizer
+        self.decoder_start_id = self.model.config.decoder_start_token_id
+        self.targeted_ids = self.model.targeted_ids
+        self.model = self.model.to(device)
+        self.model.eval()
+
+    def score(self, instruction, query, docs, batch_size):   # instruction ignored
+        return rerank_t5_DP(query, list(docs), self.tokenizer, self.model,
+                            self.decoder_start_id, self.targeted_ids, batch_size)
+
+
+class RankLlamaScorer:
+    """RankLLaMA reranker with the unified .score() signature (ignores instruction)."""
+
+    def __init__(self, cache_dir, quant="none"):
+        self.tokenizer, self.model = load_rankllama(
+            cache_dir, quant_8bit=(quant == "8b"), quant_4bit=(quant == "4b"))
+
+    def score(self, instruction, query, docs, batch_size):
+        return rerank_rankllama(query, list(docs), self.tokenizer, self.model, batch_size)
+
+
+def build_local_reranker(reranker_type, cache_dir, device="cuda", quant="none",
+                         qwen3_path="Qwen/Qwen3-Reranker-4B"):
+    """reranker_type -> a scorer object with .score(instruction, query, docs, batch_size).
+    Used by rerank_server.py so ONE server serves any HF reranker."""
+    if reranker_type == "qwen3_reranker":
+        return QwenReranker(model_path=qwen3_path, cache_dir=cache_dir, quant=quant, device=device)
+    if reranker_type in MONOT5_NAMES:
+        return MonoT5Scorer(MONOT5_NAMES[reranker_type], cache_dir, device="cuda")
+    if reranker_type == "rankllama":
+        return RankLlamaScorer(cache_dir, quant=quant)
+    raise NotImplementedError(f"reranker_type {reranker_type} not supported by the server")
+
+
+def _qwen3_instruction(args):
+    return (QWEN3_RERANK_CONV_INSTRUCTION
+            if args.reranking_query_type == "qwen_3_rerank_instruct_full"
+            else QWEN3_RERANK_DEFAULT_INSTRUCTION)
+
+
+def _score_and_writeback(hits, args, reranking_query_dic, searcher, doc_cache, scorer, instruction):
+    """Shared: build per-query (instruction, query, docs) jobs -> score (pool = concurrent
+    across N GPUs; single scorer = sequential) -> writeback rank->1/(rank+1). Reranker-agnostic."""
+    qid_order = list(hits.keys())
+    jobs = []
+    for qid in qid_order:
+        new_hits = hits[qid][0:args.rerank_top_k]
+        docs = [_fetch_contents_cached(searcher, d.docid, doc_cache) for d in new_hits]
+        jobs.append((instruction, reranking_query_dic[qid], docs))
+    if isinstance(scorer, RemoteRerankerPool):
+        all_scores = scorer.score_many(jobs, args.rerank_batch_size)
+    else:
+        all_scores = [scorer.score(inst, q, docs, args.rerank_batch_size)
+                      for inst, q, docs in tqdm(jobs, desc="Reranking")]
+    for qid, scores in zip(qid_order, all_scores):
+        hit = hits[qid]
+        indexes = np.argsort(np.array(scores, dtype=np.float32))[::-1]
+        for rank, index in enumerate(indexes):
+            hit[index].rank = rank
+        for rank, doc_object in enumerate(hit):
+            doc_object.score = (1/(doc_object.rank + 1) if rank < args.rerank_top_k
+                                else 1/(rank + 1))
+        hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+
+
 #######################################################
 ###################### Reranking ######################
 #######################################################
@@ -572,6 +661,20 @@ def rerank(hits, args):
     # per-call docid->contents cache shared by all queries (same doc appears in many
     # queries' top-k; saves the repeated raw()+json.loads)
     doc_cache = {}
+
+    # ---- UNIFIED REMOTE PATH: any reranker served by resident server(s). One URL ->
+    # RemoteReranker; comma-list -> RemoteRerankerPool (data-parallel across N GPUs). The
+    # server is configured with --reranker_type, so this client is reranker-agnostic
+    # (qwen3 sends its instruction; monot5/rankllama send "" which the server ignores).
+    # rankgpt is API-based (no model server) -> falls through to its own branch.
+    remote_url = getattr(args, "rerank_remote_url", "none")
+    urls = [u.strip() for u in str(remote_url).split(",") if u.strip() and u.strip() != "none"]
+    if urls and args.reranker != "rankgpt":
+        instruction = _qwen3_instruction(args) if args.reranker == "qwen3_reranker" else ""
+        scorer = RemoteRerankerPool(urls) if len(urls) > 1 else RemoteReranker(urls[0])
+        print(f"[rerank] remote {args.reranker} via {len(urls)} server(s)")
+        _score_and_writeback(hits, args, reranking_query_dic, searcher, doc_cache, scorer, instruction)
+        return hits
 
     if args.reranker == "rankgpt":
 
@@ -726,59 +829,15 @@ def rerank(hits, args):
             hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
 
     elif args.reranker == "qwen3_reranker":
-
-        # instruction routing: the conversational query field carries profile+conversation
-        # (judge if the doc helps answer the last question); any other reranking_query_type
-        # (e.g. a personalized rewrite) uses the model's NATIVE default instruction.
-        if args.reranking_query_type == "qwen_3_rerank_instruct_full":
-            instruction = QWEN3_RERANK_CONV_INSTRUCTION
-        else:
-            instruction = QWEN3_RERANK_DEFAULT_INSTRUCTION
-        print(f"qwen3 reranker instruction: {instruction!r}")
-
-        # rerank_remote_url may be a single URL or a COMMA-LIST of N server URLs.
-        # >1 URL -> RemoteRerankerPool (concurrent, multi-GPU via N resident servers);
-        # 1 URL -> RemoteReranker; none -> load QwenReranker in-process.
-        remote_url = getattr(args, "rerank_remote_url", "none")
-        urls = [u.strip() for u in str(remote_url).split(",") if u.strip() and u.strip() != "none"]
-        if len(urls) > 1:
-            print(f"using {len(urls)} REMOTE qwen3 rerank servers (data-parallel): {urls}")
-            reranker = RemoteRerankerPool(urls)
-        elif len(urls) == 1:
-            print(f"using REMOTE qwen3 reranker at {urls[0]}")
-            reranker = RemoteReranker(urls[0])
-        else:
-            print("loading qwen3 reranker")
-            reranker = QwenReranker(
-                model_path=getattr(args, "qwen3_reranker_path", "Qwen/Qwen3-Reranker-4B"),
-                cache_dir=args.cache_dir,
-                quant=args.rerank_quant,
-                device=f"cuda:{getattr(args, 'rerank_gpu_id', 0)}" if torch.cuda.is_available() else "cpu",
-            )
-
-        print("reranking")
-        # 1) build jobs (fetch doc text per query; CPU, fast, cached)
-        qid_order = list(hits.keys())
-        jobs = []
-        for qid in qid_order:
-            new_hits = hits[qid][0:args.rerank_top_k]
-            docs = [_fetch_contents_cached(searcher, d.docid, doc_cache) for d in new_hits]
-            jobs.append((instruction, reranking_query_dic[qid], docs))
-        # 2) score — pool fans the queries out concurrently across N GPUs; single = sequential
-        if isinstance(reranker, RemoteRerankerPool):
-            all_scores = reranker.score_many(jobs, args.rerank_batch_size)
-        else:
-            all_scores = [reranker.score(inst, q, docs, args.rerank_batch_size)
-                          for inst, q, docs in tqdm(jobs, desc="Reranking")]
-        # 3) writeback per query (same rank->1/rank convention as the other rerankers)
-        for qid, scores in zip(qid_order, all_scores):
-            hit = hits[qid]
-            indexes = np.argsort(np.array(scores, dtype=np.float32))[::-1]
-            for rank, index in enumerate(indexes):
-                hit[index].rank = rank
-            for rank, doc_object in enumerate(hit):
-                doc_object.score = (1/(doc_object.rank + 1) if rank < args.rerank_top_k
-                                    else 1/(rank + 1))
-            hits[qid] = sorted(hit, key=lambda x: x.score, reverse=True)
+        # in-process (no remote): the unified remote path above already handled the
+        # server/pool case. Load QwenReranker locally + score via the shared helper.
+        instruction = _qwen3_instruction(args)
+        print(f"loading qwen3 reranker; instruction: {instruction!r}")
+        reranker = QwenReranker(
+            model_path=getattr(args, "qwen3_reranker_path", "Qwen/Qwen3-Reranker-4B"),
+            cache_dir=args.cache_dir, quant=args.rerank_quant,
+            device=f"cuda:{getattr(args, 'rerank_gpu_id', 0)}" if torch.cuda.is_available() else "cpu",
+        )
+        _score_and_writeback(hits, args, reranking_query_dic, searcher, doc_cache, reranker, instruction)
 
     return hits

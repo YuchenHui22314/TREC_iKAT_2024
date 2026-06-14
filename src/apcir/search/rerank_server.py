@@ -36,22 +36,22 @@ class RerankRequest(BaseModel):
     batch_size: int = 8
 
 
-def create_app(model_path: str, cache_dir: str, quant: str, gpu_id: int,
-               max_length: int) -> FastAPI:
-    from apcir.search.rerank import QwenReranker
+def create_app(reranker_type: str, model_path: str, cache_dir: str, quant: str,
+               gpu_id: int, max_length: int) -> FastAPI:
+    from apcir.search.rerank import build_local_reranker
     import torch
 
     device = f"cuda:{gpu_id}" if torch.cuda.is_available() else "cpu"
-    print(f"[rerank_server] loading {model_path} on {device} (quant={quant})...")
-    reranker = QwenReranker(model_path=model_path, cache_dir=cache_dir,
-                            quant=quant, device=device, max_length=max_length)
+    print(f"[rerank_server] loading {reranker_type} on {device} (quant={quant})...")
+    reranker = build_local_reranker(reranker_type, cache_dir=cache_dir, device=device,
+                                    quant=quant, qwen3_path=model_path)
     print("[rerank_server] ready.")
 
-    app = FastAPI(title="apcir qwen3 rerank server")
+    app = FastAPI(title="apcir rerank server")
 
     @app.get("/health")
     def health():
-        return {"model": model_path, "device": device, "ready": True}
+        return {"reranker_type": reranker_type, "model": model_path, "device": device, "ready": True}
 
     @app.post("/rerank")
     def rerank(req: RerankRequest):
@@ -62,8 +62,11 @@ def create_app(model_path: str, cache_dir: str, quant: str, gpu_id: int,
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="standalone qwen3 rerank server")
-    p.add_argument("--model_path", default="Qwen/Qwen3-Reranker-4B")
+    p = argparse.ArgumentParser(description="standalone HF rerank server (any reranker)")
+    p.add_argument("--reranker_type", default="qwen3_reranker",
+                   help="qwen3_reranker | monot5_base|_10k | monot5_large|_10k | monot5_3b|_10k | rankllama")
+    p.add_argument("--model_path", default="Qwen/Qwen3-Reranker-4B",
+                   help="qwen3 HF path (other types resolve their own HF name)")
     p.add_argument("--cache_dir", default="/data/rech/huiyuche/huggingface")
     p.add_argument("--quant", default="none", choices=["none", "8b", "4b"])
     p.add_argument("--gpu_id", type=int, default=0)
@@ -71,8 +74,8 @@ def main() -> int:
     p.add_argument("--host", default="0.0.0.0")   # reachable from the other octals
     p.add_argument("--port", type=int, default=8200)
     args = p.parse_args()
-    app = create_app(args.model_path, args.cache_dir, args.quant, args.gpu_id,
-                     args.max_length)
+    app = create_app(args.reranker_type, args.model_path, args.cache_dir, args.quant,
+                     args.gpu_id, args.max_length)
     uvicorn.run(app, host=args.host, port=args.port, workers=1, log_level="info")
     return 0
 
