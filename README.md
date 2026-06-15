@@ -59,7 +59,7 @@ Since the CIKM 2025 camera-ready, this branch grew the codebase into a general b
 | **Qwen3-Embedding retrieval** | `qwen3` (`Qwen3-Embedding-0.6B`, last-token pooling + L2, dim 1024) as a first-class dense retriever. | [Retrieval parameters](#2-retrieval-parameters) |
 | **ConvDR fine-tuned encoders** | `conv-qwen3` / `conv-ance`: the *query* encoder is fine-tuned, the *doc* encoder is **frozen**, so the base ClueWeb22-B index is reused unchanged. | [Retrieval parameters](#2-retrieval-parameters) |
 | **Conversational query types** | Feed the whole dialogue to a dense encoder with no LLM rewrite: `full_conversation`, `qwen_conversation` (+ PTKB / prev-conv variants), `oracle_qwen_instruct`. | [Conversational query types](#conversational-query-types-dense-no-llm-rewrite) |
-| **TREC iKAT 2025 (offline)** | 2025 passage-ranking topics + NIST qrels, preprocessed into the same internal schema as 23/24. | [`IKAT_2025_DATA_REPORT.md`](IKAT_2025_DATA_REPORT.md) |
+| **TREC iKAT 2025 (offline)** | 2025 passage-ranking topics + NIST qrels, preprocessed into the same internal schema as 23/24. | [`IKAT_2025_DATA_REPORT.md`](docs/IKAT_2025_DATA_REPORT.md) |
 | **Shared-corpus evaluation** | Search the ~478 GB ClueWeb index **once** for a batch of experiments that share a doc index, instead of re-streaming it per experiment. | [Shared-Corpus Evaluation](#-shared-corpus-evaluation-stream-once-fan-out) |
 
 > **Codebase layout.** The source is organized as the `apcir` Python package under [`src/apcir/`](src/apcir/): `evaluate/` (pipeline entry + arg/parsing), `functional/` (the `Turn` object & query building in `topics.py`, prompts in `promptor.py`), `search/` (retrieval/fusion/rerank, with the shared-corpus loop in `search/grouped/`), `indexing/` (`dense/`, `splade/`, sparse), and `rewrite/` (LLM query reformulation). Run entry points as modules **from `src/`**, e.g. `python -m apcir.evaluate.run_experiments --config <yaml>`.
@@ -157,7 +157,7 @@ torchrun --nproc_per_node 4 distributed_dense_index.py \
 ```
 Here you should modify the batch size according to your GPU memory. On the other hand, due to RAM restriction, we cannot load all embeddings for the whole collection into memory in one go. The program will therefore encode `num_docs_per_block` at a time then save it to the disk before continuing with the next. We call this an "embedding block" of the whole collection. For instance, if we set `num_docs_per_block` to 10M, then since ClueWeb22B has 116M documents, the program will yield 116M//10M + 1 = 12 embedding blocks. Please review the annotated code for more details.
 
-> **Qwen3-Embedding documents.** Pass `--model_type qwen-embedding` to encode the collection with `Qwen3-Embedding-0.6B` (last-token pooling + L2, dim **1024**); `--model_type ance` keeps the original ANCE (dim **768**). The `conv-qwen3` / `conv-ance` retrievers fine-tune only the *query* encoder and keep the doc encoder **frozen**, so **no new document index is needed** — they reuse the base Qwen3 / ANCE index. See [`CLUEWEB_QWEN_INDEXING_REPORT.md`](CLUEWEB_QWEN_INDEXING_REPORT.md) for the full Qwen encoding recipe.
+> **Qwen3-Embedding documents.** Pass `--model_type qwen-embedding` to encode the collection with `Qwen3-Embedding-0.6B` (last-token pooling + L2, dim **1024**); `--model_type ance` keeps the original ANCE (dim **768**). The `conv-qwen3` / `conv-ance` retrievers fine-tune only the *query* encoder and keep the doc encoder **frozen**, so **no new document index is needed** — they reuse the base Qwen3 / ANCE index. See [`CLUEWEB_QWEN_INDEXING_REPORT.md`](docs/CLUEWEB_QWEN_INDEXING_REPORT.md) for the full Qwen encoding recipe.
 
 > **Merging per-rank blocks (required before search).** Multi-GPU encoding writes per-rank shards `doc_emb_block.rank_{r}.{b}.pb`, but the searcher reads consecutively numbered `doc_emb_block.{id}.pb`. Merge them once (run from `src/`):
 > ```bash
@@ -249,7 +249,7 @@ the corresponding output should look like:
   </p>
 </details>
 
-> **iKAT 2025 (offline / passage ranking).** The 2025 offline topics rename a few fields (`turns`→`responses`, `utterance`→`user_utterance`, `ptkb` dict→array, …). They are handled by [`data_preprocessing_scripts/preprocess_ikat25.py`](data_preprocessing_scripts/preprocess_ikat25.py), which emits the **same internal schema** shown above. See [`IKAT_2025_DATA_REPORT.md`](IKAT_2025_DATA_REPORT.md) for the full field-difference table and the offline-vs-interactive track discussion.
+> **iKAT 2025 (offline / passage ranking).** The 2025 offline topics rename a few fields (`turns`→`responses`, `utterance`→`user_utterance`, `ptkb` dict→array, …). They are handled by [`data_preprocessing_scripts/preprocess_ikat25.py`](data_preprocessing_scripts/preprocess_ikat25.py), which emits the **same internal schema** shown above. See [`IKAT_2025_DATA_REPORT.md`](docs/IKAT_2025_DATA_REPORT.md) for the full field-difference table and the offline-vs-interactive track discussion.
 
 ### Qrels file preprocessing 
 We use `data_preprocessing_scripts/preprocess_qrel.py` to preprocess qrel file downloaded from ikat website. This just replaces _ with - for unifying iKAT 23, 24 and 25 qrel files. 
@@ -563,7 +563,7 @@ python -m apcir.evaluate.run_experiments_grouped \
   --merge compat      # compat = byte-faithful to the default path (validation); topk = fast numpy (production)
 ```
 
-**Validation.** The grouped path was checked byte-for-byte against the default path (`--merge compat`): for `conv-ance × full_conversation × {iKAT-23, iKAT-25}` the ranking, per-query, and averaged metrics are **bit-identical**; for iKAT-24 the only difference is float32 LSB jitter in FAISS-GPU scores from the larger stacked GEMM (every reported metric Δ = 0; MAP Δ = 3e-6, i.e. unchanged at table precision). So the framework is numerically faithful within GPU floating-point noise. Design and validation notes: [`SHARED_CORPUS_FRAMEWORK_DESIGN.md`](SHARED_CORPUS_FRAMEWORK_DESIGN.md), [`GROUPED_CODE_REVIEW.md`](GROUPED_CODE_REVIEW.md). Code: [`src/apcir/search/grouped/`](src/apcir/search/grouped/) (`spec.py`, `block_source.py`, `runner.py`, `merge.py`).
+**Validation.** The grouped path was checked byte-for-byte against the default path (`--merge compat`): for `conv-ance × full_conversation × {iKAT-23, iKAT-25}` the ranking, per-query, and averaged metrics are **bit-identical**; for iKAT-24 the only difference is float32 LSB jitter in FAISS-GPU scores from the larger stacked GEMM (every reported metric Δ = 0; MAP Δ = 3e-6, i.e. unchanged at table precision). So the framework is numerically faithful within GPU floating-point noise. Design and validation notes: [`SHARED_CORPUS_FRAMEWORK_DESIGN.md`](docs/SHARED_CORPUS_FRAMEWORK_DESIGN.md), [`GROUPED_CODE_REVIEW.md`](docs/GROUPED_CODE_REVIEW.md). Code: [`src/apcir/search/grouped/`](src/apcir/search/grouped/) (`spec.py`, `block_source.py`, `runner.py`, `merge.py`).
 
 
 # Citation
