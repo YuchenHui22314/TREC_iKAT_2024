@@ -22,6 +22,7 @@ i=0
 for g in "${G[@]}"; do
   port=$((BASE + i))
   CUDA_VISIBLE_DEVICES=$g HUGGINGFACE_HUB_CACHE=/data/rech/huiyuche/huggingface \
+    PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
     nohup "$ENVBIN/python" -m apcir.search.rerank_server --reranker_type "$RTYPE" --gpu_id 0 --port "$port" \
     > "$LOGDIR/server_gpu${g}_port${port}.log" 2>&1 &
   echo "  GPU $g -> http://127.0.0.1:$port  (pid $!, log $LOGDIR/server_gpu${g}_port${port}.log)"
@@ -30,9 +31,15 @@ for g in "${G[@]}"; do
 done
 urls="${urls#,}"
 
-echo "  waiting for all servers healthy (model load ~30-60s each, parallel)..."
+echo "  waiting for all servers healthy (model load varies; fails fast on crash)..."
 for u in ${urls//,/ }; do
+  waited=0
   until curl -s -o /dev/null -w "%{http_code}" --max-time 3 "$u/health" 2>/dev/null | grep -q 200; do
+    if grep -qiE "Traceback|Error:|Exception|No module|OutOfMemory" "$LOGDIR"/server_*.log 2>/dev/null; then
+      echo "  SERVER FAILED to load. Log tail:"; tail -8 "$LOGDIR"/server_*.log; exit 1
+    fi
+    waited=$((waited + 5))
+    if [ "$waited" -gt 900 ]; then echo "  TIMEOUT waiting for $u"; exit 1; fi
     sleep 5
   done
   echo "  ready: $u"
