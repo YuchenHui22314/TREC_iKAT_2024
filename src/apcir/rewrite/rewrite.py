@@ -545,7 +545,7 @@ if __name__ == '__main__':
                 print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
                 for i in range(len(liste)):
                     print(f"MQ4CS query_{i+1}: {liste[i]}")
-            except e:
+            except Exception:
                 print(f"print error with turn id {turn.turn_id}")
                 continue
                 
@@ -673,7 +673,7 @@ if __name__ == '__main__':
                 print("this is turn: ", turn.turn_id)
                 print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
                 print(f"MQ4CS Pers query: {query}")
-            except e:
+            except Exception:
                 print(f"print error with turn id {turn.turn_id}")
                 continue
 
@@ -716,7 +716,7 @@ if __name__ == '__main__':
                 print(f"personalized query: {turn.find_reformulation('gpt-4o_judge_and_rewrite_rw').reformulated_query}")
                 for i in range(len(liste)):
                     print(f"MQ4CS query_{i+1}: {liste[i]}")
-            except e:
+            except Exception:
                 print(f"print error with turn id {turn.turn_id}")
                 continue
            

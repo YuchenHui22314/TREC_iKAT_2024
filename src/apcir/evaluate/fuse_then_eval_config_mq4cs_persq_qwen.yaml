@@ -1,0 +1,125 @@
+# =============================================================================
+# Qwen3 dense retrieval with the MQ4CS personalized rewrite (gpt-4o_MQ4CS_persq_rw),
+# encoded via the qwen3 ad-hoc instruct template (retrieval_query_type =
+# MQ4CS_persq_qwen_instruct, mirrors oracle_qwen_instruct). iKAT 23/24/25.
+# RETRIEVAL ONLY (no rerank/fusion/generation). For Table 5 (pers_conv_dense) v3 block.
+#
+# GPU: launch with CUDA_VISIBLE_DEVICES=1,2,3  (avoid GPU0 = in use).
+#   -> faiss_n_gpu=3 shards each ~79G qwen block across physical GPUs 1,2,3 (~26G each).
+#   -> query_gpu_id=0 = the first VISIBLE device = physical GPU1.
+# Run:  cd src && PATH=/data/rech/huiyuche/envs/trec_ikat/bin:$PATH \
+#       CUDA_VISIBLE_DEVICES=1,2,3 python -m apcir.evaluate.run_experiments \
+#       --config ./apcir/evaluate/fuse_then_eval_config_mq4cs_persq_qwen.yaml
+# =============================================================================
+
+iterate:
+  machine: ["octal40"]
+  retrieval_model: ["qwen3"]
+  reranker: ["none"]
+  topics: ["ikat_23_test", "ikat_24_test", "ikat_25_test"]
+
+param_mapping:
+  retrieval_model:
+    qwen3:
+      retrieval_query_type: "MQ4CS_persq_qwen_instruct"
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
+      dense_index_dir_path: "/part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged"
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: "mq4cs_persq_qwen3"
+
+  topics:
+    ikat_23_test:
+      input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
+      qrel_file_path: "../data/qrels/ikat_23_qrel.txt"
+    ikat_24_test:
+      input_query_path: "../data/topics/ikat24/ikat_2024_test.json"
+      qrel_file_path: "../data/qrels/ikat_24_qrel.txt"
+    ikat_25_test:
+      input_query_path: "../data/topics/ikat25/ikat_2025_test.json"
+      qrel_file_path: "../data/qrels/ikat_2025_qrel.txt"
+
+fixed:
+  collection: "ClueWeb_ikat"
+  topics: "ikat_23_test"
+  input_query_path: "../data/topics/ikat23/ikat_2023_test.json"
+  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_official_sparse_index/"
+  output_dir_path: "../results"
+  qrel_file_path: "../data/qrels/ikat_23_qrel.txt"
+  seed: 42
+
+  save_results_to_object: true
+  save_ranking_list: true
+  run_rag: true                    # gates the SEARCH pipeline (defines `run`); generation stays off via generation_model=none
+  run_eval: true
+
+  ## Retrieval
+  retrieval_model: "qwen3"
+  retrieval_top_k: 1000
+  personalization_group: "all"
+  query_gpu_id: 0                  # first VISIBLE device (CUDA_VISIBLE_DEVICES=1,2,3 -> phys GPU1)
+  query_encoder_batch_size: 200
+
+  ## Splade (unused)
+  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_splade_v3"
+
+  ## Dense
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
+  dense_index_dir_path: "/part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged"
+  faiss_n_gpu: 4                   # octal31: shard each ~79G block across all 4 A5000 (~20G each, fits 24G)
+  use_gpu_for_faiss: true
+  embed_dim: 1024
+  tempmem: -1
+  passage_block_num: 6
+
+  ## BM25 (unused)
+  bm25_k1: 0.9
+  bm25_b: 0.4
+
+  ## QE
+  qe_type: "none"
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+
+  ## Fusion (disabled)
+  fusion_type: 'none'
+  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  fuse_weights: [0.1, 0.4]
+  fusion_normalization: "none"
+  level_type: "gpt-3.5_judge_and_rewrite"
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: "group"
+  target_metrics: "mrr,ndcg@3,recall@10,recall@100"
+  optimize_step: 0.01
+
+  ## Reranking (disabled)
+  reranker: "none"
+  rerank_top_k: 50
+  cache_dir: "/data/rech/huiyuche/huggingface"
+  rerank_batch_size: 67
+  rerank_quant: "none"
+  rankgpt_llm: "gpt-3.5-turbo"
+  window_size: 4
+  step: 1
+
+  ## Generation (disabled)
+  generation_model: "none"
+  generation_prompt: "none"
+  generation_top_k: 3
+
+  ## Metrics
+  save_to_wandb: false
+  wandb_run_name: ""
+  metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
+  given_ranking_list_path: "none"
+
+  ## iKAT specific
+  run_name: "none"
+  retrieval_query_type: "none"
+  reranking_query_type: "none"
+  generation_query_type: "none"
+  generate_ikat_submission: false

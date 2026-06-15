@@ -369,6 +369,22 @@ class Turn:
                  f"got retrieval_model={args.retrieval_model}")
             instruction = "Given a web search query, retrieve relevant passages that answer the query"
             final_query = f"Instruct: {instruction}\nQuery:{self.oracle_utterance}"
+        elif query_type == "MQ4CS_persq_qwen_instruct":
+            # Qwen3 ad-hoc instruct encoding of the MQ4CS personalized rewrite
+            # (the precomputed gpt-4o_MQ4CS_persq_rw reformulation). Mirrors
+            # oracle_qwen_instruct EXACTLY (same MSMARCO ad-hoc instruction, docs
+            # encoded without instruction), but the standalone query is the automatic
+            # personalized rewrite instead of the human rewrite — i.e. the auto-QR
+            # counterpart of the qwen3 oracle row. The persq is already personalized,
+            # so the profile is NOT re-prepended.
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                ("MQ4CS_persq_qwen_instruct is qwen3-only; "
+                 f"got retrieval_model={args.retrieval_model}")
+            reform = self.find_reformulation("gpt-4o_MQ4CS_persq_rw")
+            assert reform is not None, \
+                f"gpt-4o_MQ4CS_persq_rw reformulation missing for turn {self.turn_id}"
+            instruction = "Given a web search query, retrieve relevant passages that answer the query"
+            final_query = f"Instruct: {instruction}\nQuery:{reform.reformulated_query}"
         elif query_type == "qwen_conversation":
             # qwen3-only. Conversation (interleaved user/system turns) ONLY — the no-PTKB
             # counterpart of qwen_conversation_ptkb (everything else identical). No truncation
@@ -437,6 +453,71 @@ class Turn:
                            f"User Profile: {profile}\n"
                            f"Previous Conversation: {' '.join(prev_parts)}\n"
                            f"Conversation: {' '.join(cur_parts)}")
+        elif query_type == "qwen_conversation_rel_ptkb":
+            # Sister of qwen_conversation_ptkb, but the profile holds ONLY the human-annotated
+            # RELEVANT PTKB (ptkb_provenance), renumbered 1..k; "Not Applicable" if none. The
+            # instruction speaks of the "relevant information in the user's profile". qwen3-only;
+            # runs on 23/24/25.
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                f"qwen_conversation_rel_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
+            instruction = ("Given a conversation between a user and an AI assistant and the relevant "
+                           "information in the user's profile, retrieve passages that answer the "
+                           "user's last question in a way consistent with the relevant information "
+                           "in the user's profile.")
+            ctx = getattr(self, "fullconv_ctx", [])
+            conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            conv_parts.append(f"User's last question: {self.current_utterance}")
+            rel = [self.ptkb[str(i)] for i in (self.ptkb_provenance or []) if str(i) in self.ptkb]
+            profile = " ".join(f"{j}. {s}" for j, s in enumerate(rel, 1)) if rel else "Not Applicable"
+            final_query = (f"Instruct: {instruction}\n"
+                           f"User Profile: {profile}\n"
+                           f"Conversation: {' '.join(conv_parts)}")
+        elif query_type == "qwen_conversation_rel_ptkb_previous_conv_as_ptkb":
+            # Sister of qwen_conversation_ptkb_previous_conv_as_ptkb (iKAT-25 only), but profile =
+            # RELEVANT PTKB only (ptkb_provenance), "relevant information" instruction wording.
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                f"qwen_conversation_rel_ptkb_previous_conv_as_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
+            assert args.topics == "ikat_25_test", \
+                ("qwen_conversation_rel_ptkb_previous_conv_as_ptkb requires iKAT 2025; "
+                 f"got topics={args.topics}")
+            instruction = ("Given a user's previous conversation, their current conversation with an "
+                           "AI assistant, and the relevant information in the user's profile, retrieve "
+                           "passages that answer the user's last question in a way consistent with the "
+                           "relevant information in the user's profile and prior conversation.")
+            prev = getattr(self, "prev_conv_ctx", [])
+            prev_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(prev)]
+            ctx = getattr(self, "fullconv_ctx", [])
+            cur_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            cur_parts.append(f"User's last question: {self.current_utterance}")
+            rel = [self.ptkb[str(i)] for i in (self.ptkb_provenance or []) if str(i) in self.ptkb]
+            profile = " ".join(f"{j}. {s}" for j, s in enumerate(rel, 1)) if rel else "Not Applicable"
+            final_query = (f"Instruct: {instruction}\n"
+                           f"User Profile: {profile}\n"
+                           f"Previous Conversation: {' '.join(prev_parts)}\n"
+                           f"Conversation: {' '.join(cur_parts)}")
+        elif query_type == "qwen_conversation_rel_new_ptkb":
+            # iKAT-25 only. RELEVANT static PTKB (ptkb_provenance) PLUS the organizer-oracle
+            # carried-over facts (ptkb-update.json new_ptkb) whose turn_dependence matches THIS
+            # turn (attached as self.applicable_new_ptkb in get_query_list). NO previous
+            # conversation. Tests whether the distilled carried-over facts help, without the raw
+            # prior-conversation text. Empty (no relevant + no applicable new) -> "Not Applicable".
+            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+                f"qwen_conversation_rel_new_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
+            assert args.topics == "ikat_25_test", \
+                f"qwen_conversation_rel_new_ptkb requires iKAT 2025; got topics={args.topics}"
+            instruction = ("Given a conversation between a user and an AI assistant and the relevant "
+                           "information in the user's profile, retrieve passages that answer the "
+                           "user's last question in a way consistent with the relevant information "
+                           "in the user's profile.")
+            ctx = getattr(self, "fullconv_ctx", [])
+            conv_parts = [f"{'User' if i % 2 == 0 else 'System'}: {t}" for i, t in enumerate(ctx)]
+            conv_parts.append(f"User's last question: {self.current_utterance}")
+            rel = [self.ptkb[str(i)] for i in (self.ptkb_provenance or []) if str(i) in self.ptkb]
+            combined = rel + list(getattr(self, "applicable_new_ptkb", []))
+            profile = " ".join(f"{j}. {s}" for j, s in enumerate(combined, 1)) if combined else "Not Applicable"
+            final_query = (f"Instruct: {instruction}\n"
+                           f"User Profile: {profile}\n"
+                           f"Conversation: {' '.join(conv_parts)}")
         elif "+" in query_type:
             query_type_list = query_type.split("+")
             reformulation_list = [self.query_type_2_query(query_type,0,0.0,args) for query_type in query_type_list]

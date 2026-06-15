@@ -127,6 +127,23 @@ def get_query_list(args):
                     for t in conv_turns:
                         t.prev_conv_ctx = list(prev_flat)
 
+                # new_ptkb (for qwen_conversation_rel_new_ptkb): organizer-oracle carried-over
+                # facts in ptkb-update.json (sibling of the topics file), keyed by conversation
+                # `number`, each with a turn_dependence list of turn numbers. Attach the statements
+                # that apply to each turn (its turn order is in turn_dependence).
+                import os as _os, json as _json
+                _upd = _os.path.join(_os.path.dirname(args.input_query_path), "ptkb-update.json")
+                _new_map = {}
+                if _os.path.exists(_upd):
+                    for _e in _json.load(open(_upd)):
+                        _new_map[str(_e["number"])] = _e.get("new_ptkb", [])
+                for _cid, _conv_turns in conv_groups.items():
+                    _entries = _new_map.get(str(_cid), [])
+                    for _t in _conv_turns:
+                        _tno = _t.get_turn_order()
+                        _t.applicable_new_ptkb = [n["statement"].strip() for n in _entries
+                                                  if _tno in (n.get("turn_dependence") or [])]
+
         # filter out the non-evaluated turns for ikat 23
         if args.topics == "ikat_23_test":
             evaluated_turn_list = filter_ikat_23_evaluated_turns(turn_list)

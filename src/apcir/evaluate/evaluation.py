@@ -306,9 +306,13 @@ def build_parser():
                             "random_weights",
                             "full_conversation",
                             "oracle_qwen_instruct",
+                            "MQ4CS_persq_qwen_instruct",
                             "qwen_conversation",
                             "qwen_conversation_ptkb",
                             "qwen_conversation_ptkb_previous_conv_as_ptkb",
+                            "qwen_conversation_rel_ptkb",
+                            "qwen_conversation_rel_ptkb_previous_conv_as_ptkb",
+                            "qwen_conversation_rel_new_ptkb",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
