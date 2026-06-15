@@ -75,6 +75,15 @@ def run_group(group, merge_fn=merge_compat):
     topN = max(int(s.args.retrieval_top_k) for s in group)
     print(f"[grouped] {len(group)} jobs, Q={Q.shape}, topN={topN}, blocks={key.block_num}")
 
+    # Release the query-encoder memory held by torch's caching allocator so faiss's raw
+    # cudaMalloc (per-GPU index-block shard ~20G on a 24G card) can use it. Without this the
+    # encoder's reserved-but-unallocated cache squeezes faiss into OOM on tight-VRAM GPUs
+    # (octal31 A5000 24G); larger groups (more/longer-query specs) cache more and OOM first.
+    import gc, torch
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     # ---- PHASE B: ONE stream over blocks ----
     index = build_faiss_index(group[0].args)    # OPT-2: built once for the whole group
     per_block = []
