@@ -13,7 +13,14 @@ from apcir.search.grouped.spec import expand_specs, ExperimentSpec, make_file_na
 from apcir.search.grouped.runner import run_group
 from apcir.search.grouped.merge import merge_topk
 
-CKPT_DIR = "/data/rech/huiyuche/huggingface/continual_ir/instruct3fp32_infonce_lr1e5"
+import argparse
+_p = argparse.ArgumentParser()
+_p.add_argument("--ckpt_dir", default="/data/rech/huiyuche/huggingface/continual_ir/instruct3fp32_infonce_lr1e5")
+_p.add_argument("--tag", default="conv-qwen3-fp32",
+                help="stem model-token base; per-epoch output stem = S1[...]-[{tag}_epoch{k}]-...")
+_a = _p.parse_args()
+CKPT_DIR = _a.ckpt_dir
+TAG = _a.tag
 EPOCHS = list(range(1, 21))   # epoch k  <->  checkpoint-step-{94*k}  (94..1880, 20 per-epoch ckpts)
 CFG = "apcir/evaluate/fuse_then_eval_config_convqwen3fp32_A.yaml"
 
@@ -31,7 +38,7 @@ for k in EPOCHS:
         a = copy.deepcopy(t.args)
         a.dense_query_encoder_path = ckpt
         a.save_results_to_object = False          # don't bloat the topic JSONs with 60 runs
-        stem = make_file_name_stem(a).replace("[conv-qwen3-fp32]", f"[conv-qwen3-fp32_epoch{k}]")
+        stem = make_file_name_stem(a).replace("[conv-qwen3-fp32]", f"[{TAG}_epoch{k}]")
         specs.append(ExperimentSpec(args=a, corpus_key=t.corpus_key, file_name_stem=stem))
 
 groups = partition_by_corpus(specs)
