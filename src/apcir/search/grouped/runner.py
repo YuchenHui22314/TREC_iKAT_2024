@@ -15,6 +15,7 @@ Validate G2/G3/G4 (byte-identical to legacy) before trusting for the paper. Uses
 import os
 import json
 import numpy as np
+from tqdm import tqdm
 
 from apcir.evaluate.evaluation_util import (
     get_query_list, evaluate, print_formatted_latex_metrics,
@@ -88,7 +89,9 @@ def run_group(group, merge_fn=merge_compat):
     index = build_faiss_index(group[0].args)    # OPT-2: built once for the whole group
     per_block = []
     try:
-        for block_id, emb, ids in src.iter_blocks():
+        for block_id, emb, ids in tqdm(src.iter_blocks(), total=key.block_num,
+                                       desc=f"[grouped] corpus stream ({len(group)} specs, Q={Q.shape[0]})",
+                                       unit="blk"):
             assert index.ntotal == 0, "index not empty before add (reset bug)"
             index.add(emb)
             D, I = index.search(Q, topN)        # ALL stacked queries in one GEMM
