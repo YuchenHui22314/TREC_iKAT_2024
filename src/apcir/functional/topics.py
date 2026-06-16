@@ -377,7 +377,7 @@ class Turn:
             # personalized rewrite instead of the human rewrite — i.e. the auto-QR
             # counterpart of the qwen3 oracle row. The persq is already personalized,
             # so the profile is NOT re-prepended.
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 ("MQ4CS_persq_qwen_instruct is qwen3-only; "
                  f"got retrieval_model={args.retrieval_model}")
             reform = self.find_reformulation("gpt-4o_MQ4CS_persq_rw")
@@ -389,7 +389,7 @@ class Turn:
             # qwen3-only. Conversation (interleaved user/system turns) ONLY — the no-PTKB
             # counterpart of qwen_conversation_ptkb (everything else identical). No truncation
             # (Qwen3 long context). fullconv_ctx = [u1, r1, u2, r2, ...] from get_query_list.
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 f"qwen_conversation is qwen3/conv-qwen3 only; got retrieval_model={args.retrieval_model}"
             instruction = ("Given a conversation between a user and an AI assistant, retrieve "
                            "passages that answer the user's last question.")
@@ -402,7 +402,7 @@ class Turn:
             # profile (ALL PTKB statements, numbered 1. 2. 3. ...) — deliberately NOT just
             # the oracle-relevant PTKB, to test Qwen's denoising. No truncation (Qwen3 long
             # context). fullconv_ctx = [u1, r1, u2, r2, ...] is attached in get_query_list.
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 f"qwen_conversation_ptkb is qwen3/conv-qwen3 only; got retrieval_model={args.retrieval_model}"
             instruction = ("Given a conversation between a user and an AI assistant and the "
                            "user's profile, retrieve passages that answer the user's last "
@@ -434,7 +434,7 @@ class Turn:
             # (e.g. current X-2 -> previous X-1) as extra context, plus current conversation
             # and the FULL PTKB profile. 23/24 have no "previous conversation" per user, so
             # this asserts the 2025 topics. prev_conv_ctx is attached in get_query_list.
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 f"qwen_conversation_ptkb_previous_conv_as_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
             assert args.topics == "ikat_25_test", \
                 ("qwen_conversation_ptkb_previous_conv_as_ptkb requires iKAT 2025 (same persona has "
@@ -458,7 +458,7 @@ class Turn:
             # RELEVANT PTKB (ptkb_provenance), renumbered 1..k; "Not Applicable" if none. The
             # instruction speaks of the "relevant information in the user's profile". qwen3-only;
             # runs on 23/24/25.
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 f"qwen_conversation_rel_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
             instruction = ("Given a conversation between a user and an AI assistant and the relevant "
                            "information in the user's profile, retrieve passages that answer the "
@@ -475,7 +475,7 @@ class Turn:
         elif query_type == "qwen_conversation_rel_ptkb_previous_conv_as_ptkb":
             # Sister of qwen_conversation_ptkb_previous_conv_as_ptkb (iKAT-25 only), but profile =
             # RELEVANT PTKB only (ptkb_provenance), "relevant information" instruction wording.
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 f"qwen_conversation_rel_ptkb_previous_conv_as_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
             assert args.topics == "ikat_25_test", \
                 ("qwen_conversation_rel_ptkb_previous_conv_as_ptkb requires iKAT 2025; "
@@ -501,7 +501,7 @@ class Turn:
             # turn (attached as self.applicable_new_ptkb in get_query_list). NO previous
             # conversation. Tests whether the distilled carried-over facts help, without the raw
             # prior-conversation text. Empty (no relevant + no applicable new) -> "Not Applicable".
-            assert args.retrieval_model in ("qwen3", "conv-qwen3"), \
+            assert args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"), \
                 f"qwen_conversation_rel_new_ptkb is qwen3/conv-qwen3 only; got {args.retrieval_model}"
             assert args.topics == "ikat_25_test", \
                 f"qwen_conversation_rel_new_ptkb requires iKAT 2025; got topics={args.topics}"
