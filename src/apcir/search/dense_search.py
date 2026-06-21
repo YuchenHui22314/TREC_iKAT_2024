@@ -296,7 +296,7 @@ def get_test_query_embedding(args):
     # query and document embeddings are directly comparable. The instruction is
     # already baked into the query string by the `oracle_qwen_instruct` query type;
     # documents carry NO instruction (Qwen3-Embedding protocol).
-    if args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32"):
+    if args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32") or args.retrieval_model.startswith("qwen3_e"):
         query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu"
         tokenizer = AutoTokenizer.from_pretrained(args.dense_query_encoder_path, padding_side="left")
         model = QwenEmbedding(args.dense_query_encoder_path).to(query_device)

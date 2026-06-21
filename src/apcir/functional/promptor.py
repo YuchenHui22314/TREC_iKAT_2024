@@ -577,9 +577,105 @@ class PersonalizedResponseGenPromptor:
         else:
             return text[10:]
     
+import os as _os
+
+# Live, hot-reloadable generation prompt — decoupled from the (245G) server load. Edit this file
+# to change the prompt with NO server restart; the server re-reads it every request.
+_GEN_PROMPT_FILE = _os.environ.get(
+    "IKAT_GEN_PROMPT_FILE",
+    _os.path.join(_os.path.dirname(_os.path.dirname(__file__)), "interactive", "gen_prompt.txt"))
+_GEN_PROMPT_DELIM = "\n===TAIL_INSTRUCTION===\n"
+
+
+class InteractiveResponseGenPromptor(PersonalizedResponseGenPromptor):
+    """Improved RAG answer prompt for the iKAT'26 INTERACTIVE system, tuned to the official
+    iKAT response-generation scoring (Overview 2024/2025) and last-year participant designs:
+      - Nugget-coverage recall (NtR / GPT-4.1 Nugget-to-Response) is a PRIMARY metric -> the
+        biggest change vs the base prompt is an explicit "cover EVERY relevant fact" clause.
+      - Groundedness (0/1) + trustworthiness -> hard "only the passages, no outside knowledge,
+        say so if absent" (cf. GenAIus "do not hallucinate / no outside knowledge", GRILL
+        "unsupported generation is prohibited").
+      - Personalization + relevance rubric -> SELECTIVE PTKB use (USIIR/CFDA: dumping all PTKB
+        adds noise; we feed the full base u accumulated profile, so this matters).
+      - Naturalness -> abstractive synthesis, no verbatim copy, no passage-number clutter (we
+        emit citations via the API field from the top hits, NOT inline, to protect answer-
+        equivalence vs the gold response and naturalness; and we do NOT ask clarifying questions
+        because the user-simulator loops/penalizes non-answers).
+    Overrides ONLY instruction/tail_instruction; inherits build_turn_prompt + parse_returned_text
+    so the offline PersonalizedResponseGenPromptor stays untouched."""
+
+    def __init__(self) -> None:
+        self.instruction = (
+            "# Task Description:\n"
+            "You will be given\n"
+            "\t(1) An information-seeking dialog between a user and an intelligent assistant.\n"
+            "\t(2) The profile of the user (PTKB), as several sentences describing their "
+            "background, preferences, and situation.\n"
+            "\t(3) Several reference passages retrieved by a search engine for answering the "
+            "user's last question in the dialog.\n"
+            "Your task is as follows:\n"
+            "\t(1) Understand the dialog and the User Profile.\n"
+            "\t(2) Answer the user's last question using the provided reference passages, so the "
+            "answer is suitable for showing to the user. It must satisfy ALL of the following:\n"
+            "\t\ta. Groundedness: Base the answer SOLELY on the reference passages. Do NOT use "
+            "outside knowledge and do NOT invent or assume facts. If the passages do not contain "
+            "the answer, briefly say what the passages do and do not cover rather than guessing.\n"
+            "\t\tb. Completeness / coverage: Include EVERY distinct fact in the passages that is "
+            "relevant to the last question. The answer is judged on how many of the key relevant "
+            "facts it covers, so do not omit a relevant fact; but do NOT add extraneous, "
+            "redundant, or off-topic content.\n"
+            "\t\tc. Naturalness: Write a fluent, coherent, human-like answer that is consistent "
+            "with the previous dialog turns. Synthesize across passages into a single answer "
+            "(abstractive summary); do not copy passages verbatim and do not mention passage "
+            "numbers or cite sources inline.\n"
+            "\t\td. Personalization: Tailor the answer using ONLY the profile facts that are "
+            "relevant to this question; ignore profile facts that are not relevant, and never "
+            "force-fit the profile.\n"
+            "\t\te. If a provided passage is not relevant to the user's last question, do not "
+            "use it.\n"
+            "\t\tf. Length: Keep the answer focused and self-contained, normally within about "
+            "250 words and never exceeding ~350 words."
+        )
+        self.tail_instruction = (
+            "Now, please provide the response for the **Last Question** under the **Dialog "
+            "Context**, considering the **User Profile** and using the **Reference Passages**. "
+            "The output format should always be:\n\nResponse: $Response\n\nGo ahead!"
+        )
+        # the in-code prompt above is the FALLBACK; the live prompt is read from gen_prompt.txt
+        self._default_instruction = self.instruction
+        self._default_tail = self.tail_instruction
+        self._refresh()
+
+    def _refresh(self) -> None:
+        """HOT-RELOAD: re-read instruction + tail from gen_prompt.txt (split on _GEN_PROMPT_DELIM)
+        every build_turn_prompt call, so editing that file changes the live prompt with NO server
+        restart (decoupled from the 245G index load). Falls back to the in-code defaults on any
+        failure. Edit gen_prompt.txt to iterate on the prompt."""
+        self.instruction, self.tail_instruction = self._default_instruction, self._default_tail
+        try:
+            with open(_GEN_PROMPT_FILE, encoding="utf-8") as f:
+                txt = f.read()
+            if _GEN_PROMPT_DELIM in txt:
+                instr, tail = txt.split(_GEN_PROMPT_DELIM, 1)
+                instr, tail = instr.strip("\n"), tail.strip("\n")
+                if instr and tail:
+                    self.instruction, self.tail_instruction = instr, tail
+        except Exception:
+            pass
+
+    def build_turn_prompt(self, *args, **kwargs):
+        self._refresh()
+        prompt = super().build_turn_prompt(*args, **kwargs)
+        # Frame retrieved text as the assistant's own "Search Results" (not "Reference Passages"),
+        # so the natural "based on my search results" voice is consistent and the model never has
+        # to expose RAG-internal "passage" wording.
+        return (prompt.replace("**Reference Passages**", "**Search Results**")
+                      .replace("Reference Passage ", "Search Result "))
+
+
 class GtR_RW:
     def __init__(
-        self, 
+        self,
         phi=2
         ) -> None:
         

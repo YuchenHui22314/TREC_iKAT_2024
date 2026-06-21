@@ -369,6 +369,29 @@ class Turn:
                  f"got retrieval_model={args.retrieval_model}")
             instruction = "Given a web search query, retrieve relevant passages that answer the query"
             final_query = f"Instruct: {instruction}\nQuery:{self.oracle_utterance}"
+        elif query_type == "oracle_rel_ptkb_qwen_instruct":
+            # P1 (round4): raise the teacher ceiling. The oracle rewrite mostly only de-references
+            # and under-injects persona, so we explicitly append the human-relevant PTKB
+            # (ptkb_provenance) AFTER the oracle query. Same MSMARCO ad-hoc instruction; docs
+            # encoded without instruction. Tests whether an explicitly-personalized teacher beats 36.3.
+            assert args.retrieval_model == "qwen3", \
+                f"oracle_rel_ptkb_qwen_instruct is qwen3-only; got {args.retrieval_model}"
+            instruction = "Given a web search query, retrieve relevant passages that answer the query"
+            rel = [self.ptkb[str(i)] for i in (self.ptkb_provenance or []) if str(i) in self.ptkb]
+            persona = (" " + " ".join(rel)) if rel else ""
+            final_query = f"Instruct: {instruction}\nQuery:{self.oracle_utterance}{persona}"
+        elif query_type == "oracle_qwen_instruct_v2":
+            # P0 (round4): instruction search. v2 = more specific "directly and specifically answer".
+            assert args.retrieval_model == "qwen3", \
+                f"oracle_qwen_instruct_v2 is qwen3-only; got {args.retrieval_model}"
+            instruction = "Given a web search query, retrieve passages that directly and specifically answer the query"
+            final_query = f"Instruct: {instruction}\nQuery:{self.oracle_utterance}"
+        elif query_type == "oracle_qwen_instruct_v3":
+            # P0 (round4): instruction search. v3 = personalized / user-specific wording.
+            assert args.retrieval_model == "qwen3", \
+                f"oracle_qwen_instruct_v3 is qwen3-only; got {args.retrieval_model}"
+            instruction = "Given a user's personalized search query, retrieve passages that specifically answer it for this user"
+            final_query = f"Instruct: {instruction}\nQuery:{self.oracle_utterance}"
         elif query_type == "MQ4CS_persq_qwen_instruct":
             # Qwen3 ad-hoc instruct encoding of the MQ4CS personalized rewrite
             # (the precomputed gpt-4o_MQ4CS_persq_rw reformulation). Mirrors

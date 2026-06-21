@@ -41,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--rrf_k", type=int, default=60)
     p.add_argument("--retrieval_top_k", type=int, default=c.retrieval_top_k)
     # reranking (between fusion and generation; co-hosted on the gen-LLM GPU)
-    p.add_argument("--reranker", default=c.reranker, choices=["none", "qwen3_reranker"])
+    p.add_argument("--reranker", default=c.reranker, choices=["none", "qwen3_reranker", "rankllama"])
     p.add_argument("--rerank_top_k", type=int, default=c.rerank_top_k)
     p.add_argument("--rerank_batch_size", type=int, default=c.rerank_batch_size)
     p.add_argument("--rerank_quant", default=c.rerank_quant, choices=["none", "8b", "4b"])
@@ -78,6 +78,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--dense_index_dir_path", default=c.dense_index_dir_path)
     p.add_argument("--dense_query_encoder_path", default=c.dense_query_encoder_path)
     p.add_argument("--embed_dim", type=int, default=c.embed_dim)
+    p.add_argument("--dense_dtype", choices=["float32", "float16"], default=c.dense_dtype,
+                   help="RAM dtype for the dense index; float16 halves it (qwen3 491G -> ~245G)")
     p.add_argument("--passage_block_num", type=int, default=c.passage_block_num)
     p.add_argument("--faiss_n_gpu", type=int, default=c.faiss_n_gpu)
     p.add_argument("--query_gpu_id", type=int, default=c.query_gpu_id)
@@ -149,6 +151,7 @@ def config_from_args(args) -> PipelineConfig:
         dense_index_dir_path=args.dense_index_dir_path,
         dense_query_encoder_path=args.dense_query_encoder_path,
         embed_dim=args.embed_dim,
+        dense_dtype=args.dense_dtype,
         passage_block_num=args.passage_block_num,
         faiss_n_gpu=args.faiss_n_gpu,
         query_gpu_id=args.query_gpu_id,

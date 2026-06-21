@@ -33,7 +33,7 @@ def build_parser():
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
                         choices=["ClueWeb_ikat","topiocqa_wiki"])
     parser.add_argument("--topics", type=str, default="ikat_23_test",
-                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa"])
+                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa", "perso_dense_val", "perso_dense_train"])
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
     parser.add_argument("--output_dir_path", type=str, default="../../results")
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
@@ -45,7 +45,9 @@ def build_parser():
     ###################
 
     parser.add_argument("--retrieval_model", type=str, default="BM25",
-                        choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama", "qwen3", "conv-qwen3", "conv-qwen3-fp32", "conv-ance"])
+                        # qwen3_e* = aliases that all load QwenEmbedding from dense_query_encoder_path
+                        # (lets one shared-corpus stream score many ckpts; distinct file_name_stem per alias).
+                        choices= ["none","BM25", "ance", "dpr", "splade_v3", "repllama", "qwen3", "conv-qwen3", "conv-qwen3-fp32", "conv-ance"] + [f"qwen3_e{i}" for i in range(600)])
     parser.add_argument("--retrieval_top_k", type=int, default="1000")
     parser.add_argument("--personalization_group", type=str, default="a", 
                         choices=["a","b","c","all"]
@@ -180,8 +182,10 @@ def build_parser():
     parser.add_argument("--retrieval_query_type", type=str, default="oracle",
                         choices=[
                             "none",
-                            "raw", 
+                            "raw",
                             "oracle",
+                            "perso_dense_val_ptkb",
+                            "perso_dense_val_rel_ptkb",
                             "rar_rwrs",
                             "rar_rw",
                             "rar_cot_rw",
@@ -306,6 +310,9 @@ def build_parser():
                             "random_weights",
                             "full_conversation",
                             "oracle_qwen_instruct",
+                            "oracle_rel_ptkb_qwen_instruct",
+                            "oracle_qwen_instruct_v2",
+                            "oracle_qwen_instruct_v3",
                             "MQ4CS_persq_qwen_instruct",
                             "qwen_conversation",
                             "qwen_conversation_ptkb",
@@ -410,7 +417,9 @@ if __name__ == "__main__":
         "ikat_23_test": "TREC_iKAT_2023",
         "ikat_24_test": "TREC_iKAT_2024",
         "ikat_25_test": "TREC_iKAT_2025",
-        "topiocqa": "continual_ir"
+        "topiocqa": "continual_ir",
+        "perso_dense_val": "TREC_iKAT_personalized",
+        "perso_dense_train": "TREC_iKAT_personalized"
     }
     project_name = topic_name_map[args.topics] 
 

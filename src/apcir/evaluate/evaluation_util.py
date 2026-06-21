@@ -77,7 +77,7 @@ def get_query_list(args):
     # TODO: for reranking and generation, conceptually we use LLM readable format full conversation, right?
 
     # apply topic specific processing
-    if "ikat" in args.topics or "topiocqa" in args.topics:
+    if "ikat" in args.topics or "topiocqa" in args.topics or args.topics.startswith("perso_dense"):
         turn_list = load_turns_from_json(
             input_topic_path=args.input_query_path,
             range_start=0,
@@ -152,6 +152,13 @@ def get_query_list(args):
         elif args.topics == "ikat_25_test":
             evaluated_turn_list = filter_ikat_25_evaluated_turns(turn_list)
         elif "topiocqa" in args.topics:
+            evaluated_turn_list = turn_list
+        elif args.topics.startswith("perso_dense"):
+            # The perso_dense_{val,train} topics file already contains ONLY the held-out / train-split
+            # turns of the personalized-dense-retriever experiment. Their query is a PRE-BUILT
+            # reformulation (perso_dense_val_ptkb / perso_dense_val_rel_ptkb), so the per-year
+            # context attachment + builders above are skipped (the `if "ikat"` block did not run),
+            # and every turn here is "evaluated".
             evaluated_turn_list = turn_list
         
         qid_list_string = [str(turn.turn_id) for turn in evaluated_turn_list]

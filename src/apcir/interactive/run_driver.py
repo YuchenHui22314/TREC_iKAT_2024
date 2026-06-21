@@ -37,6 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--max_conversations", type=int, default=1)
     # safety: cap turns/session so a degenerate user-simulator loop can't run forever
     p.add_argument("--max_turns_per_session", type=int, default=30)
+    p.add_argument("--extract_ptkb", action="store_true",
+                   help="per turn, extract NEW persona facts via gpt-5-mini and log [extract] "
+                        "(+ accumulate per persona for the cross-session PTKB override)")
+    p.add_argument("--override_ptkb", action="store_true",
+                   help="(needs --extract_ptkb) replace the simulator's static base PTKB sent to "
+                        "the search server with base + our accumulated extracted facts for that "
+                        "persona (the dynamic-PTKB carry-over; logs [override])")
     p.add_argument("--results_dir",
                    default="/data/rech/huiyuche/TREC_iKAT_2024/results")
     # hard guard: official scored runs must be explicitly acknowledged

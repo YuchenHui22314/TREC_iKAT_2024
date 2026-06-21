@@ -107,6 +107,7 @@ class PipelineConfig:
         "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/"
         "snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234")
     embed_dim: int = 768
+    dense_dtype: str = "float32"            # "float16" halves index RAM (qwen3 491G -> ~245G)
     passage_block_num: int = 12
     faiss_n_gpu: int = 3                    # GPUs 0,1,2 (GPU 3 reserved for the vLLM server)
     use_gpu_for_faiss: bool = True
@@ -165,20 +166,23 @@ class InteractivePipeline:
         if self._needs_llm:
             self._setup_llm()
         if self._needs_dense:
-            self._ram = RamBlockSource(c.dense_index_dir_path, c.passage_block_num, c.embed_dim)
+            self._ram = RamBlockSource(c.dense_index_dir_path, c.passage_block_num, c.embed_dim,
+                                       store_dtype=c.dense_dtype)
             self._faiss = build_faiss_index(self._make_args())   # GPUs 0..faiss_n_gpu-1 (NOT GPU 3)
         if self._needs_sparse:
             self._bm25 = LuceneSearcher(c.sparse_index_dir_path)
             self._bm25.set_bm25(c.bm25_k1, c.bm25_b)
         # doc-fetch: passage text is stored in the lucene (sparse) index
         self._docfetch = LuceneSearcher(c.sparse_index_dir_path)
-        if c.reranker == "qwen3_reranker":
+        if c.reranker != "none":
             if c.rerank_remote_url:
-                # model hosted on another machine (rerank_server.py, e.g. octal31's
-                # A5000) — zero local VRAM; LAN round-trip is negligible
+                # model hosted on another machine (rerank_server.py) — the remote knows the
+                # reranker TYPE (qwen3_reranker / rankllama / monot5 ...), so ANY reranker is
+                # usable remotely with zero local VRAM; LAN round-trip is negligible.
                 from apcir.search.rerank import RemoteReranker
+                print(f"[pipeline] using remote reranker ({c.reranker}) at {c.rerank_remote_url}")
                 self._reranker = RemoteReranker(c.rerank_remote_url)
-            else:
+            elif c.reranker == "qwen3_reranker":
                 # co-hosted on the gen-LLM GPU (cuda:llm_gpu_id). VRAM: openai backend ->
                 # GPU 3 is free (bf16 ~9G fits trivially); local_vllm backend -> run_server
                 # lowers vllm_gpu_mem_util to ~0.72 so ~13G stays free. rerank_quant 8b/4b
@@ -190,6 +194,11 @@ class InteractivePipeline:
                 print(f"[pipeline] loading qwen3 reranker on {dev} (quant={c.rerank_quant})...")
                 self._reranker = QwenReranker(
                     model_path=c.qwen3_reranker_path, quant=c.rerank_quant, device=dev)
+            else:
+                raise SystemExit(
+                    f"reranker '{c.reranker}' has no LOCAL loader in the interactive pipeline; "
+                    f"host it with `python -m apcir.search.rerank_server --reranker_type "
+                    f"{c.reranker} ...` and pass --rerank_remote_url.")
 
     def _setup_llm(self):
         """Build the shared LLM client (+ rewriter). For local_vllm, boot the vLLM

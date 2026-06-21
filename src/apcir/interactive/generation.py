@@ -12,9 +12,11 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from apcir.functional.topics import Turn, load_document_by_id
-from apcir.functional.promptor import PersonalizedResponseGenPromptor
+from apcir.functional.promptor import InteractiveResponseGenPromptor
 
-_GEN_PROMPTOR = PersonalizedResponseGenPromptor()
+# iKAT-scoring-tuned prompt (nugget coverage + groundedness + selective PTKB); offline
+# PersonalizedResponseGenPromptor is left untouched. See promptor.InteractiveResponseGenPromptor.
+_GEN_PROMPTOR = InteractiveResponseGenPromptor()
 
 
 def rag_response(
