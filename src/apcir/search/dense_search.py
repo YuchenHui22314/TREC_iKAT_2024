@@ -267,6 +267,28 @@ def build_ance_conv_query_tokens(tokenizer, query_json,
     return ids
 
 
+# Cache the qwen3 query encoder (+tokenizer) by (path, device) so the resident interactive server
+# loads each encoder ONCE instead of rebuilding it every turn (the model is frozen/eval -> quality-
+# identical). Keyed by path, so multiple legs (e.g. conv-qwen3 + pers-conv-qwen3) each cache once.
+import threading as _threading
+_QWEN_ENCODER_CACHE = {}
+_QWEN_ENCODER_LOCK = _threading.Lock()
+
+
+def _get_qwen_encoder(encoder_path, device):
+    key = (encoder_path, str(device))
+    cached = _QWEN_ENCODER_CACHE.get(key)               # fast path, no lock
+    if cached is None:
+        with _QWEN_ENCODER_LOCK:                        # double-checked: avoid a racy double-load/OOM
+            cached = _QWEN_ENCODER_CACHE.get(key)
+            if cached is None:
+                tok = AutoTokenizer.from_pretrained(encoder_path, padding_side="left")
+                model = QwenEmbedding(encoder_path).to(device)
+                model.eval()
+                _QWEN_ENCODER_CACHE[key] = cached = (tok, model)
+    return cached
+
+
 def get_test_query_embedding(args):
     '''
     Load the model, build the test query dataset/dataloader, and get the query embeddings.
@@ -298,9 +320,7 @@ def get_test_query_embedding(args):
     # documents carry NO instruction (Qwen3-Embedding protocol).
     if args.retrieval_model in ("qwen3", "conv-qwen3", "conv-qwen3-fp32") or args.retrieval_model.startswith("qwen3_e"):
         query_device = f"cuda:{args.query_gpu_id}" if args.query_gpu_id >= 0 else "cpu"
-        tokenizer = AutoTokenizer.from_pretrained(args.dense_query_encoder_path, padding_side="left")
-        model = QwenEmbedding(args.dense_query_encoder_path).to(query_device)
-        model.eval()
+        tokenizer, model = _get_qwen_encoder(args.dense_query_encoder_path, query_device)
         embeddings, embedding2id = [], []
         bs = args.query_encoder_batch_size
         with torch.no_grad():

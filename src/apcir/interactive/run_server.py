@@ -33,6 +33,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--qr", nargs="+", default=None,
                    help="QR name per retriever leg (rar / rar_personalized_cot1 / "
                         "rar_non_personalized_cot1 / MQ4CS_persq / GtR / ptkb_sum / none)")
+    p.add_argument("--dense_encoder_paths", nargs="+", default=None,
+                   help="per-leg DENSE query-encoder ckpt, parallel to --retrievers; token '-' = "
+                        "use the global --dense_query_encoder_path. Lets two dense legs (e.g. "
+                        "conv-qwen3 + pers-conv-qwen3) use different encoders on the same index.")
     # fusion
     p.add_argument("--fusion_type", default="RRF",
                    choices=["RRF", "linear_combination", "round_robin", "concat"])
@@ -103,8 +107,16 @@ def config_from_args(args) -> PipelineConfig:
             f"--qr ({len(qr_list)}) must have the same length as --retrievers "
             f"({len(args.retrievers)})")
     qr_list = ["" if q in ("none", "None") else q for q in qr_list]
-    retrievers = [RetrieverSpec(n, qt, qr)
-                  for n, qt, qr in zip(args.retrievers, args.retrieval_query_types, qr_list)]
+    enc_list = (args.dense_encoder_paths if args.dense_encoder_paths is not None
+                else ["-"] * len(args.retrievers))
+    if len(enc_list) != len(args.retrievers):
+        raise SystemExit(
+            f"--dense_encoder_paths ({len(enc_list)}) must have the same length as "
+            f"--retrievers ({len(args.retrievers)})")
+    enc_list = [None if e in ("-", "default", "none", "None", "") else e for e in enc_list]
+    retrievers = [RetrieverSpec(n, qt, qr, encoder_path=enc)
+                  for n, qt, qr, enc in zip(args.retrievers, args.retrieval_query_types,
+                                            qr_list, enc_list)]
     # default LLM model by backend (local vLLM -> qwen3-32b ; OpenAI -> gpt-5-mini)
     llm_model = args.llm_model or ("gpt-5-mini" if args.llm_backend == "openai" else "qwen3-32b")
     # co-hosting VRAM: when the qwen3 reranker shares the LLM GPU with a local vLLM we

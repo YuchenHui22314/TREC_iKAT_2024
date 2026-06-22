@@ -52,6 +52,7 @@ class SharedLLMClient:
         timeout: float = 120.0,
         max_retries: int = 4,
         enable_thinking: bool = True,
+        reasoning_effort: Optional[str] = None,
     ):
         if backend not in ("openai", "local_vllm"):
             raise ValueError(f"backend must be 'openai' or 'local_vllm', got {backend!r}")
@@ -61,6 +62,10 @@ class SharedLLMClient:
         self.temperature = temperature
         self.top_p = top_p
         self.max_retries = max_retries
+        # gpt-5 / o-series reasoning effort: minimal|low|medium|high. None -> API default
+        # (medium). Falls back to env LLM_REASONING_EFFORT so the server's gen call AND the
+        # driver's extraction call can be sped up by one env var, no flag threading.
+        self.reasoning_effort = reasoning_effort or os.environ.get("LLM_REASONING_EFFORT")
         # Qwen3 etc. are reasoning models that emit <think>…</think>, which breaks the
         # promptors' strict parsers. Disable thinking on the local server (vLLM honours the
         # chat-template kwarg) and strip any residual block. QR/RAG don't need it.
@@ -95,6 +100,8 @@ class SharedLLMClient:
             if not is_reasoning:
                 kw["temperature"] = self.temperature
                 kw["top_p"] = self.top_p
+            elif self.reasoning_effort:        # minimal|low|medium|high (speed vs quality)
+                kw["reasoning_effort"] = self.reasoning_effort
         else:  # local_vllm
             kw["max_tokens"] = self.max_tokens
             kw["temperature"] = self.temperature

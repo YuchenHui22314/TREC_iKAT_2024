@@ -202,8 +202,20 @@ class Driver:
         print(f"[driver] budget before: {json.dumps(budget_before, ensure_ascii=False)}")
 
         sessions_done = 0
-        msg = self.client.start(self.run_id, self.args.description,
-                                extra={"track_persona": bool(self.args.track_persona)})
+        try:
+            msg = self.client.start(self.run_id, self.args.description,
+                                    extra={"track_persona": bool(self.args.track_persona)})
+        except SimAPIError as e:
+            if "HTTP 412" not in str(e):
+                raise
+            # run name already registered (a prior partial launch): RESUME the open sessions
+            # via /session instead of re-/start (which 412s). No /start => no extra run slot.
+            print(f"[driver] /{self.args.mode}/start -> 412 (run exists); RESUMING via "
+                  f"/{self.args.mode}/session", flush=True)
+            msg = self.client.resume(self.run_id)
+            if msg.last_response_of_run:
+                print(f"[driver] run {self.run_id} already COMPLETE; nothing to resume.")
+                return 0
         session_records: List[Dict[str, Any]] = []
         ptkb = PTKBStore(conversation_id=f"{msg.topic_id}-{msg.user_id}")
         turn_index = 0

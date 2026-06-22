@@ -170,6 +170,12 @@ class SimClient:
         The API requires the run_id query param."""
         return self._request("GET", f"/{self.mode}/session", params={"run_id": run_id})
 
+    def resume(self, run_id: str) -> "UserUtteranceMessage":
+        """Resume an ALREADY-STARTED run: GET /{mode}/session parsed as the next
+        UserUtteranceMessage awaiting our response. Use when /{mode}/start 412s (the run
+        name already exists) — drive /continue from this turn. Read-only, no budget cost."""
+        return UserUtteranceMessage.from_json(self.session(run_id))
+
     def run_status(self, run_id: str) -> Dict[str, Any]:
         return self._request("GET", "/run/status", params={"run_id": run_id})
 

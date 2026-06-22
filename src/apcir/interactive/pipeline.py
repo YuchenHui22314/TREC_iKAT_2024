@@ -14,9 +14,9 @@ v1 reuses the offline functions verbatim for faithfulness:
   - apcir.interactive.ram_index.search_query_against_ram
   - apcir.search.fuse.RRF / normalize_scores / per_query_linear_combination / round_robin_fusion / concat
   - apcir.functional.topics.Turn / load_document_by_id
-NOTE: the ANCE query encoder is rebuilt inside get_test_query_embedding every turn
-(a few hundred ms); v1 accepts this — refactor to a persistent encoder if turn latency
-matters.
+NOTE: qwen3 query encoders are CACHED by (path, device) in dense_search._get_qwen_encoder
+(loaded once, reused across turns — supports multiple per-leg encoders); ANCE encoders still
+load per-turn (acceptable, not on the current path).
 """
 
 from __future__ import annotations
@@ -25,6 +25,9 @@ import json
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 
 from pyserini.search.lucene import LuceneSearcher
 
@@ -46,10 +49,13 @@ from .generation import rag_response
 @dataclass
 class RetrieverSpec:
     """One configured retriever leg of the fusion."""
-    name: str                 # "BM25" | "ance" | "qwen3" | "splade_v3" ...
+    name: str                 # "BM25" | "ance" | "qwen3" | "conv-qwen3" | "splade_v3" ...
     query_type: str           # used when qr=="": "raw" | "full_conversation_dense" | "qwen_conversation"[_ptkb]
     qr: str = ""              # online QR name (rar / rar_personalized_cot1 / MQ4CS_persq / GtR / ptkb_sum);
                               # "" or "none" = no QR, use query_type. A QR may emit MULTIPLE queries (GtR) -> fused.
+    encoder_path: Optional[str] = None  # per-leg DENSE query-encoder ckpt; None -> global
+                              # dense_query_encoder_path. Lets two qwen3 legs (e.g. conv-qwen3 +
+                              # pers-conv-qwen3) use DIFFERENT encoders while sharing one doc index.
 
 
 @dataclass
@@ -263,14 +269,43 @@ class InteractivePipeline:
         turn = self._build_turn(utterance, history, qid, topic_id, user_id, ptkb_store)
         context_turns = context_turns_from_history(history)
 
-        # 1) retrieve per leg. A QR leg may emit MULTIPLE queries -> multiple hits dicts;
-        #    they all join hits_list and get fused together (multi-query + cross-retriever).
-        hits_list: List[Dict[str, List[Any]]] = []
-        for spec in c.retrievers:
-            for hits in self._retrieve_one(spec, turn, qid, context_turns):
-                if c.fusion_type == "linear_combination":
-                    hits = fuse_mod.normalize_scores(hits, c.fusion_normalization)
-                hits_list.append(hits)
+        # 1) retrieve. The shared-corpus dense group + parallel-sparse speedup applies ONLY for the
+        #    order-insensitive RRF fusion (our submissions): non-QR dense legs on the single index do
+        #    ONE shared corpus pass (self._dense_group_search), and GPU-FREE sparse legs (BM25/splade,
+        #    incl. their slow online-QR LLM call) run in a worker thread CONCURRENTLY with that GPU
+        #    search — disjoint resources (HTTP/Lucene vs CUDA, GIL released in both). Any GPU-using
+        #    "rest" leg (a dense leg WITH a QR) runs SERIALLY in the main thread (it would collide
+        #    with the dense group on the GPU). For order-sensitive fusion (round_robin /
+        #    linear_combination / concat) or no dense group, fall back to the original sequential
+        #    per-leg loop (preserves config order + positional fuse weights).
+        _SPARSE = ("BM25", "splade_v3")
+        def _is_dense_grp(s: RetrieverSpec) -> bool:
+            return s.name in self._DENSE_NAMES and (not s.qr or s.qr == "none")
+        dense_group = [s for s in c.retrievers if _is_dense_grp(s)]
+
+        if c.fusion_type == "RRF" and dense_group:
+            sparse_rest = [s for s in c.retrievers if not _is_dense_grp(s) and s.name in _SPARSE]
+            gpu_rest = [s for s in c.retrievers if not _is_dense_grp(s) and s.name not in _SPARSE]
+
+            def _run(specs) -> List[Dict[str, List[Any]]]:
+                hl: List[Dict[str, List[Any]]] = []
+                for spec in specs:
+                    hl.extend(self._retrieve_one(spec, turn, qid, context_turns))
+                return hl
+
+            with ThreadPoolExecutor(max_workers=1) as ex:
+                sparse_fut = ex.submit(_run, sparse_rest) if sparse_rest else None
+                dense_hits = self._dense_group_search(dense_group, turn, qid)   # GPU, main thread
+                gpu_rest_hits = _run(gpu_rest)                                   # GPU, after dense
+                sparse_hits = sparse_fut.result() if sparse_fut else []
+            hits_list = sparse_hits + dense_hits + gpu_rest_hits   # RRF is order-insensitive
+        else:
+            hits_list = []
+            for spec in c.retrievers:
+                for hits in self._retrieve_one(spec, turn, qid, context_turns):
+                    if c.fusion_type == "linear_combination":
+                        hits = fuse_mod.normalize_scores(hits, c.fusion_normalization)
+                    hits_list.append(hits)
 
         # 2) fuse
         fused = self._fuse(hits_list, qid)
@@ -356,7 +391,9 @@ class InteractivePipeline:
                 # a QR rewrite is a plain string -> plain encode path (NOT full_conversation_dense,
                 # which expects a JSON turn-list). Keep the conv type only for non-QR conv legs.
                 a = self._make_args(retrieval_model=spec.name,
-                                    retrieval_query_type=(spec.query_type if is_conv else "raw"))
+                                    retrieval_query_type=(spec.query_type if is_conv else "raw"),
+                                    dense_query_encoder_path=(spec.encoder_path
+                                                              or c.dense_query_encoder_path))
                 a.retrieval_query_list = [q]
                 a.qid_list_string = [qid]
                 emb, emb2id = get_test_query_embedding(a)
@@ -365,6 +402,46 @@ class InteractivePipeline:
             else:
                 raise NotImplementedError(f"retriever {spec.name} not wired in interactive pipeline")
         return out
+
+    # dense retriever leg names (encode a query into the frozen doc-embedding space).
+    _DENSE_NAMES = ("ance", "conv-ance", "qwen3", "conv-qwen3")
+
+    def _dense_group_search(self, dense_specs: List[RetrieverSpec], turn: Turn,
+                            qid: str) -> List[Dict[str, List[Any]]]:
+        """Shared-corpus dense search for a GROUP of NON-QR dense legs that share ONE index:
+        encode each leg's query with its OWN (cached) encoder -> stack to (K,dim) -> ONE pass over
+        the corpus (`search_query_against_ram` scores all K rows per block) -> split into K per-leg
+        hits dicts. The corpus read dominates, so K legs ~= 1 leg. All legs here target self._ram
+        (the single loaded index); a multi-index future would group by index and call this once per
+        group. NOTE: legs in a group MUST share the index/dim (e.g. conv-qwen3 + pers-conv-qwen3,
+        both 1024-d on the qwen index); a different index (e.g. ANCE 768-d) cannot share — it needs
+        its own RamBlockSource + its own group."""
+        c = self.config
+        if not dense_specs:
+            return []
+        vecs = []
+        for spec in dense_specs:
+            enc = spec.encoder_path or c.dense_query_encoder_path
+            is_conv = (spec.query_type == "full_conversation_dense")
+            a0 = self._make_args(retrieval_model=spec.name, retrieval_query_type=spec.query_type,
+                                 dense_query_encoder_path=enc)
+            q = turn.query_type_2_query(spec.query_type, 0, 0.0, a0)
+            a = self._make_args(retrieval_model=spec.name,
+                                retrieval_query_type=(spec.query_type if is_conv else "raw"),
+                                dense_query_encoder_path=enc)
+            a.retrieval_query_list = [q]
+            a.qid_list_string = [qid]
+            emb, _ = get_test_query_embedding(a)              # (1, dim)
+            vecs.append(np.asarray(emb, dtype=np.float32))
+        dim0 = vecs[0].shape[1]
+        assert all(v.shape[1] == dim0 for v in vecs), (
+            "dense-group legs must share the embedding dim / index space — cannot mix e.g. "
+            "ANCE 768-d + qwen 1024-d in one shared corpus search")
+        Q_all = np.concatenate(vecs, axis=0)                 # (K, dim) — one row per leg
+        D, I = search_query_against_ram(Q_all, self._ram, self._faiss, c.retrieval_top_k)
+        # one hits dict per leg (this group is only used in the order-insensitive RRF path).
+        return [get_dense_ranking_list([qid], D[k:k + 1], I[k:k + 1], c.retrieval_top_k)
+                for k in range(len(dense_specs))]
 
     def _rerank(self, ranked: List[Any], turn) -> List[Any]:
         """Step 2.5: Qwen3-Reranker over the fused top rerank_top_k; the tail [k:] keeps
