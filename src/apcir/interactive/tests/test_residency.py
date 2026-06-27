@@ -44,3 +44,36 @@ def test_set_active_refuses_clueweb_qwen_on_small_host():
     except CapacityError as e:
         assert "clueweb_qwen" in str(e)
     assert p.resident() == set()
+
+
+def test_set_active_validates_loader_before_evicting():
+    # reranker_qwen3 has no loader yet; requesting it (which would evict the resident mini) must
+    # raise BEFORE the eviction, leaving the current resident set intact.
+    p = _pipe(200.0)
+    p.set_active(["qrecc_ance_mini"])
+    try:
+        p.set_active(["reranker_qwen3"])     # plan: evict mini, load reranker (unsupported kind)
+        assert False, "expected NotImplementedError"
+    except NotImplementedError:
+        pass
+    assert p.resident() == {"qrecc_ance_mini"}    # mini was NOT evicted
+
+
+def test_set_active_rolls_back_partial_load_on_failure():
+    from apcir.interactive.capacity import IndexFootprint
+    mini = "/part/01/Tmp/yuchenhui/indexes/qrecc_ance_mini_merged"
+    reg = IndexRegistry({
+        "good": IndexFootprint("good", "dense", 0.01, 0.02, index_dir=mini,
+                               dtype="float16", embed_dim=768, block_num=1),
+        "bad": IndexFootprint("bad", "dense", 0.01, 0.02, index_dir="/nonexistent/dir",
+                              dtype="float16", embed_dim=768, block_num=1),
+    })
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0, free_vram_fn=lambda: [24.0])
+    p = InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+    try:
+        p.set_active(["good", "bad"])        # good loads, bad's dir is missing -> load raises
+        assert False, "expected load failure"
+    except Exception:
+        pass
+    assert p.resident() == set()             # rolled back: good unloaded, bad never resident
+    assert p._dense == {}

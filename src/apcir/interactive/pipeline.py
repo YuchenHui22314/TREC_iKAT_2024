@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import gc
 import json
+import threading
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
@@ -185,6 +186,7 @@ class InteractivePipeline:
             registry = IndexRegistry.from_yaml(join(dirname(__file__), "capacity_config.yaml"))
         self.registry = registry
         self.capacity = capacity or CapacityManager(registry)
+        self._residency_lock = threading.RLock()    # serialize residency changes (vs each other + search)
 
     # --- startup: load resident state once --------------------------------- #
     def load(self):
@@ -287,18 +289,37 @@ class InteractivePipeline:
         """Names of all currently-resident capacity units."""
         return set(self._resident)
 
+    _LOADABLE_KINDS = {"dense"}   # kinds with a load_/unload_ impl (extended as more are wired)
+
     def set_active(self, active_set, progress_cb=None) -> CapacityPlan:
-        """Make exactly `active_set` resident (active-set semantics): evict units not in it,
-        load units missing from it. Refuse (CapacityError) if the set won't fit by load-peak
-        vs live free RAM/VRAM. `progress_cb(msg, frac)` is called around each load/unload."""
-        plan = self.capacity.plan(list(active_set), list(self._resident))
-        if not plan.fits:
-            raise CapacityError(plan.reason)
-        for unit in plan.to_unload:
-            self._unload_unit(unit, progress_cb)
-        for unit in plan.to_load:
-            self._load_unit(unit, progress_cb)
-        return plan
+        """Make exactly `active_set` resident (active-set semantics): evict units not in it, load
+        units missing from it. Refuse (CapacityError) if the set won't fit by load-peak vs live
+        free RAM/VRAM. Transactional + locked: holds an exclusive residency lock, validates every
+        loader BEFORE mutating (so an unimplemented kind fails clean without first evicting the
+        current set), and on a mid-load failure rolls back the partial loads so `_resident` always
+        matches the real objects. `progress_cb(msg, frac)` wraps each load/unload."""
+        with self._residency_lock:
+            plan = self.capacity.plan(list(active_set), list(self._resident))
+            if not plan.fits:
+                raise CapacityError(plan.reason)
+            for unit in plan.to_load:                       # validate BEFORE touching residency
+                kind = self.registry.get(unit).kind
+                if kind not in self._LOADABLE_KINDS:
+                    raise NotImplementedError(
+                        f"no loader for kind {kind!r} (unit {unit!r}); supported: "
+                        f"{sorted(self._LOADABLE_KINDS)}")
+            for unit in plan.to_unload:
+                self._unload_unit(unit, progress_cb)
+            loaded_now = []
+            try:
+                for unit in plan.to_load:
+                    self._load_unit(unit, progress_cb)
+                    loaded_now.append(unit)
+            except Exception:
+                for unit in loaded_now:                     # roll back partial loads -> consistent
+                    self._unload_unit(unit, progress_cb)
+                raise
+            return plan
 
     def _load_unit(self, unit: str, progress_cb=None):
         kind = self.registry.get(unit).kind
