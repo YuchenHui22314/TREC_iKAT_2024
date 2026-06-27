@@ -106,8 +106,23 @@ def test_plan_reranker_refused_when_no_gpu_room():
 def test_capacity_config_yaml_loads_and_has_expected_units():
     path = os.path.join(os.path.dirname(__file__), "..", "capacity_config.yaml")
     reg = IndexRegistry.from_yaml(path)
-    for unit in ("dense_qwen", "dense_ance", "splade", "bm25", "reranker_qwen3"):
+    for unit in ("clueweb_qwen", "qrecc_ance", "qrecc_qwen", "qrecc_ance_mini", "reranker_qwen3"):
         fp = reg.get(unit)
         assert fp.load_peak_ram_gb >= fp.resident_ram_gb >= 0
-    assert reg.get("dense_qwen").load_peak_ram_gb > 237
+    # clueweb qwen's load peak must exceed octal31's ~237G free -> guard refuses it here
+    assert reg.get("clueweb_qwen").load_peak_ram_gb > 237
+    # qrecc ance fits comfortably under octal31's free RAM
+    assert reg.get("qrecc_ance").load_peak_ram_gb < 237
     assert reg.get("reranker_qwen3").vram_gb > 0
+
+
+def test_plan_on_octal31_config_refuses_clueweb_qwen_but_fits_qrecc_ance():
+    path = os.path.join(os.path.dirname(__file__), "..", "capacity_config.yaml")
+    reg = IndexRegistry.from_yaml(path)
+    mgr = CapacityManager(reg, free_ram_fn=lambda: 237.0,
+                          free_vram_fn=lambda: [24.0, 24.0, 24.0, 24.0])
+    assert not mgr.plan(active_set=["clueweb_qwen"], resident=[]).fits
+    assert mgr.plan(active_set=["qrecc_ance"], resident=[]).fits
+    # switching from qrecc_ance to qrecc_qwen evicts the first, loads the second
+    p = mgr.plan(active_set=["qrecc_qwen"], resident=["qrecc_ance"])
+    assert p.to_unload == ["qrecc_ance"] and p.to_load == ["qrecc_qwen"] and p.fits
