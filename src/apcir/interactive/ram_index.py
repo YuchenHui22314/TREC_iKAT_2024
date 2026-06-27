@@ -93,7 +93,8 @@ def search_query_against_ram(query_embeddings: np.ndarray,
                              ram_src: RamBlockSource,
                              index,
                              topN: int,
-                             merge_fn=merge_topk):
+                             merge_fn=merge_topk,
+                             gpus=None):
     """PHASE-B for the RAM index: per block add -> search(Q, topN) -> map ids -> reset,
     then merge across blocks. Mirrors grouped/runner.py:78-92.
 
@@ -108,7 +109,7 @@ def search_query_against_ram(query_embeddings: np.ndarray,
     # fits ONE GPU (<46G), so we search it NATIVELY in fp16 below (no cast, no sharding, half the
     # PCIe traffic) -> ~10x faster. Only the float32 path (ANCE) goes through faiss.
     if getattr(ram_src, "store_dtype", np.dtype("float32")) == np.float16:
-        return _search_ram_fp16_gpu(query_embeddings, ram_src, topN, merge_fn)
+        return _search_ram_fp16_gpu(query_embeddings, ram_src, topN, merge_fn, gpus=gpus)
 
     Q = np.ascontiguousarray(query_embeddings, dtype=np.float32)
     per_block = []
@@ -127,31 +128,53 @@ def search_query_against_ram(query_embeddings: np.ndarray,
 
 
 def _search_ram_fp16_gpu(query_embeddings, ram_src, topN, merge_fn=merge_topk,
-                         device="cuda:0", row_chunk=10_000_000):
-    """fp16 dense search WITHOUT faiss (no fp16->fp32 round-trip).
+                         gpus=None, row_chunk=4_000_000):
+    """fp16 dense search WITHOUT faiss, sharded across `gpus` (default [0]).
 
-    A fp16 block (41G) fits one GPU, so we skip faiss's float32-only add + multi-GPU sharding
-    (the ~180s/query bottleneck for the 491G qwen index). Per block: transfer the fp16 block
-    (chunked, to bound GPU RAM) to ONE GPU, compute scores = Q @ block.T with tensor cores
-    (fp16 inputs, fp32 accumulation), top-k on GPU, then merge across blocks. Same global top-k
-    as the faiss path; identical (D, ids[I]) per-block contract for merge_fn.
+    Each block's rows are split evenly across the GPUs; on each GPU the shard is streamed in
+    row_chunks (bounding GPU memory) while keeping a running per-shard top-k (scores = Q @ shard.T
+    with tensor cores, fp16 in / fp32 accumulate, then top-k). The per-(block, shard) top-k's are
+    merged by `merge_fn` into the global top-N. Sharding lets a 41G fp16 block fit even 24G cards
+    and lets the GPUs work in parallel (each GPU's shard work is issued before any `.cpu()` sync);
+    gpus=[0] is the legacy whole-block-on-one-card path. Same global top-N and the same
+    (D, ids[I]) contract as the faiss path.
     """
     import torch
-    Qt = torch.from_numpy(np.ascontiguousarray(query_embeddings, dtype=np.float16)).to(device)
-    per_block = []
+    gpus = list(gpus) if gpus else [0]
+    devs = [(g, f"cuda:{g}") for g in gpus]
+    Qf = np.ascontiguousarray(query_embeddings, dtype=np.float16)
+    Qt = {d: torch.from_numpy(Qf).to(d) for _, d in devs}
+    sources = []
     with torch.no_grad():
-        for block_id, emb, ids in ram_src.iter_blocks():
+        for _block_id, emb, ids in ram_src.iter_blocks():
             n = emb.shape[0]
-            parts = []
-            for s in range(0, n, row_chunk):
-                ct = torch.from_numpy(emb[s:s + row_chunk]).to(device)   # fp16 (chunk, dim)
-                parts.append((Qt @ ct.T).float())                       # (nq, chunk) IP scores
-                del ct
-            scores = torch.cat(parts, dim=1)                            # (nq, n)
-            k = min(topN, n)
-            topv, topi = torch.topk(scores, k, dim=1)                    # sorted desc, GPU
-            per_block.append((topv.cpu().numpy(), ids[topi.cpu().numpy()]))
-            del scores, topv, topi, parts
-        torch.cuda.empty_cache()
-    merged_D, merged_I = merge_fn(per_block, topN)
+            edges = np.linspace(0, n, len(devs) + 1, dtype=np.int64)
+            staged = []
+            for gi, (_g, d) in enumerate(devs):
+                s0, s1 = int(edges[gi]), int(edges[gi + 1])
+                if s1 <= s0:
+                    continue
+                bv = bi = None                                   # running per-shard top-k (on d)
+                for s in range(s0, s1, row_chunk):
+                    e = min(s + row_chunk, s1)
+                    ct = torch.from_numpy(emb[s:e]).to(d)        # fp16 (m, dim)
+                    sc = (Qt[d] @ ct.T).float()                  # (nq, m) inner product
+                    cv, ci = torch.topk(sc, min(topN, sc.shape[1]), dim=1)   # (nq, k) sorted desc
+                    ci = ci + s                                  # chunk-local -> block-row index
+                    if bv is None:
+                        bv, bi = cv, ci
+                    else:
+                        cat_v = torch.cat([bv, cv], dim=1)
+                        cat_i = torch.cat([bi, ci], dim=1)
+                        bv, sel = torch.topk(cat_v, min(topN, cat_v.shape[1]), dim=1)
+                        bi = torch.gather(cat_i, 1, sel)
+                    del ct, sc, cv, ci
+                staged.append((bv, bi, ids))
+            for bv, bi, ids_full in staged:                      # .cpu() here -> GPUs overlapped above
+                sources.append((bv.cpu().numpy(), ids_full[bi.cpu().numpy()]))
+                del bv, bi
+    for g in gpus:
+        with torch.cuda.device(g):
+            torch.cuda.empty_cache()
+    merged_D, merged_I = merge_fn(sources, topN)
     return np.asarray(merged_D), np.asarray(merged_I)

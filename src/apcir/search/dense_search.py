@@ -63,7 +63,10 @@ def build_faiss_index(args):
                                                     cpu_index, co)
         index = gpu_index
     else:
-        index = cpu_index
+        raise RuntimeError(
+            "CPU faiss is forbidden (far too slow at ClueWeb scale). Use the default dense "
+            "backend 'fp16_torch' (multi-GPU exact search), or pass use_gpu_for_faiss=True for "
+            "GPU faiss. (CLAUDE.md: FAISS retrieval runs on GPU by default.)")
 
     return index
 
