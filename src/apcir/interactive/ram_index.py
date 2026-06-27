@@ -19,12 +19,43 @@ from __future__ import annotations
 import time
 from os.path import join as oj
 import os
+import gc
 import pickle
 from typing import List, Optional, Tuple
 
 import numpy as np
 
 from apcir.search.grouped.merge import merge_topk
+
+
+_LIBC = None
+
+
+def _rss_gb() -> float:
+    """Resident set size of this process in GB (via /proc/self/statm; no deps)."""
+    try:
+        with open("/proc/self/statm") as f:
+            pages = int(f.read().split()[1])
+        return pages * os.sysconf("SC_PAGE_SIZE") / 1e9
+    except Exception:
+        return -1.0
+
+
+def _reclaim_libc_heap():
+    """Return freed heap memory to the OS. NumPy/pickle free their large fp32 buffers via libc,
+    but glibc may retain freed multi-GB chunks in its arenas, so RSS does NOT drop on `del` alone
+    (this caused a ~235G RSS / OOM when loading a 169G-fp32 index as fp16). gc.collect() handles
+    Python reachability; malloc_trim(0) asks glibc to return free top-of-heap memory to the OS.
+    Best-effort: no-op if libc / malloc_trim is unavailable."""
+    gc.collect()
+    global _LIBC
+    try:
+        if _LIBC is None:
+            import ctypes
+            _LIBC = ctypes.CDLL("libc.so.6")
+        _LIBC.malloc_trim(0)
+    except Exception:
+        pass
 
 
 class RamBlockSource:
@@ -65,20 +96,30 @@ class RamBlockSource:
         for block_id in range(self.num_blocks):
             tb = time.time()
             with open(oj(self.index_dir, f"doc_emb_block.{block_id}.pb"), "rb") as h:
-                emb = pickle.load(h)
+                emb32 = pickle.load(h)
             with open(oj(self.index_dir, f"doc_embid_block.{block_id}.pb"), "rb") as h:
                 ids = pickle.load(h)
                 if isinstance(ids, list):
-                    ids = np.array(ids)
-            emb = np.ascontiguousarray(emb, dtype=self.store_dtype)
+                    # dtype=object keeps docids as pointers (~8MB/block, still supports ids[I]
+                    # fancy-indexing). The DEFAULT builds a fixed-width UCS4 array padded to the
+                    # LONGEST docid: qrecc URL docids reach 6335 chars -> ~25G/block, which (kept
+                    # across 55 blocks) OOM'd the loader. The fp16 embeddings were never the issue.
+                    ids = np.array(ids, dtype=object)
+            emb = np.ascontiguousarray(emb32, dtype=self.store_dtype)
+            if emb is not emb32:
+                del emb32                    # drop the fp32 source NOW (always a copy for fp16 store)
             if self.dim is not None and emb.shape[1] != self.dim:
                 raise ValueError(
                     f"block {block_id} dim {emb.shape[1]} != expected {self.dim}")
             self._blocks.append((block_id, emb, ids))
             total_vecs += emb.shape[0]
+            # return the freed fp32 buffer to the OS so RSS stays ~ (fp16 resident + one block),
+            # not (fp16 resident + ALL fp32 temporaries) — the glibc-arena retention that caused
+            # the ~235G RSS / OOM when loading qrecc_ance (169G fp32) as fp16.
+            _reclaim_libc_heap()
             if verbose:
                 print(f"[RamBlockSource] block {block_id}: {emb.shape} "
-                      f"({emb.nbytes/1e9:.1f} GB) in {time.time()-tb:.1f}s")
+                      f"({emb.nbytes/1e9:.1f} GB)  RSS={_rss_gb():.1f}G  in {time.time()-tb:.1f}s")
         if verbose:
             print(f"[RamBlockSource] loaded {self.num_blocks} blocks, "
                   f"{total_vecs:,} vectors in {time.time()-t0:.1f}s")
