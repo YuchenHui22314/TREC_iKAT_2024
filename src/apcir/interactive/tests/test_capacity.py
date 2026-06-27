@@ -100,6 +100,25 @@ def test_plan_reranker_refused_when_no_gpu_room():
     assert "VRAM" in plan.reason
 
 
+def test_plan_dedups_active_and_resident():
+    # duplicate names must not double-count projected RAM or schedule duplicate loads
+    plan = _mgr(480.0).plan(active_set=["dense_qwen", "dense_qwen", "bm25"], resident=[])
+    assert plan.to_load == ["dense_qwen", "bm25"]
+    assert plan.projected_resident_ram_gb == 253.0
+
+
+def test_plan_vram_credits_eviction():
+    # one GPU, 6G free; evict a 9G reranker (frees its VRAM) then load a 9G reranker -> fits
+    reg = IndexRegistry({
+        "r_old": IndexFootprint("r_old", "reranker", 1.0, 1.0, vram_gb=9.0),
+        "r_new": IndexFootprint("r_new", "reranker", 1.0, 1.0, vram_gb=9.0),
+    })
+    mgr = CapacityManager(reg, free_ram_fn=lambda: 100.0, free_vram_fn=lambda: [6.0])
+    plan = mgr.plan(active_set=["r_new"], resident=["r_old"])
+    assert plan.to_unload == ["r_old"] and plan.to_load == ["r_new"]
+    assert plan.fits  # 6 free + 9 evicted = 15 >= 9 + 1 safety
+
+
 # --------------------------------------------------------------------------- #
 # Task 4 — capacity_config.yaml
 # --------------------------------------------------------------------------- #

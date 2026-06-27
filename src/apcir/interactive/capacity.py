@@ -77,6 +77,16 @@ def _default_free_vram_gb() -> List[float]:
 # --------------------------------------------------------------------------- #
 # Planner
 # --------------------------------------------------------------------------- #
+def _dedup(seq):
+    """Order-preserving de-duplication."""
+    seen, out = set(), []
+    for x in seq:
+        if x not in seen:
+            seen.add(x)
+            out.append(x)
+    return out
+
+
 @dataclass
 class CapacityPlan:
     to_load: List[str]
@@ -98,7 +108,7 @@ class CapacityManager:
         self.vram_safety_gb = vram_safety_gb
 
     def plan(self, active_set: List[str], resident: List[str]) -> CapacityPlan:
-        active, res = list(active_set), list(resident)
+        active, res = _dedup(active_set), _dedup(resident)
         to_unload = [r for r in res if r not in active]
         to_load = [a for a in active if a not in res]
         projected = sum(self.reg.get(a).resident_ram_gb for a in active)
@@ -122,10 +132,17 @@ class CapacityManager:
                 break
             free -= fp.resident_ram_gb
 
-        # VRAM: place each GPU-resident component (reranker) on the GPU with the most free VRAM.
+        # VRAM: place each GPU-resident component (reranker) on the GPU with the most free VRAM,
+        # largest-need first; credit VRAM freed by evicting GPU-resident units (the common
+        # reranker-swap case). Exact per-GPU placement isn't tracked, so the evicted credit goes
+        # to the most-free GPU (optimistic, matches a single-reranker swap on one GPU).
         if fits:
             gpu_free = sorted(self.free_vram_fn(), reverse=True)
-            for n in to_load:
+            evicted_vram = sum(self.reg.get(n).vram_gb for n in to_unload)
+            if gpu_free and evicted_vram:
+                gpu_free[0] += evicted_vram
+                gpu_free.sort(reverse=True)
+            for n in sorted(to_load, key=lambda m: self.reg.get(m).vram_gb, reverse=True):
                 need = self.reg.get(n).vram_gb
                 if need <= 0:
                     continue
