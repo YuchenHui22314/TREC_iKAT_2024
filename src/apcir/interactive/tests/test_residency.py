@@ -108,6 +108,29 @@ def test_effective_config_none_returns_config():
     assert p._effective_config(None) is p.config
 
 
+def test_can_serve_false_until_unit_resident():
+    from apcir.interactive.pipeline import RunSpec, RetrieverSpec
+    p = _pipe(200.0)
+    rs = RunSpec(retrievers=[RetrieverSpec("qwen3", "raw", unit="qrecc_ance_mini")])
+    ok, reason = p.can_serve(rs)
+    assert not ok and "qrecc_ance_mini" in reason
+    p.set_active(["qrecc_ance_mini"])
+    ok2, _ = p.can_serve(rs)
+    assert ok2
+
+
+def test_models_status_lists_units_and_live_state():
+    p = _pipe(200.0)
+    st = p.models_status()
+    names = {u["name"] for u in st["units"]}
+    assert {"qrecc_ance_mini", "clueweb_qwen", "qrecc_ance", "reranker_qwen3"} <= names
+    assert st["resident"] == []
+    assert st["free_ram_gb"] == 200.0
+    assert st["free_vram_gb"] == [24.0, 24.0, 24.0, 24.0]
+    mini = next(u for u in st["units"] if u["name"] == "qrecc_ance_mini")
+    assert mini["available"] is True and mini["kind"] == "dense"
+
+
 def test_process_turn_rejects_unavailable_reranker():
     # codex#3 #4: RunSpec asking for a reranker that isn't resident must fail fast, not silently skip
     from apcir.interactive.pipeline import RunSpec

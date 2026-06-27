@@ -318,6 +318,29 @@ class InteractivePipeline:
         """Names of all currently-resident capacity units."""
         return set(self._resident)
 
+    def models_status(self) -> Dict[str, Any]:
+        """Catalog of capacity units + live residency/memory state (for GET /models)."""
+        import os
+        units = []
+        for name in self.registry.names():
+            fp = self.registry.get(name)
+            units.append({
+                "name": name, "kind": fp.kind,
+                "resident_ram_gb": fp.resident_ram_gb, "load_peak_ram_gb": fp.load_peak_ram_gb,
+                "vram_gb": fp.vram_gb, "dtype": fp.dtype,
+                "available": fp.index_dir is None or os.path.isdir(fp.index_dir),
+            })
+        try:                                              # best-effort: torch.cuda probe may fail
+            free_vram = [round(v, 1) for v in self.capacity.free_vram_fn()]
+        except Exception:
+            free_vram = []
+        return {
+            "units": units,
+            "resident": sorted(self.resident()),
+            "free_ram_gb": round(self.capacity.free_ram_fn(), 1),
+            "free_vram_gb": free_vram,
+        }
+
     _LOADABLE_KINDS = {"dense"}   # kinds with a load_/unload_ impl (extended as more are wired)
 
     def set_active(self, active_set, progress_cb=None) -> CapacityPlan:
@@ -437,6 +460,26 @@ class InteractivePipeline:
         from dataclasses import replace
         overrides = {k: v for k, v in vars(run_spec).items() if v is not None}
         return replace(self.config, **overrides)
+
+    def can_serve(self, run_spec=None):
+        """Whether the effective config's retrievers/reranker can be served by the CURRENT resident
+        state. Returns (ok: bool, reason: str) for a clean preflight (vs a deep runtime exception)."""
+        c = self._effective_config(run_spec)
+        for spec in c.retrievers:
+            unit = getattr(spec, "unit", None)
+            if unit:
+                if unit not in self._dense:
+                    return False, f"retriever unit {unit!r} is not resident; POST /activate first"
+            elif spec.name in self._DENSE_NAMES and self._ram is None:
+                return False, (f"dense retriever {spec.name!r} has no loaded index; activate a unit "
+                               f"and set retrievers[].unit")
+            elif spec.name == "BM25" and self._bm25 is None:
+                return False, "BM25 retriever needs its lucene index loaded"
+            elif spec.name == "splade_v3" and self._splade is None:
+                return False, "splade_v3 retriever needs its index loaded"
+        if c.reranker != "none" and self._reranker is None:
+            return False, f"reranker {c.reranker!r} is not resident"
+        return True, ""
 
     # --- per-turn ---------------------------------------------------------- #
     def process_turn(
