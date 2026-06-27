@@ -285,6 +285,16 @@ class InteractivePipeline:
         }
 
     # --- dynamic residency: load/unload capacity units on demand ----------- #
+    @staticmethod
+    def _progress(cb, msg, frac):
+        """Best-effort progress callback: a UI exception must never break load/unload/rollback."""
+        if cb is None:
+            return
+        try:
+            cb(msg, frac)
+        except Exception:
+            pass
+
     def resident(self) -> set:
         """Names of all currently-resident capacity units."""
         return set(self._resident)
@@ -297,7 +307,9 @@ class InteractivePipeline:
         free RAM/VRAM. Transactional + locked: holds an exclusive residency lock, validates every
         loader BEFORE mutating (so an unimplemented kind fails clean without first evicting the
         current set), and on a mid-load failure rolls back the partial loads so `_resident` always
-        matches the real objects. `progress_cb(msg, frac)` wraps each load/unload."""
+        matches the real objects. `progress_cb(msg, frac)` wraps each load/unload.
+        NOTE: units EVICTED earlier in this call are NOT restored on a later load failure — the
+        service may be left with fewer units resident (but `_resident`/`_dense` stay consistent)."""
         with self._residency_lock:
             plan = self.capacity.plan(list(active_set), list(self._resident))
             if not plan.fits:
@@ -338,32 +350,48 @@ class InteractivePipeline:
 
     def load_dense(self, unit: str, progress_cb=None):
         """Construct a RAM-resident dense index for `unit` (RamBlockSource preloads all blocks
-        into RAM at construction, so this IS the load)."""
-        fp = self.registry.get(unit)
-        if progress_cb:
-            progress_cb(f"loading {unit}", 0.0)
-        ram = RamBlockSource(fp.index_dir, fp.block_num, fp.embed_dim,
-                             store_dtype=fp.dtype or "float16")
-        self._dense[unit] = ram
-        self._resident.add(unit)
-        if progress_cb:
-            progress_cb(f"loaded {unit} ({ram.total_vecs:,} vecs)", 1.0)
+        into RAM at construction, so this IS the load). Acquires the residency lock (reentrant)."""
+        with self._residency_lock:
+            fp = self.registry.get(unit)
+            self._progress(progress_cb, f"loading {unit}", 0.0)
+            ram = RamBlockSource(fp.index_dir, fp.block_num, fp.embed_dim,
+                                 store_dtype=fp.dtype or "float16")
+            self._dense[unit] = ram
+            self._resident.add(unit)
+            self._progress(progress_cb, f"loaded {unit} ({ram.total_vecs:,} vecs)", 1.0)
 
     def unload_dense(self, unit: str, progress_cb=None):
-        """Drop the resident dense index for `unit` and reclaim its RAM/VRAM."""
-        if progress_cb:
-            progress_cb(f"unloading {unit}", 0.0)
-        self._dense.pop(unit, None)
-        self._resident.discard(unit)
-        gc.collect()
-        try:
-            import torch
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        except Exception:
-            pass
-        if progress_cb:
-            progress_cb(f"unloaded {unit}", 1.0)
+        """Drop the resident dense index for `unit` and reclaim its RAM/VRAM. Acquires the lock."""
+        with self._residency_lock:
+            self._progress(progress_cb, f"unloading {unit}", 0.0)
+            self._dense.pop(unit, None)
+            self._resident.discard(unit)
+            gc.collect()
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            except Exception:
+                pass
+            self._progress(progress_cb, f"unloaded {unit}", 1.0)
+
+    def search_dense_unit(self, unit: str, query_embeddings, topN: int):
+        """Search a RESIDENT dense unit with raw query embeddings. Returns (D, I): scores + docids,
+        shape (n_query, topN). fp16 units use the GPU fp16 path (no faiss). The RamBlockSource ref
+        is snapshotted under the residency lock so a concurrent set_active unload can't pull it out
+        mid-search (the in-flight search keeps it alive; a concurrent activate may thus transiently
+        hold both the old unit and a newly-loaded one in RAM)."""
+        with self._residency_lock:
+            if unit not in self._dense:
+                raise KeyError(f"unit {unit!r} not resident; activate it first "
+                               f"(resident dense: {sorted(self._dense)})")
+            ram = self._dense[unit]
+        if str(getattr(ram, "store_dtype", "")) != "float16":
+            raise ValueError(
+                f"search_dense_unit currently supports only fp16 units; {unit!r} is {ram.store_dtype} "
+                f"(fp32 needs a faiss index, not wired into dynamic residency yet)")
+        gpus = list(range(self.config.faiss_n_gpu))
+        return search_query_against_ram(query_embeddings, ram, None, topN, gpus=gpus)
 
     # --- per-turn ---------------------------------------------------------- #
     def process_turn(

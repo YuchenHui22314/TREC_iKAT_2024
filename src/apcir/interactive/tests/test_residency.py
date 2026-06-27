@@ -59,6 +59,17 @@ def test_set_active_validates_loader_before_evicting():
     assert p.resident() == {"qrecc_ance_mini"}    # mini was NOT evicted
 
 
+def test_set_active_swallows_progress_callback_errors():
+    # codex #5: a raising progress callback must not abort the load or corrupt residency
+    p = _pipe(200.0)
+
+    def bad_cb(msg, frac):
+        raise RuntimeError("ui blew up")
+
+    p.set_active(["qrecc_ance_mini"], progress_cb=bad_cb)
+    assert p.resident() == {"qrecc_ance_mini"}     # loaded despite the callback raising
+
+
 def test_set_active_rolls_back_partial_load_on_failure():
     from apcir.interactive.capacity import IndexFootprint
     mini = "/part/01/Tmp/yuchenhui/indexes/qrecc_ance_mini_merged"

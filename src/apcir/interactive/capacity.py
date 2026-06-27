@@ -133,15 +133,16 @@ class CapacityManager:
             free -= fp.resident_ram_gb
 
         # VRAM: place each GPU-resident component (reranker) on the GPU with the most free VRAM,
-        # largest-need first; credit VRAM freed by evicting GPU-resident units (the common
-        # reranker-swap case). Exact per-GPU placement isn't tracked, so the evicted credit goes
-        # to the most-free GPU (optimistic, matches a single-reranker swap on one GPU).
+        # largest-need first. Credit VRAM freed by evicting GPU-resident units ONLY when there is a
+        # single GPU (unambiguous). On multi-GPU we don't track which GPU each unit sits on, so
+        # crediting the most-free GPU could false-accept (free [8,1,1], evict two 9G on the full
+        # GPUs, load 20G: real post-evict is [8,10,10], no GPU fits 20G). Per-GPU placement tracking
+        # is a TODO for when reranker residency lands.
         if fits:
             gpu_free = sorted(self.free_vram_fn(), reverse=True)
             evicted_vram = sum(self.reg.get(n).vram_gb for n in to_unload)
-            if gpu_free and evicted_vram:
+            if len(gpu_free) == 1 and evicted_vram:
                 gpu_free[0] += evicted_vram
-                gpu_free.sort(reverse=True)
             for n in sorted(to_load, key=lambda m: self.reg.get(m).vram_gb, reverse=True):
                 need = self.reg.get(n).vram_gb
                 if need <= 0:

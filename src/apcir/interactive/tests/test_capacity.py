@@ -119,6 +119,20 @@ def test_plan_vram_credits_eviction():
     assert plan.fits  # 6 free + 9 evicted = 15 >= 9 + 1 safety
 
 
+def test_plan_vram_credit_not_false_accepting_multigpu():
+    # codex #4: free [8,1,1] with two 9G units on the two near-full GPUs; evict both, load 20G.
+    # Optimistic "credit all evicted vram to the most-free GPU" would model [26,1,1] and ACCEPT,
+    # but the real post-evict state is [8,10,10] where NO single GPU holds 20G. Must NOT accept.
+    reg = IndexRegistry({
+        "r1": IndexFootprint("r1", "reranker", 1.0, 1.0, vram_gb=9.0),
+        "r2": IndexFootprint("r2", "reranker", 1.0, 1.0, vram_gb=9.0),
+        "big": IndexFootprint("big", "reranker", 1.0, 1.0, vram_gb=20.0),
+    })
+    mgr = CapacityManager(reg, free_ram_fn=lambda: 100.0, free_vram_fn=lambda: [8.0, 1.0, 1.0])
+    plan = mgr.plan(active_set=["big"], resident=["r1", "r2"])
+    assert not plan.fits
+
+
 # --------------------------------------------------------------------------- #
 # Task 4 — capacity_config.yaml
 # --------------------------------------------------------------------------- #
