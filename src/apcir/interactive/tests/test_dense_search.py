@@ -37,6 +37,61 @@ def test_search_dense_unit_requires_resident():
         pass
 
 
+def test_ram_for_routes_to_resident_unit():
+    from apcir.interactive.pipeline import RetrieverSpec
+    p = _pipe()
+    p.set_active(["qrecc_ance_mini"])
+    ram, faiss = p._ram_for(RetrieverSpec("ance", "raw", unit="qrecc_ance_mini"))
+    assert ram is p._dense["qrecc_ance_mini"]
+    assert faiss is None                      # fp16 unit -> no faiss
+
+
+def test_ram_for_unresident_unit_raises():
+    from apcir.interactive.pipeline import RetrieverSpec
+    p = _pipe()
+    try:
+        p._ram_for(RetrieverSpec("ance", "raw", unit="qrecc_ance_mini"))
+        assert False, "expected KeyError (unit not resident)"
+    except KeyError:
+        pass
+
+
+def test_ram_for_no_unit_uses_legacy_ram():
+    from apcir.interactive.pipeline import RetrieverSpec
+    p = _pipe()
+    ram, faiss = p._ram_for(RetrieverSpec("ance", "raw"))   # unit=None -> legacy single index
+    assert ram is p._ram and faiss is p._faiss
+
+
+def test_ram_for_rejects_non_fp16_unit():
+    # codex#3 #2: dynamic units must be fp16 (index=None path); fp32 must fail clearly, not crash
+    from apcir.interactive.capacity import IndexFootprint
+    from apcir.interactive.pipeline import RetrieverSpec
+    mini = "/part/01/Tmp/yuchenhui/indexes/qrecc_ance_mini_merged"
+    reg = IndexRegistry({"mini32": IndexFootprint("mini32", "dense", 0.01, 0.02, index_dir=mini,
+                                                  dtype="float32", embed_dim=768, block_num=1)})
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0, free_vram_fn=lambda: [24.0])
+    p = InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+    p.set_active(["mini32"])
+    try:
+        p._ram_for(RetrieverSpec("ance", "raw", unit="mini32"))
+        assert False, "expected ValueError for a non-fp16 dynamic unit"
+    except ValueError as e:
+        assert "fp16" in str(e)
+
+
+def test_dense_group_search_rejects_mixed_units():
+    # codex#3 #1: a shared-corpus group must target ONE unit; reject (not assert) mixed units
+    from apcir.interactive.pipeline import RetrieverSpec
+    p = _pipe()
+    specs = [RetrieverSpec("ance", "raw", unit="a"), RetrieverSpec("ance", "raw", unit="b")]
+    try:
+        p._dense_group_search(specs, None, "q")
+        assert False, "expected ValueError for mixed units"
+    except ValueError as e:
+        assert "unit" in str(e).lower()
+
+
 def test_search_dense_unit_rejects_non_fp16():
     # codex #2: index=None is only valid for the fp16 GPU path; an fp32 unit must be rejected
     # with a clear error, not crash deep in ram_index's faiss branch.

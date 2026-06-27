@@ -88,3 +88,51 @@ def test_set_active_rolls_back_partial_load_on_failure():
         pass
     assert p.resident() == set()             # rolled back: good unloaded, bad never resident
     assert p._dense == {}
+
+
+def test_effective_config_applies_runspec_overrides():
+    from apcir.interactive.pipeline import RunSpec, RetrieverSpec
+    p = _pipe(200.0)
+    rs = RunSpec(retrievers=[RetrieverSpec("ance", "raw", unit="qrecc_ance_mini")],
+                 fusion_type="concat", reranker="none", generation="extractive")
+    c = p._effective_config(rs)
+    assert c.retrievers[0].unit == "qrecc_ance_mini"
+    assert c.fusion_type == "concat"
+    assert c.generation == "extractive"
+    assert c.retrieval_top_k == p.config.retrieval_top_k   # untouched field -> config default
+    assert p.config.fusion_type == "RRF"                   # original config NOT mutated
+
+
+def test_effective_config_none_returns_config():
+    p = _pipe(200.0)
+    assert p._effective_config(None) is p.config
+
+
+def test_process_turn_rejects_unavailable_reranker():
+    # codex#3 #4: RunSpec asking for a reranker that isn't resident must fail fast, not silently skip
+    from apcir.interactive.pipeline import RunSpec
+    p = _pipe(200.0)                                  # no reranker loaded
+    try:
+        p.process_turn("q", [], run_spec=RunSpec(reranker="qwen3_reranker"))
+        assert False, "expected RuntimeError (reranker not resident)"
+    except RuntimeError as e:
+        assert "reranker" in str(e).lower()
+
+
+def test_fuse_honors_cfg_override():
+    # the helpers must read the EFFECTIVE config, not self.config. A bogus fusion_type in cfg makes
+    # _fuse raise; the default (self.config="RRF") would not -> proves the cfg param is used.
+    from dataclasses import replace
+
+    class D:
+        def __init__(self, docid, score):
+            self.docid, self.score = docid, score
+
+    p = _pipe(200.0)
+    hits = [{"q": [D("a", 1.0)]}, {"q": [D("b", 0.9)]}]   # 2 legs -> reaches the fusion dispatch
+    assert "q" in p._fuse(hits, "q")                       # default RRF fuses fine
+    try:
+        p._fuse(hits, "q", cfg=replace(p.config, fusion_type="BOGUS_FUSION"))
+        assert False, "expected ValueError for the bogus fusion_type from cfg"
+    except ValueError as e:
+        assert "BOGUS_FUSION" in str(e)

@@ -59,6 +59,7 @@ class RetrieverSpec:
     encoder_path: Optional[str] = None  # per-leg DENSE query-encoder ckpt; None -> global
                               # dense_query_encoder_path. Lets two qwen3 legs (e.g. conv-qwen3 +
                               # pers-conv-qwen3) use DIFFERENT encoders while sharing one doc index.
+    unit: Optional[str] = None  # capacity unit (resident dense index) to search; None -> legacy self._ram
 
 
 @dataclass
@@ -142,6 +143,24 @@ class PipelineConfig:
     # topics tag (drives the iKAT branch in query building); interactive synthetic tag
     topics: str = "ikat_26_sim"
     seed: int = 42
+
+
+# --------------------------------------------------------------------------- #
+# Per-request overrides
+# --------------------------------------------------------------------------- #
+@dataclass
+class RunSpec:
+    """Per-request overrides for process_turn (a None field -> use the pipeline's config default).
+    Lets one /search pick which RESIDENT units to search + how to fuse/rerank/generate, with no
+    server restart."""
+    retrievers: Optional[List[RetrieverSpec]] = None
+    fusion_type: Optional[str] = None
+    fuse_weights: Optional[List[float]] = None
+    reranker: Optional[str] = None
+    rerank_top_k: Optional[int] = None
+    generation: Optional[str] = None
+    generation_top_k: Optional[int] = None
+    retrieval_top_k: Optional[int] = None
 
 
 # --------------------------------------------------------------------------- #
@@ -393,6 +412,32 @@ class InteractivePipeline:
         gpus = list(range(self.config.faiss_n_gpu))
         return search_query_against_ram(query_embeddings, ram, None, topN, gpus=gpus)
 
+    def _ram_for(self, spec):
+        """Resolve the dense (RamBlockSource, faiss_index) a leg should search: spec.unit -> the
+        resident _dense[unit] (ref snapshotted under the residency lock; fp16 only -> no faiss);
+        else the legacy single-index self._ram/self._faiss (back-compat for the startup index)."""
+        unit = getattr(spec, "unit", None)
+        if unit:
+            with self._residency_lock:
+                if unit not in self._dense:
+                    raise KeyError(f"retriever unit {unit!r} is not resident; activate it first "
+                                   f"(resident dense: {sorted(self._dense)})")
+                ram = self._dense[unit]
+            if str(getattr(ram, "store_dtype", "")) != "float16":
+                raise ValueError(f"dynamic dense unit {unit!r} must be fp16 (the index=None search "
+                                 f"path); got {ram.store_dtype} (fp32 faiss path not wired here)")
+            return ram, None
+        return self._ram, self._faiss
+
+    def _effective_config(self, run_spec) -> PipelineConfig:
+        """Apply a per-request RunSpec's non-None fields over self.config (immutably, via
+        dataclasses.replace). run_spec=None -> the pipeline's own config unchanged."""
+        if run_spec is None:
+            return self.config
+        from dataclasses import replace
+        overrides = {k: v for k, v in vars(run_spec).items() if v is not None}
+        return replace(self.config, **overrides)
+
     # --- per-turn ---------------------------------------------------------- #
     def process_turn(
         self,
@@ -402,8 +447,13 @@ class InteractivePipeline:
         topic_id: str = "0",
         user_id: str = "0",
         turn_index: int = 0,
+        run_spec: Optional[RunSpec] = None,
     ) -> TurnResult:
-        c = self.config
+        c = self._effective_config(run_spec)
+        if c.reranker != "none" and self._reranker is None:
+            raise RuntimeError(f"requested reranker {c.reranker!r} is not resident; load a reranker "
+                               f"first (RunSpec.reranker can only enable an already-loaded reranker, "
+                               f"or disable it with 'none')")
         qid = f"{topic_id}-{user_id}-{turn_index}"
         turn = self._build_turn(utterance, history, qid, topic_id, user_id, ptkb_store)
         context_turns = context_turns_from_history(history)
@@ -429,30 +479,40 @@ class InteractivePipeline:
             def _run(specs) -> List[Dict[str, List[Any]]]:
                 hl: List[Dict[str, List[Any]]] = []
                 for spec in specs:
-                    hl.extend(self._retrieve_one(spec, turn, qid, context_turns))
+                    hl.extend(self._retrieve_one(spec, turn, qid, context_turns, c))
                 return hl
+
+            # dense legs may target DIFFERENT resident units; each shared-corpus pass needs ONE
+            # index, so group by unit and run one _dense_group_search per group (then concat — RRF
+            # is order-insensitive). "__legacy__" = the startup self._ram (unit=None).
+            dgroups: Dict[str, List[RetrieverSpec]] = {}
+            for s in dense_group:
+                dgroups.setdefault(getattr(s, "unit", None) or "__legacy__", []).append(s)
 
             with ThreadPoolExecutor(max_workers=1) as ex:
                 sparse_fut = ex.submit(_run, sparse_rest) if sparse_rest else None
-                dense_hits = self._dense_group_search(dense_group, turn, qid)   # GPU, main thread
+                dense_hits: List[Dict[str, List[Any]]] = []
+                for grp in dgroups.values():
+                    dense_hits.extend(self._dense_group_search(grp, turn, qid, c))   # GPU, main thread
                 gpu_rest_hits = _run(gpu_rest)                                   # GPU, after dense
                 sparse_hits = sparse_fut.result() if sparse_fut else []
             hits_list = sparse_hits + dense_hits + gpu_rest_hits   # RRF is order-insensitive
         else:
             hits_list = []
             for spec in c.retrievers:
-                for hits in self._retrieve_one(spec, turn, qid, context_turns):
+                for hits in self._retrieve_one(spec, turn, qid, context_turns, c):
                     if c.fusion_type == "linear_combination":
                         hits = fuse_mod.normalize_scores(hits, c.fusion_normalization)
                     hits_list.append(hits)
 
         # 2) fuse
-        fused = self._fuse(hits_list, qid)
+        fused = self._fuse(hits_list, qid, c)
         ranked = fused[qid]
 
-        # 2.5) rerank the fused top-k (tail [k:] keeps its original order behind it)
-        if self._reranker is not None and len(ranked) > 1:
-            ranked = self._rerank(ranked, turn)
+        # 2.5) rerank the fused top-k (tail [k:] keeps its original order behind it). Gated on the
+        # EFFECTIVE config so a request can disable reranking even if a reranker is resident.
+        if c.reranker != "none" and self._reranker is not None and len(ranked) > 1:
+            ranked = self._rerank(ranked, turn, c)
 
         # 3) generate + citations
         response = None
@@ -461,7 +521,7 @@ class InteractivePipeline:
                 self._llm, self._docfetch, ranked, context_turns, turn.ptkb,
                 utterance, c.generation_top_k, _truncate_tokens, c.response_max_tokens)
         if response is None:                       # extractive fallback (also the no-LLM path)
-            response = self._extractive_response(ranked)
+            response = self._extractive_response(ranked, c)
         citations = {d.docid: float(d.score) for d in ranked[:c.citations_max]}
         hits_out = [(d.docid, float(d.score)) for d in ranked]
 
@@ -509,10 +569,10 @@ class InteractivePipeline:
         return turn
 
     def _retrieve_one(self, spec: RetrieverSpec, turn: Turn, qid: str,
-                      context_turns: List[Turn]) -> List[Dict[str, List[Any]]]:
+                      context_turns: List[Turn], cfg=None) -> List[Dict[str, List[Any]]]:
         """Return a LIST of hits dicts (one per query). Non-QR leg -> 1 query; a QR leg ->
         the rewriter's query list (>=1; GtR returns phi)."""
-        c = self.config
+        c = cfg if cfg is not None else self.config
         if spec.qr and spec.qr != "none":
             queries = self._rewriter.rewrite(turn, spec.qr, context_turns, turn.ptkb or {})
             is_conv = False                      # QR rewrites are plain query strings
@@ -536,7 +596,8 @@ class InteractivePipeline:
                 a.retrieval_query_list = [q]
                 a.qid_list_string = [qid]
                 emb, emb2id = get_test_query_embedding(a)
-                D, I = search_query_against_ram(emb, self._ram, self._faiss, c.retrieval_top_k,
+                ram, faiss = self._ram_for(spec)
+                D, I = search_query_against_ram(emb, ram, faiss, c.retrieval_top_k,
                                                 gpus=list(range(c.faiss_n_gpu)))
                 out.append(get_dense_ranking_list(emb2id, D, I, c.retrieval_top_k))
             elif spec.name == "splade_v3":
@@ -556,7 +617,7 @@ class InteractivePipeline:
     _DENSE_NAMES = ("ance", "conv-ance", "qwen3", "conv-qwen3")
 
     def _dense_group_search(self, dense_specs: List[RetrieverSpec], turn: Turn,
-                            qid: str) -> List[Dict[str, List[Any]]]:
+                            qid: str, cfg=None) -> List[Dict[str, List[Any]]]:
         """Shared-corpus dense search for a GROUP of NON-QR dense legs that share ONE index:
         encode each leg's query with its OWN (cached) encoder -> stack to (K,dim) -> ONE pass over
         the corpus (`search_query_against_ram` scores all K rows per block) -> split into K per-leg
@@ -565,9 +626,14 @@ class InteractivePipeline:
         group. NOTE: legs in a group MUST share the index/dim (e.g. conv-qwen3 + pers-conv-qwen3,
         both 1024-d on the qwen index); a different index (e.g. ANCE 768-d) cannot share — it needs
         its own RamBlockSource + its own group."""
-        c = self.config
+        c = cfg if cfg is not None else self.config
         if not dense_specs:
             return []
+        units = {getattr(s, "unit", None) for s in dense_specs}
+        if len(units) != 1:
+            raise ValueError(
+                "dense-group legs must target the SAME resident unit (one shared corpus pass); "
+                f"got mixed units {units}")
         vecs = []
         for spec in dense_specs:
             enc = spec.encoder_path or c.dense_query_encoder_path
@@ -587,13 +653,14 @@ class InteractivePipeline:
             "dense-group legs must share the embedding dim / index space — cannot mix e.g. "
             "ANCE 768-d + qwen 1024-d in one shared corpus search")
         Q_all = np.concatenate(vecs, axis=0)                 # (K, dim) — one row per leg
-        D, I = search_query_against_ram(Q_all, self._ram, self._faiss, c.retrieval_top_k,
+        ram, faiss = self._ram_for(dense_specs[0])
+        D, I = search_query_against_ram(Q_all, ram, faiss, c.retrieval_top_k,
                                         gpus=list(range(c.faiss_n_gpu)))
         # one hits dict per leg (this group is only used in the order-insensitive RRF path).
         return [get_dense_ranking_list([qid], D[k:k + 1], I[k:k + 1], c.retrieval_top_k)
                 for k in range(len(dense_specs))]
 
-    def _rerank(self, ranked: List[Any], turn) -> List[Any]:
+    def _rerank(self, ranked: List[Any], turn, cfg=None) -> List[Any]:
         """Step 2.5: Qwen3-Reranker over the fused top rerank_top_k; the tail [k:] keeps
         its original order behind the reranked head. Instruction routing mirrors
         rerank.py: the conversational field -> custom instruction + profile-first query
@@ -601,7 +668,7 @@ class InteractivePipeline:
         reformulation name (e.g. an online-QR '_rw') -> NATIVE instruction + that rewrite."""
         from apcir.search.rerank import (
             QWEN3_RERANK_CONV_INSTRUCTION, QWEN3_RERANK_DEFAULT_INSTRUCTION)
-        c = self.config
+        c = cfg if cfg is not None else self.config
         rqt = c.reranking_query_type
         if rqt == "qwen_3_rerank_instruct_full":
             instruction = QWEN3_RERANK_CONV_INSTRUCTION
@@ -624,8 +691,8 @@ class InteractivePipeline:
             d.score = 1.0 / (rank + 1)
         return out
 
-    def _fuse(self, hits_list: List[Dict[str, List[Any]]], qid: str) -> Dict[str, List[Any]]:
-        c = self.config
+    def _fuse(self, hits_list: List[Dict[str, List[Any]]], qid: str, cfg=None) -> Dict[str, List[Any]]:
+        c = cfg if cfg is not None else self.config
         if len(hits_list) == 1:
             return hits_list[0]
         ft = c.fusion_type
@@ -646,8 +713,8 @@ class InteractivePipeline:
         except Exception:
             return ""
 
-    def _extractive_response(self, ranked: List[Any]) -> str:
-        c = self.config
+    def _extractive_response(self, ranked: List[Any], cfg=None) -> str:
+        c = cfg if cfg is not None else self.config
         parts, seen = [], set()
         for d in ranked[:c.generation_top_k]:
             if d.docid in seen:
