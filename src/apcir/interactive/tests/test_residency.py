@@ -1,0 +1,46 @@
+"""Integration tests for dynamic residency (set_active load/unload) against a REAL index.
+
+Uses the tiny `qrecc_ance_mini` unit (1 block, 1000 vecs) so the load is instant and needs no
+GPU. Exercises the real RamBlockSource construct->resident->drop mechanism + the capacity guard.
+Run from src/ in the trec_ikat env:
+  python -m pytest apcir/interactive/tests/test_residency.py -v
+"""
+import os
+
+from apcir.interactive.capacity import IndexRegistry, CapacityManager, CapacityError
+from apcir.interactive.pipeline import InteractivePipeline, PipelineConfig
+
+CONFIG_YAML = os.path.join(os.path.dirname(__file__), "..", "capacity_config.yaml")
+
+
+def _pipe(free_ram_gb):
+    reg = IndexRegistry.from_yaml(CONFIG_YAML)
+    cap = CapacityManager(reg, free_ram_fn=lambda: free_ram_gb,
+                          free_vram_fn=lambda: [24.0, 24.0, 24.0, 24.0])
+    return InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+
+
+def test_set_active_loads_and_unloads_mini_dense():
+    p = _pipe(200.0)
+    plan = p.set_active(["qrecc_ance_mini"])
+    assert plan.fits
+    assert plan.to_load == ["qrecc_ance_mini"]
+    assert p.resident() == {"qrecc_ance_mini"}
+    ram = p._dense["qrecc_ance_mini"]
+    assert ram.total_vecs == 1000
+    assert str(ram.store_dtype) == "float16"
+    # switch to empty active set -> evict
+    plan2 = p.set_active([])
+    assert plan2.to_unload == ["qrecc_ance_mini"]
+    assert p.resident() == set()
+    assert "qrecc_ance_mini" not in p._dense
+
+
+def test_set_active_refuses_clueweb_qwen_on_small_host():
+    p = _pipe(237.0)
+    try:
+        p.set_active(["clueweb_qwen"])
+        assert False, "expected CapacityError (qwen peak > 237G free)"
+    except CapacityError as e:
+        assert "clueweb_qwen" in str(e)
+    assert p.resident() == set()

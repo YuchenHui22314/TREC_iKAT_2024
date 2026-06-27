@@ -25,6 +25,12 @@ class IndexFootprint:
     vram_gb: float = 0.0           # steady-state VRAM (rerankers); dense fp16 search VRAM is transient -> 0
     index_dir: Optional[str] = None
     dtype: Optional[str] = None
+    embed_dim: Optional[int] = None      # dense units: query/doc embedding dim
+    block_num: Optional[int] = None      # dense units: number of doc_emb blocks
+
+
+class CapacityError(RuntimeError):
+    """Raised when a requested active set cannot fit in available memory."""
 
 
 class IndexRegistry:

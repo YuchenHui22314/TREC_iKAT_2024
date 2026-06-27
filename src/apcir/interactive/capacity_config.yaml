@@ -8,6 +8,7 @@
 # resident_ram_gb = steady-state RAM once loaded; load_peak_ram_gb = transient peak DURING load
 # (dense = read fp32 block + cast to fp16, block by block, so peak = resident + one fp32 block +
 # its fp16 cast). vram_gb = steady-state VRAM (rerankers only; dense fp16 search VRAM is transient).
+# embed_dim/block_num = dense-index geometry (passed to RamBlockSource at load).
 indexes:
   # --- ClueWeb22-B production corpus. Only qwen is present on octal31, and its fp16 LOAD PEAK
   #     (~320G) exceeds octal31's ~237G free RAM, so the guard REFUSES it here (needs octal40). ---
@@ -18,6 +19,8 @@ indexes:
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged
     dtype: float16
+    embed_dim: 1024
+    block_num: 6
 
   # --- QReCC dev/test indexes (present on octal31, fit in RAM — exercise the real load/unload +
   #     capacity machinery without needing octal40). ---
@@ -28,6 +31,8 @@ indexes:
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_ance_merged
     dtype: float16
+    embed_dim: 768
+    block_num: 55
   qrecc_qwen:           # 55 blocks, 1024-d
     kind: dense
     resident_ram_gb: 107.0
@@ -35,6 +40,8 @@ indexes:
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_qwen_emb_0.6_merged
     dtype: float16
+    embed_dim: 1024
+    block_num: 55
   qrecc_ance_mini:      # 1 block, 1000 vecs — fast smoke test
     kind: dense
     resident_ram_gb: 0.01
@@ -42,6 +49,8 @@ indexes:
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_ance_mini_merged
     dtype: float16
+    embed_dim: 768
+    block_num: 1
 
   reranker_qwen3:       # GPU-resident, co-hosted on the gen-LLM GPU (bf16 ~9G VRAM)
     kind: reranker

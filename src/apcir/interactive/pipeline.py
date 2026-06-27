@@ -21,6 +21,7 @@ load per-turn (acceptable, not on the current path).
 
 from __future__ import annotations
 
+import gc
 import json
 from dataclasses import dataclass, field
 from types import SimpleNamespace
@@ -41,6 +42,7 @@ from .ptkb_store import PTKBStore
 from .llm_client import SharedLLMClient
 from .rewriter import OnlineRewriter, RewriterConfig, context_turns_from_history
 from .generation import rag_response
+from .capacity import IndexRegistry, CapacityManager, CapacityPlan, CapacityError
 
 
 # --------------------------------------------------------------------------- #
@@ -157,7 +159,8 @@ class TurnResult:
 # Pipeline
 # --------------------------------------------------------------------------- #
 class InteractivePipeline:
-    def __init__(self, config: PipelineConfig):
+    def __init__(self, config: PipelineConfig, registry: Optional[IndexRegistry] = None,
+                 capacity: Optional[CapacityManager] = None):
         self.config = config
         self._ram: Optional[RamBlockSource] = None
         self._faiss = None
@@ -174,6 +177,14 @@ class InteractivePipeline:
         self._needs_splade = any(r.name == "splade_v3" for r in config.retrievers)
         self._needs_llm = (config.generation == "rag"
                            or any(r.qr and r.qr != "none" for r in config.retrievers))
+        # --- dynamic residency (RALI Searcher): which capacity units are loaded right now ---
+        self._dense: Dict[str, RamBlockSource] = {}   # unit name -> resident dense index
+        self._resident: set = set()                    # all resident unit names (any kind)
+        if registry is None:
+            from os.path import join, dirname
+            registry = IndexRegistry.from_yaml(join(dirname(__file__), "capacity_config.yaml"))
+        self.registry = registry
+        self.capacity = capacity or CapacityManager(registry)
 
     # --- startup: load resident state once --------------------------------- #
     def load(self):
@@ -270,6 +281,68 @@ class InteractivePipeline:
             "reranking_query_type": (self.config.reranking_query_type
                                      if self._reranker is not None else None),
         }
+
+    # --- dynamic residency: load/unload capacity units on demand ----------- #
+    def resident(self) -> set:
+        """Names of all currently-resident capacity units."""
+        return set(self._resident)
+
+    def set_active(self, active_set, progress_cb=None) -> CapacityPlan:
+        """Make exactly `active_set` resident (active-set semantics): evict units not in it,
+        load units missing from it. Refuse (CapacityError) if the set won't fit by load-peak
+        vs live free RAM/VRAM. `progress_cb(msg, frac)` is called around each load/unload."""
+        plan = self.capacity.plan(list(active_set), list(self._resident))
+        if not plan.fits:
+            raise CapacityError(plan.reason)
+        for unit in plan.to_unload:
+            self._unload_unit(unit, progress_cb)
+        for unit in plan.to_load:
+            self._load_unit(unit, progress_cb)
+        return plan
+
+    def _load_unit(self, unit: str, progress_cb=None):
+        kind = self.registry.get(unit).kind
+        if kind == "dense":
+            self.load_dense(unit, progress_cb)
+        else:
+            raise NotImplementedError(
+                f"load for kind {kind!r} not yet wired (set_active is dense-only in 2A.2a)")
+
+    def _unload_unit(self, unit: str, progress_cb=None):
+        kind = self.registry.get(unit).kind
+        if kind == "dense":
+            self.unload_dense(unit, progress_cb)
+        else:
+            raise NotImplementedError(f"unload for kind {kind!r} not yet wired")
+
+    def load_dense(self, unit: str, progress_cb=None):
+        """Construct a RAM-resident dense index for `unit` (RamBlockSource preloads all blocks
+        into RAM at construction, so this IS the load)."""
+        fp = self.registry.get(unit)
+        if progress_cb:
+            progress_cb(f"loading {unit}", 0.0)
+        ram = RamBlockSource(fp.index_dir, fp.block_num, fp.embed_dim,
+                             store_dtype=fp.dtype or "float16")
+        self._dense[unit] = ram
+        self._resident.add(unit)
+        if progress_cb:
+            progress_cb(f"loaded {unit} ({ram.total_vecs:,} vecs)", 1.0)
+
+    def unload_dense(self, unit: str, progress_cb=None):
+        """Drop the resident dense index for `unit` and reclaim its RAM/VRAM."""
+        if progress_cb:
+            progress_cb(f"unloading {unit}", 0.0)
+        self._dense.pop(unit, None)
+        self._resident.discard(unit)
+        gc.collect()
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+        if progress_cb:
+            progress_cb(f"unloaded {unit}", 1.0)
 
     # --- per-turn ---------------------------------------------------------- #
     def process_turn(
