@@ -1,0 +1,40 @@
+# Loadable capacity units for the RALI Searcher. resident_ram_gb = steady-state RAM held once
+# loaded; load_peak_ram_gb = transient peak DURING load (dense = read fp32 block + cast to fp16,
+# block by block, so peak = resident + largest fp32 block + its fp16 cast). vram_gb = steady-state
+# VRAM (rerankers only; dense fp16 search VRAM is transient). Refine numbers with `du` on disk.
+indexes:
+  dense_qwen:
+    kind: dense
+    resident_ram_gb: 245.0
+    load_peak_ram_gb: 330.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged
+    dtype: float16
+  dense_ance:
+    kind: dense
+    resident_ram_gb: 184.0
+    load_peak_ram_gb: 220.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2
+    dtype: float16
+  splade:
+    kind: splade
+    resident_ram_gb: 176.0
+    load_peak_ram_gb: 200.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchen/indexes/splade_v3_clueweb22B
+    dtype: int16
+  bm25:
+    kind: sparse
+    resident_ram_gb: 8.0
+    load_peak_ram_gb: 8.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2
+    dtype: null
+  reranker_qwen3:
+    kind: reranker
+    resident_ram_gb: 1.0
+    load_peak_ram_gb: 1.0
+    vram_gb: 9.0
+    index_dir: null
+    dtype: bf16
