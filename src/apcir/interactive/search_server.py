@@ -23,11 +23,12 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, field_validator
 
 from .pipeline import InteractivePipeline, PipelineConfig, RetrieverSpec, RunSpec
 from .ptkb_store import PTKBStore
+from .store import Store
 
 
 class RetrieverLeg(BaseModel):
@@ -73,6 +74,19 @@ class SearchResponse(BaseModel):
     qid: str = ""
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class SessionCreate(BaseModel):
+    title: str = ""
+
+
+class SessionRename(BaseModel):
+    title: str
+
+
 def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
     """Turn the optional RunSpec fields of a SearchRequest into a RunSpec (or None if none set)."""
     fields: Dict[str, Any] = {}
@@ -90,8 +104,10 @@ def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
 
 
 def create_app(config: PipelineConfig, eager_load: bool = True,
-               pipeline: Optional[InteractivePipeline] = None) -> FastAPI:
+               pipeline: Optional[InteractivePipeline] = None,
+               store: Optional[Store] = None) -> FastAPI:
     pipeline = pipeline or InteractivePipeline(config)
+    store = store or Store(":memory:")
     tasks: Dict[str, Dict[str, Any]] = {}   # task_id -> {state, progress, resident, error}
     tasks_lock = threading.Lock()
     activate_lock = threading.Lock()        # admits ONE activation at a time + guards `inflight`
@@ -193,5 +209,58 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
             hits=[[d, s] for d, s in result.hits],
             ptkb_provenance=result.ptkb_provenance, qid=result.qid,
         )
+
+    # --- auth + session management ----------------------------------------- #
+    def _current_user(authorization: Optional[str] = Header(None)) -> int:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="missing bearer token")
+        uid = store.user_for_token(authorization[7:])
+        if uid is None:
+            raise HTTPException(status_code=401, detail="invalid or expired token")
+        return uid
+
+    @app.post("/auth/login")
+    def login(req: LoginRequest):
+        u = store.verify_user(req.username, req.password)
+        if not u:
+            raise HTTPException(status_code=401, detail="invalid username or password")
+        return {"token": store.create_token(u["id"]), "user": u}
+
+    @app.post("/auth/logout")
+    def logout(authorization: Optional[str] = Header(None)):
+        if authorization and authorization.startswith("Bearer "):
+            store.delete_token(authorization[7:])
+        return {"ok": True}
+
+    @app.get("/auth/me")
+    def me(uid: int = Depends(_current_user)):
+        return store.get_user(uid)
+
+    @app.get("/sessions")
+    def list_sessions(uid: int = Depends(_current_user)):
+        return store.list_sessions(uid)
+
+    @app.post("/sessions")
+    def create_session(req: SessionCreate, uid: int = Depends(_current_user)):
+        sid = store.create_session(uid, req.title)
+        return {"id": sid, "title": req.title}
+
+    @app.patch("/sessions/{session_id}")
+    def rename_session(session_id: int, req: SessionRename, uid: int = Depends(_current_user)):
+        if not store.rename_session(session_id, uid, req.title):
+            raise HTTPException(status_code=404, detail="session not found")
+        return {"ok": True}
+
+    @app.delete("/sessions/{session_id}")
+    def delete_session(session_id: int, uid: int = Depends(_current_user)):
+        if not store.delete_session(session_id, uid):
+            raise HTTPException(status_code=404, detail="session not found")
+        return {"ok": True}
+
+    @app.get("/sessions/{session_id}/turns")
+    def session_turns(session_id: int, uid: int = Depends(_current_user)):
+        if store.get_session(session_id, uid) is None:
+            raise HTTPException(status_code=404, detail="session not found")
+        return store.list_turns(session_id)
 
     return app
