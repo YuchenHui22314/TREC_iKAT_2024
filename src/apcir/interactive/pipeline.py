@@ -128,6 +128,14 @@ class PipelineConfig:
         "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2")
     bm25_k1: float = 0.9
     bm25_b: float = 0.4
+    # SPLADE_v3 learned-sparse leg (retriever name "splade_v3"); its inverted index loads to RAM.
+    # splade_value_dtype: "int16" (~176G, empirically lossless vs fp32, numba-safe) | "float32" (~235G).
+    splade_query_encoder_path: str = (
+        "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/"
+        "8291b13eb8f4e24cc745c542825f14eb87296879")
+    splade_index_dir_path: str = "/part/01/Tmp/yuchen/indexes/splade_v3_clueweb22B"
+    splade_dim_voc: int = 30522
+    splade_value_dtype: str = "int16"
     # topics tag (drives the iKAT branch in query building); interactive synthetic tag
     topics: str = "ikat_26_sim"
     seed: int = 42
@@ -159,9 +167,11 @@ class InteractivePipeline:
         self._rewriter: Optional[OnlineRewriter] = None
         self._vllm = None                  # VLLMServer (local_vllm backend only)
         self._reranker = None              # QwenReranker (co-hosted on the LLM GPU)
+        self._splade = None                # SparseRetrieval (SPLADE_v3 inverted index in RAM)
         self._needs_dense = any(r.name in ("ance", "conv-ance", "qwen3", "conv-qwen3")
                                 for r in config.retrievers)
         self._needs_sparse = any(r.name == "BM25" for r in config.retrievers)
+        self._needs_splade = any(r.name == "splade_v3" for r in config.retrievers)
         self._needs_llm = (config.generation == "rag"
                            or any(r.qr and r.qr != "none" for r in config.retrievers))
 
@@ -175,6 +185,12 @@ class InteractivePipeline:
             self._ram = RamBlockSource(c.dense_index_dir_path, c.passage_block_num, c.embed_dim,
                                        store_dtype=c.dense_dtype)
             self._faiss = build_faiss_index(self._make_args())   # GPUs 0..faiss_n_gpu-1 (NOT GPU 3)
+        if self._needs_splade:
+            from apcir.splade_index import SparseRetrieval
+            print(f"[pipeline] loading SPLADE_v3 index ({c.splade_value_dtype}) from "
+                  f"{c.splade_index_dir_path} (after the dense index, to bound peak RAM)...")
+            self._splade = SparseRetrieval(c.splade_index_dir_path, "None", c.splade_dim_voc,
+                                           c.retrieval_top_k, value_dtype=c.splade_value_dtype)
         if self._needs_sparse:
             self._bm25 = LuceneSearcher(c.sparse_index_dir_path)
             self._bm25.set_bm25(c.bm25_k1, c.bm25_b)
@@ -242,6 +258,7 @@ class InteractivePipeline:
             "dense_loaded": self._ram is not None,
             "dense_vectors": getattr(self._ram, "total_vecs", None),
             "sparse_loaded": self._bm25 is not None,
+            "splade_loaded": self._splade is not None,
             "docfetch_loaded": self._docfetch is not None,
             "retrievers": [(r.name, r.query_type, r.qr) for r in self.config.retrievers],
             "fusion_type": self.config.fusion_type,
@@ -397,8 +414,18 @@ class InteractivePipeline:
                 a.retrieval_query_list = [q]
                 a.qid_list_string = [qid]
                 emb, emb2id = get_test_query_embedding(a)
-                D, I = search_query_against_ram(emb, self._ram, self._faiss, c.retrieval_top_k)
+                D, I = search_query_against_ram(emb, self._ram, self._faiss, c.retrieval_top_k,
+                                                gpus=list(range(c.faiss_n_gpu)))
                 out.append(get_dense_ranking_list(emb2id, D, I, c.retrieval_top_k))
+            elif spec.name == "splade_v3":
+                # learned-sparse leg: encode q (the rar rewrite) into a SPLADE vocab vector, then
+                # score the inverted index (CPU/numba, GIL released -> runs concurrent with the dense
+                # GPU leg). retrieve() returns RRF-ready {qid: [PyScoredDoc]}.
+                from apcir.search.splade_search import splade_encode_query
+                sp_dev = f"cuda:{c.query_gpu_id}" if c.query_gpu_id >= 0 else "cpu"
+                q_rep = splade_encode_query(q, c.splade_query_encoder_path, sp_dev)
+                _, sp_hits = self._splade.retrieve({qid: q_rep})
+                out.append({qid: sp_hits[str(qid)]})
             else:
                 raise NotImplementedError(f"retriever {spec.name} not wired in interactive pipeline")
         return out
@@ -438,7 +465,8 @@ class InteractivePipeline:
             "dense-group legs must share the embedding dim / index space — cannot mix e.g. "
             "ANCE 768-d + qwen 1024-d in one shared corpus search")
         Q_all = np.concatenate(vecs, axis=0)                 # (K, dim) — one row per leg
-        D, I = search_query_against_ram(Q_all, self._ram, self._faiss, c.retrieval_top_k)
+        D, I = search_query_against_ram(Q_all, self._ram, self._faiss, c.retrieval_top_k,
+                                        gpus=list(range(c.faiss_n_gpu)))
         # one hits dict per leg (this group is only used in the order-insensitive RRF path).
         return [get_dense_ranking_list([qid], D[k:k + 1], I[k:k + 1], c.retrieval_top_k)
                 for k in range(len(dense_specs))]
