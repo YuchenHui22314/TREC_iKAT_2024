@@ -506,10 +506,25 @@ def dense_search(args):
     PyScoredDoc_dict: Dict[qid, list_of(PyScoredDoc)], the ranking list of passages for each query
     '''
 
-    set_seed(args.seed, args.faiss_n_gpu >= 0) 
-    index = build_faiss_index(args)
+    set_seed(args.seed, args.faiss_n_gpu >= 0)
     query_embeddings, query_embedding2id = get_test_query_embedding(args)
-    PyScoredDoc_dict = calculate_score_and_get_rakning_list(args, index, query_embeddings, query_embedding2id)
+    backend = getattr(args, "dense_backend", "faiss_gpu")
+    if backend == "fp16_torch":
+        # Multi-GPU exact fp16 search over a RAM-resident index (no faiss, never CPU). Loads the
+        # whole index into RAM once (store_dtype float16 -> half the RAM) and scores all queries in
+        # one pass, sharded across faiss_n_gpu GPUs. See apcir/interactive/ram_index.py.
+        from apcir.interactive.ram_index import RamBlockSource, search_query_against_ram
+        ram = RamBlockSource(args.dense_index_dir_path, args.passage_block_num,
+                             dim=args.embed_dim, store_dtype="float16")
+        D, I = search_query_against_ram(query_embeddings, ram, None, args.retrieval_top_k,
+                                        gpus=list(range(args.faiss_n_gpu)))
+        PyScoredDoc_dict = get_dense_ranking_list(query_embedding2id, D, I, args.retrieval_top_k)
+    elif backend == "faiss_gpu":
+        index = build_faiss_index(args)      # GPU faiss (build_faiss_index forbids CPU)
+        PyScoredDoc_dict = calculate_score_and_get_rakning_list(
+            args, index, query_embeddings, query_embedding2id)
+    else:
+        raise ValueError(f"unknown dense_backend {backend!r}; use 'fp16_torch' or 'faiss_gpu'")
 
     return PyScoredDoc_dict
 

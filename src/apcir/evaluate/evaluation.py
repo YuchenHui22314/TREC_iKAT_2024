@@ -68,6 +68,7 @@ def build_parser():
     # faiss
     parser.add_argument("--faiss_n_gpu", type=int, default=4)
     parser.add_argument("--use_gpu_for_faiss", action=argparse.BooleanOptionalAction, default=True)  # GPU by default; CPU faiss forbidden (build_faiss_index raises)
+    parser.add_argument("--dense_backend", choices=["faiss_gpu", "fp16_torch"], default="faiss_gpu")  # faiss_gpu: exact, byte-identical to paper (default); fp16_torch: multi-GPU RAM fp16, opt-in (~fp16 noise)
     parser.add_argument("--embed_dim", type=int, default=768)
     parser.add_argument("--tempmem", type=int, default=-1)
     parser.add_argument("--passage_block_num", type=int, default=116)

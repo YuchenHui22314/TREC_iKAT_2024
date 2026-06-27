@@ -86,22 +86,33 @@ def run_group(group, merge_fn=merge_compat):
         torch.cuda.empty_cache()
 
     # ---- PHASE B: ONE stream over blocks ----
-    index = build_faiss_index(group[0].args)    # OPT-2: built once for the whole group
-    per_block = []
-    try:
-        for block_id, emb, ids in tqdm(src.iter_blocks(), total=key.block_num,
-                                       desc=f"[grouped] corpus stream ({len(group)} specs, Q={Q.shape[0]})",
-                                       unit="blk"):
-            assert index.ntotal == 0, "index not empty before add (reset bug)"
-            index.add(emb)
-            D, I = index.search(Q, topN)        # ALL stacked queries in one GEMM
-            per_block.append((D, ids[I]))       # map faiss idx -> docid within this block
+    # backend default 'faiss_gpu' = the byte-identical legacy path (paper numbers). 'fp16_torch'
+    # opts into multi-GPU exact fp16 search over a RAM-resident fp16 index (no faiss), reusing the
+    # SAME RamBlockSource + search as the interactive server (apcir/interactive/ram_index.py).
+    backend = getattr(group[0].args, "dense_backend", "faiss_gpu")
+    if backend == "fp16_torch":
+        from apcir.interactive.ram_index import RamBlockSource, search_query_against_ram
+        ram = RamBlockSource(key.index_dir, key.block_num, dim=key.embed_dim, store_dtype="float16")
+        gpus = list(range(int(group[0].args.faiss_n_gpu)))
+        print(f"[grouped] dense_backend=fp16_torch, gpus={gpus}")
+        merged_D, merged_I = search_query_against_ram(Q, ram, None, topN, gpus=gpus)
+    else:
+        index = build_faiss_index(group[0].args)    # OPT-2: built once for the whole group
+        per_block = []
+        try:
+            for block_id, emb, ids in tqdm(src.iter_blocks(), total=key.block_num,
+                                           desc=f"[grouped] corpus stream ({len(group)} specs, Q={Q.shape[0]})",
+                                           unit="blk"):
+                assert index.ntotal == 0, "index not empty before add (reset bug)"
+                index.add(emb)
+                D, I = index.search(Q, topN)        # ALL stacked queries in one GEMM
+                per_block.append((D, ids[I]))       # map faiss idx -> docid within this block
+                index.reset()
+                assert index.ntotal == 0, "index not reset after block (reset bug)"
+                del emb, ids
+        finally:
             index.reset()
-            assert index.ntotal == 0, "index not reset after block (reset bug)"
-            del emb, ids
-    finally:
-        index.reset()
-    merged_D, merged_I = merge_fn(per_block, topN)
+        merged_D, merged_I = merge_fn(per_block, topN)
     merged_D, merged_I = np.array(merged_D), np.array(merged_I)
 
     # ---- PHASE C: slice + emit per spec (reproduces evaluation.py:467-648) ----
