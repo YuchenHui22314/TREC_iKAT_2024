@@ -46,17 +46,105 @@ def test_set_active_refuses_clueweb_qwen_on_small_host():
     assert p.resident() == set()
 
 
-def test_set_active_validates_loader_before_evicting():
-    # reranker_qwen3 has no loader yet; requesting it (which would evict the resident mini) must
-    # raise BEFORE the eviction, leaving the current resident set intact.
+def test_set_active_dispatches_splade_reranker_llm():
+    # verify the kind->loader dispatch (mock the heavy loads so no real models are needed)
+    from apcir.interactive.capacity import IndexFootprint
+    reg = IndexRegistry({
+        "sp": IndexFootprint("sp", "splade", 1.0, 1.0, index_dir="/x"),
+        "rr": IndexFootprint("rr", "reranker", 1.0, 1.0, vram_gb=2.0),
+        "lm": IndexFootprint("lm", "llm", 1.0, 1.0, vram_gb=2.0),
+    })
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0, free_vram_fn=lambda: [24.0])
+    p = InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+    calls = []
+    p.load_splade = lambda u, cb=None: (calls.append(("splade", u)), p._resident.add(u))
+    p.load_reranker = lambda u, cb=None: (calls.append(("reranker", u)), p._resident.add(u))
+    p.load_llm = lambda u, cb=None: (calls.append(("llm", u)), p._resident.add(u))
+    p.set_active(["sp", "rr", "lm"])
+    assert ("splade", "sp") in calls and ("reranker", "rr") in calls and ("llm", "lm") in calls
+    assert p.resident() == {"sp", "rr", "lm"}
+
+
+def test_can_serve_generation_needs_docfetch():
+    from apcir.interactive.pipeline import RunSpec, RetrieverSpec
     p = _pipe(200.0)
-    p.set_active(["qrecc_ance_mini"])
+    p.set_active(["qrecc_ance_mini"])           # dense only -> no doc-fetch loaded
+    rs = RunSpec(retrievers=[RetrieverSpec("qwen3", "raw", unit="qrecc_ance_mini")],
+                 generation="extractive", reranker="none")
+    ok, reason = p.can_serve(rs)
+    assert not ok and "doc-fetch" in reason.lower()   # extractive/RAG needs passage text
+
+
+def test_set_active_rejects_two_singleton_units():
+    from apcir.interactive.capacity import IndexFootprint
+    reg = IndexRegistry({
+        "bm25a": IndexFootprint("bm25a", "sparse", 0.5, 0.5, index_dir="/x", corpus="c"),
+        "bm25b": IndexFootprint("bm25b", "sparse", 0.5, 0.5, index_dir="/y", corpus="c"),
+    })
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0, free_vram_fn=lambda: [24.0])
+    p = InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
     try:
-        p.set_active(["reranker_qwen3"])     # plan: evict mini, load reranker (unsupported kind)
+        p.set_active(["bm25a", "bm25b"])         # two sparse singletons -> reject
+        assert False, "expected ValueError"
+    except ValueError as e:
+        assert "sparse" in str(e)
+
+
+def test_set_active_rejects_mixed_corpora():
+    from apcir.interactive.capacity import IndexFootprint
+    reg = IndexRegistry({
+        "d_q": IndexFootprint("d_q", "dense", 1.0, 1.0, index_dir="/x", corpus="qrecc",
+                              embed_dim=768, block_num=1),
+        "d_c": IndexFootprint("d_c", "dense", 1.0, 1.0, index_dir="/y", corpus="clueweb",
+                              embed_dim=1024, block_num=1),
+    })
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0, free_vram_fn=lambda: [24.0])
+    p = InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+    try:
+        p.set_active(["d_q", "d_c"])             # mixed corpora -> reject
+        assert False, "expected ValueError"
+    except ValueError as e:
+        assert "corpus" in str(e).lower()
+
+
+def test_can_serve_qr_needs_llm():
+    from apcir.interactive.pipeline import RunSpec, RetrieverSpec
+    p = _pipe(200.0)
+    p.set_active(["qrecc_ance_mini", "qrecc_bm25"])    # dense + doc-fetch, but NO LLM
+    rs = RunSpec(retrievers=[RetrieverSpec("qwen3", "raw", unit="qrecc_ance_mini", qr="rar")],
+                 generation="none", reranker="none")
+    ok, reason = p.can_serve(rs)
+    assert not ok and "qr" in reason.lower()           # online QR needs the LLM
+
+
+def test_set_active_loads_sparse_bm25_and_docfetch():
+    p = _pipe(200.0)
+    p.set_active(["qrecc_bm25"])
+    assert p.resident() == {"qrecc_bm25"}
+    assert p._bm25 is not None and p._docfetch is not None   # BM25 search + passage doc-fetch
+    p.set_active([])
+    assert p._bm25 is None and p._docfetch is None
+    assert p.resident() == set()
+
+
+def test_set_active_validates_loader_before_evicting():
+    # an UNSUPPORTED kind must raise BEFORE evicting the current resident set.
+    from apcir.interactive.capacity import IndexFootprint
+    mini = "/part/01/Tmp/yuchenhui/indexes/qrecc_ance_mini_merged"
+    reg = IndexRegistry({
+        "mini": IndexFootprint("mini", "dense", 0.01, 0.02, index_dir=mini, dtype="float16",
+                               embed_dim=768, block_num=1),
+        "bogus": IndexFootprint("bogus", "weird_kind", 1.0, 1.0),
+    })
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0, free_vram_fn=lambda: [24.0])
+    p = InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+    p.set_active(["mini"])
+    try:
+        p.set_active(["bogus"])              # unsupported kind -> raise BEFORE evicting mini
         assert False, "expected NotImplementedError"
     except NotImplementedError:
         pass
-    assert p.resident() == {"qrecc_ance_mini"}    # mini was NOT evicted
+    assert p.resident() == {"mini"}          # mini was NOT evicted
 
 
 def test_set_active_swallows_progress_callback_errors():
@@ -162,7 +250,8 @@ def test_enrich_per_retriever_and_shared_docs():
 def test_can_serve_false_until_unit_resident():
     from apcir.interactive.pipeline import RunSpec, RetrieverSpec
     p = _pipe(200.0)
-    rs = RunSpec(retrievers=[RetrieverSpec("qwen3", "raw", unit="qrecc_ance_mini")])
+    # generation="none" -> retrieval-only, so this tests just retriever residency (not doc-fetch/LLM)
+    rs = RunSpec(retrievers=[RetrieverSpec("qwen3", "raw", unit="qrecc_ance_mini")], generation="none")
     ok, reason = p.can_serve(rs)
     assert not ok and "qrecc_ance_mini" in reason
     p.set_active(["qrecc_ance_mini"])

@@ -21,6 +21,7 @@ indexes:
     dtype: float16
     embed_dim: 1024
     block_num: 6
+    corpus: clueweb
 
   # --- QReCC dev/test indexes (present on octal31, fit in RAM — exercise the real load/unload +
   #     capacity machinery without needing octal40). ---
@@ -33,6 +34,7 @@ indexes:
     dtype: float16
     embed_dim: 768
     block_num: 55
+    corpus: qrecc
   qrecc_qwen:           # 55 blocks, 1024-d
     kind: dense
     resident_ram_gb: 107.0
@@ -42,6 +44,7 @@ indexes:
     dtype: float16
     embed_dim: 1024
     block_num: 55
+    corpus: qrecc
   qrecc_ance_mini:      # 1 block, 1000 vecs — fast smoke test
     kind: dense
     resident_ram_gb: 0.01
@@ -51,6 +54,15 @@ indexes:
     dtype: float16
     embed_dim: 768
     block_num: 1
+    corpus: qrecc
+  qrecc_bm25:           # small QReCC lucene index -> BM25 + doc-fetch (passage text)
+    kind: sparse
+    resident_ram_gb: 0.5
+    load_peak_ram_gb: 0.5
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_hf_sparse_mini_index
+    dtype: null
+    corpus: qrecc
 
   reranker_qwen3:       # GPU-resident, co-hosted on the gen-LLM GPU (bf16 ~9G VRAM)
     kind: reranker

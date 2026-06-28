@@ -347,7 +347,25 @@ class InteractivePipeline:
             "free_vram_gb": free_vram,
         }
 
-    _LOADABLE_KINDS = {"dense"}   # kinds with a load_/unload_ impl (extended as more are wired)
+    _LOADABLE_KINDS = {"dense", "sparse", "splade", "reranker", "llm"}   # kinds with load_/unload_
+    _SINGLETON_KINDS = {"sparse", "splade", "reranker", "llm"}           # one resident instance each
+
+    def _validate_active_set(self, active):
+        """A valid active set has at most one unit per SINGLETON kind (sparse/splade/reranker/llm —
+        each is a single pipeline instance) and all corpus-tagged units share ONE corpus (the
+        doc-fetch passage text must come from the same corpus the retrievers search)."""
+        by_kind, corpora = {}, set()
+        for unit in active:
+            fp = self.registry.get(unit)
+            if fp.kind in self._SINGLETON_KINDS:
+                by_kind.setdefault(fp.kind, []).append(unit)
+            if getattr(fp, "corpus", None):
+                corpora.add(fp.corpus)
+        for kind, units in by_kind.items():
+            if len(units) > 1:
+                raise ValueError(f"at most one {kind!r} unit can be active at once; got {units}")
+        if len(corpora) > 1:
+            raise ValueError(f"all active retrieval units must share ONE corpus; got {sorted(corpora)}")
 
     def set_active(self, active_set, progress_cb=None) -> CapacityPlan:
         """Make exactly `active_set` resident (active-set semantics): evict units not in it, load
@@ -359,6 +377,7 @@ class InteractivePipeline:
         NOTE: units EVICTED earlier in this call are NOT restored on a later load failure — the
         service may be left with fewer units resident (but `_resident`/`_dense` stay consistent)."""
         with self._residency_lock:
+            self._validate_active_set(list(active_set))    # one corpus, <=1 per singleton kind
             plan = self.capacity.plan(list(active_set), list(self._resident))
             if not plan.fits:
                 raise CapacityError(plan.reason)
@@ -383,18 +402,20 @@ class InteractivePipeline:
 
     def _load_unit(self, unit: str, progress_cb=None):
         kind = self.registry.get(unit).kind
-        if kind == "dense":
-            self.load_dense(unit, progress_cb)
-        else:
-            raise NotImplementedError(
-                f"load for kind {kind!r} not yet wired (set_active is dense-only in 2A.2a)")
+        loader = {"dense": self.load_dense, "sparse": self.load_sparse, "splade": self.load_splade,
+                  "reranker": self.load_reranker, "llm": self.load_llm}.get(kind)
+        if loader is None:
+            raise NotImplementedError(f"no loader for kind {kind!r} (unit {unit!r})")
+        loader(unit, progress_cb)
 
     def _unload_unit(self, unit: str, progress_cb=None):
         kind = self.registry.get(unit).kind
-        if kind == "dense":
-            self.unload_dense(unit, progress_cb)
-        else:
-            raise NotImplementedError(f"unload for kind {kind!r} not yet wired")
+        unloader = {"dense": self.unload_dense, "sparse": self.unload_sparse,
+                    "splade": self.unload_splade, "reranker": self.unload_reranker,
+                    "llm": self.unload_llm}.get(kind)
+        if unloader is None:
+            raise NotImplementedError(f"no unloader for kind {kind!r} (unit {unit!r})")
+        unloader(unit, progress_cb)
 
     def load_dense(self, unit: str, progress_cb=None):
         """Construct a RAM-resident dense index for `unit` (RamBlockSource preloads all blocks
@@ -422,6 +443,104 @@ class InteractivePipeline:
             except Exception:
                 pass
             self._progress(progress_cb, f"unloaded {unit}", 1.0)
+
+    def load_sparse(self, unit: str, progress_cb=None):
+        """Load a BM25 lucene index + doc-fetch (passage text lives in the SAME lucene index, so the
+        sparse unit also provides the text the RAG/extractive response needs)."""
+        with self._residency_lock:
+            fp = self.registry.get(unit)
+            self._progress(progress_cb, f"loading {unit} (BM25 + doc-fetch)", 0.0)
+            self._bm25 = LuceneSearcher(fp.index_dir)
+            self._bm25.set_bm25(self.config.bm25_k1, self.config.bm25_b)
+            self._docfetch = LuceneSearcher(fp.index_dir)
+            self._resident.add(unit)
+            self._progress(progress_cb, f"loaded {unit}", 1.0)
+
+    def unload_sparse(self, unit: str, progress_cb=None):
+        with self._residency_lock:
+            self._progress(progress_cb, f"unloading {unit}", 0.0)
+            for s in (self._bm25, self._docfetch):     # best-effort: release JVM lucene readers
+                try:
+                    if s is not None and hasattr(s, "close"):
+                        s.close()
+                except Exception:
+                    pass
+            self._bm25 = None
+            self._docfetch = None
+            self._resident.discard(unit)
+            gc.collect()
+
+    def load_splade(self, unit: str, progress_cb=None):
+        """Load the SPLADE_v3 learned-sparse inverted index into RAM."""
+        with self._residency_lock:
+            fp = self.registry.get(unit)
+            self._progress(progress_cb, f"loading {unit} (SPLADE inverted index)", 0.0)
+            from apcir.splade_index import SparseRetrieval
+            self._splade = SparseRetrieval(fp.index_dir, "None", self.config.splade_dim_voc,
+                                           self.config.retrieval_top_k,
+                                           value_dtype=self.config.splade_value_dtype)
+            self._resident.add(unit)
+            self._progress(progress_cb, f"loaded {unit}", 1.0)
+
+    def unload_splade(self, unit: str, progress_cb=None):
+        with self._residency_lock:
+            self._progress(progress_cb, f"unloading {unit}", 0.0)
+            self._splade = None
+            self._resident.discard(unit)
+            gc.collect()
+
+    def load_reranker(self, unit: str, progress_cb=None):
+        """Load the reranker (remote -> 0 local VRAM; else qwen3 on the LLM GPU). Type/path from config."""
+        with self._residency_lock:
+            c = self.config
+            self._progress(progress_cb, f"loading {unit} (reranker)", 0.0)
+            if c.rerank_remote_url:
+                from apcir.search.rerank import RemoteReranker
+                self._reranker = RemoteReranker(c.rerank_remote_url)
+            else:
+                from apcir.search.rerank import QwenReranker
+                import torch as _torch
+                dev = (f"cuda:{c.llm_gpu_id}" if _torch.cuda.is_available() else "cpu")
+                self._reranker = QwenReranker(model_path=c.qwen3_reranker_path,
+                                              quant=c.rerank_quant, device=dev)
+            self._resident.add(unit)
+            self._progress(progress_cb, f"loaded {unit}", 1.0)
+
+    def unload_reranker(self, unit: str, progress_cb=None):
+        with self._residency_lock:
+            self._progress(progress_cb, f"unloading {unit}", 0.0)
+            self._reranker = None
+            self._resident.discard(unit)
+            gc.collect()
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            except Exception:
+                pass
+
+    def load_llm(self, unit: str, progress_cb=None):
+        """Bring up the shared LLM (+ online rewriter); boots the local vLLM server if configured.
+        Idempotent: if the LLM is already up (legacy eager load() or a prior activate) reuse it —
+        never boot a second vLLM. NOTE: the eager load() path and dynamic activation are not meant
+        to be mixed; the RALI Searcher runs with eager_load=False."""
+        with self._residency_lock:
+            self._progress(progress_cb, f"loading {unit} (LLM + rewriter)", 0.0)
+            if self._llm is None:
+                self._setup_llm()
+            self._resident.add(unit)
+            self._progress(progress_cb, f"loaded {unit}", 1.0)
+
+    def unload_llm(self, unit: str, progress_cb=None):
+        with self._residency_lock:
+            self._progress(progress_cb, f"unloading {unit}", 0.0)
+            if self._vllm is not None:
+                self._vllm.stop()
+                self._vllm = None
+            self._llm = None
+            self._rewriter = None
+            self._resident.discard(unit)
+            gc.collect()
 
     def search_dense_unit(self, unit: str, query_embeddings, topN: int):
         """Search a RESIDENT dense unit with raw query embeddings. Returns (D, I): scores + docids,
@@ -485,6 +604,15 @@ class InteractivePipeline:
                 return False, "splade_v3 retriever needs its index loaded"
         if c.reranker != "none" and self._reranker is None:
             return False, f"reranker {c.reranker!r} is not resident"
+        if any((getattr(s, "qr", "") and s.qr != "none") for s in c.retrievers):
+            if self._llm is None or self._rewriter is None:    # online query rewrite needs the LLM
+                return False, "online query rewrite (qr) needs the LLM; activate the llm unit"
+        if (c.reranker != "none" or c.generation != "none") and self._docfetch is None:
+            return False, ("reranking/generation needs passage text (doc-fetch); activate a "
+                           "sparse/BM25 unit (its lucene index provides doc-fetch)")
+        if c.generation == "rag" and self._llm is None:
+            return False, ("rag generation needs the LLM; activate the llm unit "
+                           "(or set generation=extractive)")
         return True, ""
 
     def extract_ptkb(self, current_ptkb, utterance, response):

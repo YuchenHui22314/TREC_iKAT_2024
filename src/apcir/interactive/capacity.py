@@ -27,6 +27,7 @@ class IndexFootprint:
     dtype: Optional[str] = None
     embed_dim: Optional[int] = None      # dense units: query/doc embedding dim
     block_num: Optional[int] = None      # dense units: number of doc_emb blocks
+    corpus: Optional[str] = None         # corpus tag; one active set must share a single corpus
 
 
 class CapacityError(RuntimeError):
