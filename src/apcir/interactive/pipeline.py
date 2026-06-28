@@ -487,6 +487,22 @@ class InteractivePipeline:
             return False, f"reranker {c.reranker!r} is not resident"
         return True, ""
 
+    def extract_ptkb(self, current_ptkb, utterance, response):
+        """Ask the shared LLM for NEW durable persona facts revealed this turn (reuses the driver's
+        PTKB_EXTRACT_PROMPT + parser). Returns [] if no LLM is resident or on failure."""
+        if self._llm is None:
+            return []
+        try:                                       # import + format + LLM + parse all isolated
+            from .driver import PTKB_EXTRACT_PROMPT, _parse_extracted_facts
+            prompt = PTKB_EXTRACT_PROMPT.format(
+                ptkb=("\n".join(f"{i}. {s}" for i, s in enumerate(current_ptkb, 1)) or "(empty)"),
+                utterance=utterance, response=(response or "")[:1200])
+            ans, _ = self._llm.generate(prompt)
+            return _parse_extracted_facts(ans)
+        except Exception as e:  # noqa: BLE001
+            print(f"[extract_ptkb] error: {e}", flush=True)
+            return []
+
     @staticmethod
     def _leg_label(spec) -> str:
         """Stable display label for a retriever leg: name[@unit][:qr]."""

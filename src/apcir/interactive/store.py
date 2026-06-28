@@ -178,10 +178,15 @@ class Store:
             return cur.rowcount > 0
 
     # --- turns -------------------------------------------------------------- #
-    def add_turn(self, session_id: int, idx: int, utterance: str, response: str = "",
-                 payload: Optional[Dict[str, Any]] = None) -> int:
+    def add_turn(self, session_id: int, idx: Optional[int] = None, utterance: str = "",
+                 response: str = "", payload: Optional[Dict[str, Any]] = None) -> int:
         with self._lock:
             now = self._now()
+            if idx is None:                        # server-allocate the next index atomically
+                row = self._conn.execute(
+                    "SELECT COALESCE(MAX(idx), -1) + 1 AS n FROM turns WHERE session_id=?",
+                    (session_id,)).fetchone()
+                idx = row["n"]
             cur = self._conn.execute(
                 "INSERT INTO turns(session_id, idx, utterance, response, payload, created_at) "
                 "VALUES (?,?,?,?,?,?)",

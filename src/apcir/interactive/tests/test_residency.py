@@ -108,6 +108,23 @@ def test_effective_config_none_returns_config():
     assert p._effective_config(None) is p.config
 
 
+def test_extract_ptkb_keeps_first_person_facts():
+    p = _pipe(200.0)
+
+    class FakeLLM:
+        def generate(self, prompt):
+            return ("I am a vegetarian.\nI live in Montreal.\nThe weather is nice today.\nNONE", {})
+
+    p._llm = FakeLLM()
+    facts = p.extract_ptkb([], "vegan places near me?", "Here are some options...")
+    assert facts == ["I am a vegetarian.", "I live in Montreal."]   # non-first-person/NONE dropped
+
+
+def test_extract_ptkb_no_llm_returns_empty():
+    p = _pipe(200.0)                          # no LLM loaded
+    assert p.extract_ptkb([], "hi", "hello") == []
+
+
 def test_parse_citations():
     from apcir.interactive.generation import parse_citations
     resp = "The sky is blue [1] and grass is green [2][3]. ignore array[1] here."

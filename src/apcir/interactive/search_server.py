@@ -50,6 +50,8 @@ class SearchRequest(BaseModel):
     topic_id: str = "0"
     user_id: str = "0"
     turn_index: int = 0
+    session_id: Optional[int] = None        # if set + authed: persist this turn to the session
+    extract_ptkb: bool = False              # if set + authed: extract + store new PTKB facts this turn
     # per-request RunSpec overrides (all optional; None -> server config default)
     retrievers: Optional[List[RetrieverLeg]] = None
     fusion_type: Optional[str] = None
@@ -77,6 +79,7 @@ class SearchResponse(BaseModel):
     shared_docs: Dict[str, List[str]] = {}        # docid -> retrievers it appears in (>=2)
     reformulations: Dict[str, List[str]] = {}     # leg label -> reformulated query string(s)
     citation_spans: List[Dict[str, Any]] = []     # [{n, docid, start, end}] inline-[n] -> passage
+    persisted: bool = False                       # was this turn saved to a session (authed + owned)?
 
 
 class LoginRequest(BaseModel):
@@ -90,6 +93,14 @@ class SessionCreate(BaseModel):
 
 class SessionRename(BaseModel):
     title: str
+
+
+class PtkbCreate(BaseModel):
+    statement: str
+
+
+class PtkbUpdate(BaseModel):
+    statement: str
 
 
 def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
@@ -109,6 +120,38 @@ def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
     return RunSpec(**fields) if fields else None
 
 
+def _persist_turn(store, pipeline, uid, req, result) -> bool:
+    """If authed + a valid OWNED session_id, persist this turn (SERVER-allocated index) and, when
+    req.extract_ptkb, extract + store NEW per-user PTKB facts. Best-effort + isolated: a save or
+    extract error never breaks the /search response, and an extract failure never loses the saved
+    turn. Returns True iff the turn was saved."""
+    if uid is None or req.session_id is None:
+        return False
+    if store.get_session(req.session_id, uid) is None:
+        return False                             # session isn't this user's
+    payload = {"citations": result.citations, "per_retriever": result.per_retriever,
+               "shared_docs": result.shared_docs, "reformulations": result.reformulations,
+               "citation_spans": result.citation_spans}
+    try:
+        store.add_turn(req.session_id, None, req.utterance, result.response or "", payload)
+    except Exception as e:  # noqa: BLE001
+        print(f"[persist_turn] save failed: {e}", flush=True)
+        return False
+    if req.extract_ptkb:                          # an extract error must NOT lose the saved turn
+        try:
+            existing = store.list_ptkb(uid)
+            seen = {p["statement"].strip().lower() for p in existing}      # normalized dedup set
+            current = [p["statement"] for p in existing]
+            for fact in pipeline.extract_ptkb(current, req.utterance, result.response or ""):
+                norm = fact.strip().lower()
+                if norm and norm not in seen:                              # dedup across turns + batch
+                    seen.add(norm)
+                    store.add_ptkb(uid, fact, source="extracted")
+        except Exception as e:  # noqa: BLE001
+            print(f"[persist_turn] ptkb extract failed: {e}", flush=True)
+    return True
+
+
 def create_app(config: PipelineConfig, eager_load: bool = True,
                pipeline: Optional[InteractivePipeline] = None,
                store: Optional[Store] = None) -> FastAPI:
@@ -124,6 +167,13 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
         done = [tid for tid, t in tasks.items() if t["state"] != "running"]
         for tid in done[:max(0, len(done) - MAX_DONE_TASKS)]:
             tasks.pop(tid, None)
+
+    def _optional_user(authorization: Optional[str] = Header(None)) -> Optional[int]:
+        """Resolve a bearer token to a user id, or None if absent/invalid (no 401) — lets /search
+        run anonymously yet persist + extract when a logged-in user supplies a token."""
+        if authorization and authorization.startswith("Bearer "):
+            return store.user_for_token(authorization[7:])
+        return None
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -198,24 +248,30 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
             return dict(t, progress=list(t["progress"]))     # consistent snapshot under the lock
 
     @app.post("/search", response_model=SearchResponse)
-    def search(req: SearchRequest):
+    def search(req: SearchRequest, uid: Optional[int] = Depends(_optional_user)):
         run_spec = _build_run_spec(req)
         ok, reason = pipeline.can_serve(run_spec)
         if not ok:
             raise HTTPException(status_code=409, detail=reason)
-        store = PTKBStore(conversation_id=f"{req.topic_id}-{req.user_id}")
-        store.update({"ptkb": req.ptkb})
+        ptkb_store = PTKBStore(conversation_id=f"{req.topic_id}-{req.user_id}")
+        ptkb_store.update({"ptkb": req.ptkb})
         result = pipeline.process_turn(
-            utterance=req.utterance, history=req.history, ptkb_store=store,
+            utterance=req.utterance, history=req.history, ptkb_store=ptkb_store,
             topic_id=req.topic_id, user_id=req.user_id, turn_index=req.turn_index,
             run_spec=run_spec,
         )
+        try:                                               # never fail an OK search on persistence
+            persisted = _persist_turn(store, pipeline, uid, req, result)
+        except Exception as e:  # noqa: BLE001
+            print(f"[search] persist failed: {e}", flush=True)
+            persisted = False
         return SearchResponse(
             response=result.response, citations=result.citations,
             hits=[[d, s] for d, s in result.hits],
             ptkb_provenance=result.ptkb_provenance, qid=result.qid,
             per_retriever=result.per_retriever, shared_docs=result.shared_docs,
             reformulations=result.reformulations, citation_spans=result.citation_spans,
+            persisted=persisted,
         )
 
     # --- auth + session management ----------------------------------------- #
@@ -270,5 +326,26 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
         if store.get_session(session_id, uid) is None:
             raise HTTPException(status_code=404, detail="session not found")
         return store.list_turns(session_id)
+
+    # --- per-user PTKB (view / edit / delete / manual-add) ----------------- #
+    @app.get("/ptkb")
+    def list_ptkb(uid: int = Depends(_current_user)):
+        return store.list_ptkb(uid)
+
+    @app.post("/ptkb")
+    def add_ptkb(req: PtkbCreate, uid: int = Depends(_current_user)):
+        return {"id": store.add_ptkb(uid, req.statement, source="manual")}
+
+    @app.put("/ptkb/{ptkb_id}")
+    def update_ptkb(ptkb_id: int, req: PtkbUpdate, uid: int = Depends(_current_user)):
+        if not store.update_ptkb(ptkb_id, uid, req.statement):
+            raise HTTPException(status_code=404, detail="ptkb statement not found")
+        return {"ok": True}
+
+    @app.delete("/ptkb/{ptkb_id}")
+    def delete_ptkb(ptkb_id: int, uid: int = Depends(_current_user)):
+        if not store.delete_ptkb(ptkb_id, uid):
+            raise HTTPException(status_code=404, detail="ptkb statement not found")
+        return {"ok": True}
 
     return app
