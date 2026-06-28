@@ -57,6 +57,7 @@ class SearchRequest(BaseModel):
     generation: Optional[str] = None
     generation_top_k: Optional[int] = None
     retrieval_top_k: Optional[int] = None
+    cite_passages: Optional[bool] = None
 
     @field_validator("retrievers")
     @classmethod
@@ -69,9 +70,13 @@ class SearchRequest(BaseModel):
 class SearchResponse(BaseModel):
     response: str
     citations: Dict[str, float]
-    hits: List[List[Any]]                   # [[docid, score], ...]
+    hits: List[List[Any]]                   # [[docid, score], ...] — the fused/reranked ranking
     ptkb_provenance: List[str] = []
     qid: str = ""
+    per_retriever: List[Dict[str, Any]] = []      # [{retriever, hits:[[docid,score]]}] per leg
+    shared_docs: Dict[str, List[str]] = {}        # docid -> retrievers it appears in (>=2)
+    reformulations: Dict[str, List[str]] = {}     # leg label -> reformulated query string(s)
+    citation_spans: List[Dict[str, Any]] = []     # [{n, docid, start, end}] inline-[n] -> passage
 
 
 class LoginRequest(BaseModel):
@@ -96,7 +101,8 @@ def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
                           encoder_path=l.encoder_path, unit=l.unit)
             for l in req.retrievers
         ]
-    for f in ("fusion_type", "reranker", "generation", "generation_top_k", "retrieval_top_k"):
+    for f in ("fusion_type", "reranker", "generation", "generation_top_k", "retrieval_top_k",
+              "cite_passages"):
         v = getattr(req, f)
         if v is not None:
             fields[f] = v
@@ -208,6 +214,8 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
             response=result.response, citations=result.citations,
             hits=[[d, s] for d, s in result.hits],
             ptkb_provenance=result.ptkb_provenance, qid=result.qid,
+            per_retriever=result.per_retriever, shared_docs=result.shared_docs,
+            reformulations=result.reformulations, citation_spans=result.citation_spans,
         )
 
     # --- auth + session management ----------------------------------------- #

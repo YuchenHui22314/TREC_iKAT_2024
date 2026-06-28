@@ -108,6 +108,40 @@ def test_effective_config_none_returns_config():
     assert p._effective_config(None) is p.config
 
 
+def test_parse_citations():
+    from apcir.interactive.generation import parse_citations
+    resp = "The sky is blue [1] and grass is green [2][3]. ignore array[1] here."
+    docids = ["docA", "docB"]                 # only 2 passages; [3] out of range -> dropped
+    cites = parse_citations(resp, docids)
+    assert [c["docid"] for c in cites] == ["docA", "docB"]   # array[1] is NOT a citation
+    assert cites[0]["n"] == 1
+    assert resp[cites[0]["start"]:cites[0]["end"]] == "[1]"
+    assert cites[0]["start"] == resp.index(" [1]") + 1       # the real [1], not array[1]
+    assert all(c["n"] <= 2 for c in cites)                   # [3] dropped (no docid for it)
+
+
+def test_leg_label():
+    from apcir.interactive.pipeline import RetrieverSpec, InteractivePipeline as P
+    assert P._leg_label(RetrieverSpec("BM25", "raw")) == "BM25"
+    assert P._leg_label(RetrieverSpec("qwen3", "raw", unit="qrecc_ance")) == "qwen3@qrecc_ance"
+    assert P._leg_label(RetrieverSpec("qwen3", "raw", qr="rar")) == "qwen3:rar"
+
+
+def test_enrich_per_retriever_and_shared_docs():
+    from apcir.interactive.pipeline import InteractivePipeline as P
+
+    class D:
+        def __init__(self, docid, score):
+            self.docid, self.score = docid, score
+
+    legs = [("bm25", {"q": [D("a", 1.0), D("b", 0.5)]}),
+            ("qwen", {"q": [D("a", 0.9), D("c", 0.8)]})]
+    per, shared = P._enrich(legs, "q", top_k=20)
+    assert [e["retriever"] for e in per] == ["bm25", "qwen"]
+    assert per[0]["hits"][0] == ["a", 1.0]                 # docid+score, JSON-friendly list
+    assert shared == {"a": ["bm25", "qwen"]}               # "a" shared across both; b/c not
+
+
 def test_can_serve_false_until_unit_resident():
     from apcir.interactive.pipeline import RunSpec, RetrieverSpec
     p = _pipe(200.0)

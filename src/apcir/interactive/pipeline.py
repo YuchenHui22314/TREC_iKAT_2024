@@ -90,6 +90,7 @@ class PipelineConfig:
     response_max_tokens: int = 512
     citations_max: int = 10
     generation_top_k: int = 3
+    cite_passages: bool = False            # opt-in inline [n] citations (RALI Searcher); off = iKAT prompt
     # shared LLM (QR + RAG generation) — OpenAI-compatible client
     llm_backend: str = "local_vllm"        # "local_vllm" | "openai"
     llm_model: str = "qwen3-32b"           # served-model-name (local) or e.g. gpt-4o-mini (openai)
@@ -161,6 +162,7 @@ class RunSpec:
     generation: Optional[str] = None
     generation_top_k: Optional[int] = None
     retrieval_top_k: Optional[int] = None
+    cite_passages: Optional[bool] = None
 
 
 # --------------------------------------------------------------------------- #
@@ -173,6 +175,10 @@ class TurnResult:
     hits: List[Tuple[str, float]]               # full fused ranking (docid, score)
     ptkb_provenance: List[str] = field(default_factory=list)
     qid: str = ""
+    per_retriever: List[Dict[str, Any]] = field(default_factory=list)   # [{retriever, hits:[[docid,score]]}]
+    shared_docs: Dict[str, List[str]] = field(default_factory=dict)     # docid -> retrievers it appears in (>=2)
+    reformulations: Dict[str, List[str]] = field(default_factory=dict)  # leg label -> query string(s) used
+    citation_spans: List[Dict[str, Any]] = field(default_factory=list)  # [{n, docid, start, end}] inline [n]
 
 
 # --------------------------------------------------------------------------- #
@@ -481,6 +487,32 @@ class InteractivePipeline:
             return False, f"reranker {c.reranker!r} is not resident"
         return True, ""
 
+    @staticmethod
+    def _leg_label(spec) -> str:
+        """Stable display label for a retriever leg: name[@unit][:qr]."""
+        label = spec.name
+        if getattr(spec, "unit", None):
+            label += f"@{spec.unit}"
+        if getattr(spec, "qr", "") and spec.qr != "none":
+            label += f":{spec.qr}"
+        return label
+
+    @staticmethod
+    def _enrich(legs, qid, top_k):
+        """From labeled per-leg hits [(label, {qid:[docs]})] build per-retriever top-k lists + the
+        docids shared across >=2 retrievers (for the UI's per-retriever panels + overlap colouring)."""
+        from collections import defaultdict
+        per_retriever = []
+        doc_labels = defaultdict(set)
+        for label, hits in legs:
+            docs = (hits.get(qid) or [])[:top_k]
+            ranked = [[d.docid, float(d.score)] for d in docs]
+            per_retriever.append({"retriever": label, "hits": ranked})
+            for did, _ in ranked:
+                doc_labels[did].add(label)
+        shared = {did: sorted(labels) for did, labels in doc_labels.items() if len(labels) >= 2}
+        return per_retriever, shared
+
     # --- per-turn ---------------------------------------------------------- #
     def process_turn(
         self,
@@ -515,15 +547,18 @@ class InteractivePipeline:
             return s.name in self._DENSE_NAMES and (not s.qr or s.qr == "none")
         dense_group = [s for s in c.retrievers if _is_dense_grp(s)]
 
+        # each leg is kept LABELED as (label, hits) so we can show per-retriever lists + overlap.
+        reform_sink: List[Tuple[str, List[str]]] = []
         if c.fusion_type == "RRF" and dense_group:
             sparse_rest = [s for s in c.retrievers if not _is_dense_grp(s) and s.name in _SPARSE]
             gpu_rest = [s for s in c.retrievers if not _is_dense_grp(s) and s.name not in _SPARSE]
 
-            def _run(specs) -> List[Dict[str, List[Any]]]:
-                hl: List[Dict[str, List[Any]]] = []
+            def _run_legs(specs):
+                out = []
                 for spec in specs:
-                    hl.extend(self._retrieve_one(spec, turn, qid, context_turns, c))
-                return hl
+                    for h in self._retrieve_one(spec, turn, qid, context_turns, c, reform_sink):
+                        out.append((self._leg_label(spec), h))
+                return out
 
             # dense legs may target DIFFERENT resident units; each shared-corpus pass needs ONE
             # index, so group by unit and run one _dense_group_search per group (then concat — RRF
@@ -533,21 +568,23 @@ class InteractivePipeline:
                 dgroups.setdefault(getattr(s, "unit", None) or "__legacy__", []).append(s)
 
             with ThreadPoolExecutor(max_workers=1) as ex:
-                sparse_fut = ex.submit(_run, sparse_rest) if sparse_rest else None
-                dense_hits: List[Dict[str, List[Any]]] = []
+                sparse_fut = ex.submit(_run_legs, sparse_rest) if sparse_rest else None
+                dense_legs = []
                 for grp in dgroups.values():
-                    dense_hits.extend(self._dense_group_search(grp, turn, qid, c))   # GPU, main thread
-                gpu_rest_hits = _run(gpu_rest)                                   # GPU, after dense
-                sparse_hits = sparse_fut.result() if sparse_fut else []
-            hits_list = sparse_hits + dense_hits + gpu_rest_hits   # RRF is order-insensitive
+                    grp_hits = self._dense_group_search(grp, turn, qid, c, reform_sink)  # GPU, main
+                    dense_legs += [(self._leg_label(spec), h) for spec, h in zip(grp, grp_hits)]
+                gpu_rest_legs = _run_legs(gpu_rest)                              # GPU, after dense
+                sparse_legs = sparse_fut.result() if sparse_fut else []
+            legs = sparse_legs + dense_legs + gpu_rest_legs   # RRF is order-insensitive
         else:
-            hits_list = []
+            legs = []
             for spec in c.retrievers:
-                for hits in self._retrieve_one(spec, turn, qid, context_turns, c):
+                for h in self._retrieve_one(spec, turn, qid, context_turns, c, reform_sink):
                     if c.fusion_type == "linear_combination":
-                        hits = fuse_mod.normalize_scores(hits, c.fusion_normalization)
-                    hits_list.append(hits)
+                        h = fuse_mod.normalize_scores(h, c.fusion_normalization)
+                    legs.append((self._leg_label(spec), h))
 
+        hits_list = [h for _, h in legs]
         # 2) fuse
         fused = self._fuse(hits_list, qid, c)
         ranked = fused[qid]
@@ -558,21 +595,31 @@ class InteractivePipeline:
             ranked = self._rerank(ranked, turn, c)
 
         # 3) generate + citations
-        response = None
+        response, citation_spans = None, []
         if c.generation == "rag" and self._llm is not None:
-            response = rag_response(
+            response, citation_spans = rag_response(
                 self._llm, self._docfetch, ranked, context_turns, turn.ptkb,
-                utterance, c.generation_top_k, _truncate_tokens, c.response_max_tokens)
+                utterance, c.generation_top_k, _truncate_tokens, c.response_max_tokens,
+                cite=c.cite_passages)
         if response is None:                       # extractive fallback (also the no-LLM path)
             response = self._extractive_response(ranked, c)
         citations = {d.docid: float(d.score) for d in ranked[:c.citations_max]}
         hits_out = [(d.docid, float(d.score)) for d in ranked]
 
+        # 3.5) enrichment: per-retriever top-k lists + docs shared across >=2 retrievers + the
+        #      reformulated query/queries used per leg (for the UI's panels + overlap colouring).
+        per_retriever, shared_docs = self._enrich(legs, qid, top_k=20)
+        reformulations: Dict[str, List[str]] = {}
+        for label, qs in reform_sink:
+            reformulations.setdefault(label, []).extend(qs)
+
         # 4) ptkb provenance (optional best-effort)
         prov = ptkb_store.relevant_for(turn) if ptkb_store is not None else []
 
         return TurnResult(response=response, citations=citations, hits=hits_out,
-                          ptkb_provenance=prov, qid=qid)
+                          ptkb_provenance=prov, qid=qid, per_retriever=per_retriever,
+                          shared_docs=shared_docs, reformulations=reformulations,
+                          citation_spans=citation_spans)
 
     # --- internals --------------------------------------------------------- #
     def _make_args(self, **overrides) -> SimpleNamespace:
@@ -612,9 +659,10 @@ class InteractivePipeline:
         return turn
 
     def _retrieve_one(self, spec: RetrieverSpec, turn: Turn, qid: str,
-                      context_turns: List[Turn], cfg=None) -> List[Dict[str, List[Any]]]:
+                      context_turns: List[Turn], cfg=None, reform_sink=None) -> List[Dict[str, List[Any]]]:
         """Return a LIST of hits dicts (one per query). Non-QR leg -> 1 query; a QR leg ->
-        the rewriter's query list (>=1; GtR returns phi)."""
+        the rewriter's query list (>=1; GtR returns phi). If reform_sink is given, append
+        (leg-label, query-strings) for /search to surface the reformulated query."""
         c = cfg if cfg is not None else self.config
         if spec.qr and spec.qr != "none":
             queries = self._rewriter.rewrite(turn, spec.qr, context_turns, turn.ptkb or {})
@@ -623,6 +671,9 @@ class InteractivePipeline:
             a0 = self._make_args(retrieval_model=spec.name, retrieval_query_type=spec.query_type)
             queries = [turn.query_type_2_query(spec.query_type, 0, 0.0, a0)]
             is_conv = (spec.query_type == "full_conversation_dense")
+
+        if reform_sink is not None:
+            reform_sink.append((self._leg_label(spec), [str(q) for q in queries]))
 
         out: List[Dict[str, List[Any]]] = []
         for q in queries:
@@ -660,7 +711,7 @@ class InteractivePipeline:
     _DENSE_NAMES = ("ance", "conv-ance", "qwen3", "conv-qwen3")
 
     def _dense_group_search(self, dense_specs: List[RetrieverSpec], turn: Turn,
-                            qid: str, cfg=None) -> List[Dict[str, List[Any]]]:
+                            qid: str, cfg=None, reform_sink=None) -> List[Dict[str, List[Any]]]:
         """Shared-corpus dense search for a GROUP of NON-QR dense legs that share ONE index:
         encode each leg's query with its OWN (cached) encoder -> stack to (K,dim) -> ONE pass over
         the corpus (`search_query_against_ram` scores all K rows per block) -> split into K per-leg
@@ -684,6 +735,8 @@ class InteractivePipeline:
             a0 = self._make_args(retrieval_model=spec.name, retrieval_query_type=spec.query_type,
                                  dense_query_encoder_path=enc)
             q = turn.query_type_2_query(spec.query_type, 0, 0.0, a0)
+            if reform_sink is not None:
+                reform_sink.append((self._leg_label(spec), [str(q)]))
             a = self._make_args(retrieval_model=spec.name,
                                 retrieval_query_type=(spec.query_type if is_conv else "raw"),
                                 dense_query_encoder_path=enc)
