@@ -92,6 +92,7 @@ def test_ptkb_requires_auth():
 class _FakeResult:
     response = "an answer"
     citations = {"d1": 1.0}
+    hits = [("d1", 1.0), ("d2", 0.5)]            # full fused ranking (TurnResult.hits is tuples)
     per_retriever = [{"retriever": "bm25", "hits": [["d1", 1.0]]}]
     shared_docs = {}
     reformulations = {"bm25": ["rewritten q"]}
@@ -115,6 +116,9 @@ def test_persist_turn_saves_and_extracts():
     assert turns[0]["response"] == "an answer"
     assert turns[0]["payload"]["citations"] == {"d1": 1.0}
     assert turns[0]["payload"]["per_retriever"][0]["retriever"] == "bm25"
+    # the full fused passage list must be persisted (JSON-friendly [[docid, score]]) so a reloaded
+    # session re-renders identically, not a degraded citations-only fallback.
+    assert turns[0]["payload"]["hits"] == [["d1", 1.0], ["d2", 0.5]]
     assert [p["statement"] for p in store.list_ptkb(uid)] == ["I am a vegetarian."]
     assert store.list_ptkb(uid)[0]["source"] == "extracted"
 

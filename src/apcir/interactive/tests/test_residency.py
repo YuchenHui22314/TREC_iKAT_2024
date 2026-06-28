@@ -20,6 +20,50 @@ def _pipe(free_ram_gb):
     return InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
 
 
+def _custom_pipe(footprints):
+    reg = IndexRegistry(footprints)
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0,
+                          free_vram_fn=lambda: [24.0, 24.0, 24.0, 24.0])
+    return InteractivePipeline(PipelineConfig(), registry=reg, capacity=cap)
+
+
+def test_encoder_for_prefers_unit_footprint_over_global():
+    """A unit-routed dense leg with no explicit encoder_path must use the unit's OWN query_encoder
+    (from its footprint), NOT the single global default — else an index built with encoder A is
+    queried with the global encoder B and returns garbage scores."""
+    from apcir.interactive.capacity import IndexFootprint
+    from apcir.interactive.pipeline import RetrieverSpec
+    p = _custom_pipe({
+        "ance_unit": IndexFootprint("ance_unit", "dense", 0.01, 0.02, index_dir="/x",
+                                    query_encoder="/enc/ance"),
+        "qwen_unit": IndexFootprint("qwen_unit", "dense", 0.01, 0.02, index_dir="/y",
+                                    query_encoder="/enc/qwen"),
+        "bare_unit": IndexFootprint("bare_unit", "dense", 0.01, 0.02, index_dir="/z"),
+    })
+    cfg = p.config
+    # unit-routed, no explicit encoder_path -> the unit's footprint encoder
+    assert p._encoder_for(RetrieverSpec("ance", "raw", unit="ance_unit"), cfg) == "/enc/ance"
+    assert p._encoder_for(RetrieverSpec("qwen3", "raw", unit="qwen_unit"), cfg) == "/enc/qwen"
+    # an explicit per-leg encoder_path still wins over the footprint
+    assert p._encoder_for(
+        RetrieverSpec("ance", "raw", unit="ance_unit", encoder_path="/explicit"), cfg) == "/explicit"
+    # a unit with NO query_encoder, or a legacy leg with no unit -> the global default
+    assert p._encoder_for(RetrieverSpec("ance", "raw", unit="bare_unit"), cfg) \
+        == cfg.dense_query_encoder_path
+    assert p._encoder_for(RetrieverSpec("BM25", "raw"), cfg) == cfg.dense_query_encoder_path
+
+
+def test_models_status_surfaces_query_encoder():
+    """GET /models must report each dense unit's query_encoder so an operator/client can see which
+    encoder a unit needs."""
+    from apcir.interactive.capacity import IndexFootprint
+    p = _custom_pipe({
+        "u": IndexFootprint("u", "dense", 0.01, 0.02, index_dir="/x", query_encoder="/enc/q"),
+    })
+    unit = next(x for x in p.models_status()["units"] if x["name"] == "u")
+    assert unit["query_encoder"] == "/enc/q"
+
+
 def test_set_active_loads_and_unloads_mini_dense():
     p = _pipe(200.0)
     plan = p.set_active(["qrecc_ance_mini"])

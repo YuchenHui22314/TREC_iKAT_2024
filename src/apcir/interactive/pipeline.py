@@ -333,7 +333,7 @@ class InteractivePipeline:
             units.append({
                 "name": name, "kind": fp.kind,
                 "resident_ram_gb": fp.resident_ram_gb, "load_peak_ram_gb": fp.load_peak_ram_gb,
-                "vram_gb": fp.vram_gb, "dtype": fp.dtype,
+                "vram_gb": fp.vram_gb, "dtype": fp.dtype, "query_encoder": fp.query_encoder,
                 "available": fp.index_dir is None or os.path.isdir(fp.index_dir),
             })
         try:                                              # best-effort: torch.cuda probe may fail
@@ -802,6 +802,20 @@ class InteractivePipeline:
             turn.ptkb = {i: s for i, s in enumerate(ptkb_store.base, 1)}
         return turn
 
+    def _encoder_for(self, spec, cfg) -> str:
+        """Dense query-encoder for a leg. Precedence: explicit per-leg encoder_path > the routed
+        unit's IndexFootprint.query_encoder > the global cfg.dense_query_encoder_path. This makes a
+        unit-routed ANCE/qwen leg encode the QUERY with the SAME model its index was built with,
+        instead of whatever single global default happens to be set (the encoder-mismatch bug)."""
+        if spec.encoder_path:
+            return spec.encoder_path
+        unit = getattr(spec, "unit", None)
+        if unit:
+            qe = getattr(self.registry.get(unit), "query_encoder", None)
+            if qe:
+                return qe
+        return cfg.dense_query_encoder_path
+
     def _retrieve_one(self, spec: RetrieverSpec, turn: Turn, qid: str,
                       context_turns: List[Turn], cfg=None, reform_sink=None) -> List[Dict[str, List[Any]]]:
         """Return a LIST of hits dicts (one per query). Non-QR leg -> 1 query; a QR leg ->
@@ -829,8 +843,7 @@ class InteractivePipeline:
                 # which expects a JSON turn-list). Keep the conv type only for non-QR conv legs.
                 a = self._make_args(retrieval_model=spec.name,
                                     retrieval_query_type=(spec.query_type if is_conv else "raw"),
-                                    dense_query_encoder_path=(spec.encoder_path
-                                                              or c.dense_query_encoder_path))
+                                    dense_query_encoder_path=self._encoder_for(spec, c))
                 a.retrieval_query_list = [q]
                 a.qid_list_string = [qid]
                 emb, emb2id = get_test_query_embedding(a)
@@ -874,7 +887,7 @@ class InteractivePipeline:
                 f"got mixed units {units}")
         vecs = []
         for spec in dense_specs:
-            enc = spec.encoder_path or c.dense_query_encoder_path
+            enc = self._encoder_for(spec, c)
             is_conv = (spec.query_type == "full_conversation_dense")
             a0 = self._make_args(retrieval_model=spec.name, retrieval_query_type=spec.query_type,
                                  dense_query_encoder_path=enc)

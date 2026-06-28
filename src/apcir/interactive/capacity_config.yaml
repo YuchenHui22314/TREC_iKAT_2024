@@ -22,6 +22,7 @@ indexes:
     embed_dim: 1024
     block_num: 6
     corpus: clueweb
+    query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
 
   # --- QReCC dev/test indexes (present on octal31, fit in RAM — exercise the real load/unload +
   #     capacity machinery without needing octal40). ---
@@ -35,6 +36,7 @@ indexes:
     embed_dim: 768
     block_num: 55
     corpus: qrecc
+    query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
   qrecc_qwen:           # 55 blocks, 1024-d
     kind: dense
     resident_ram_gb: 107.0
@@ -45,6 +47,7 @@ indexes:
     embed_dim: 1024
     block_num: 55
     corpus: qrecc
+    query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
   qrecc_ance_mini:      # 1 block, 1000 vecs — fast smoke test
     kind: dense
     resident_ram_gb: 0.01
@@ -55,6 +58,7 @@ indexes:
     embed_dim: 768
     block_num: 1
     corpus: qrecc
+    query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
   qrecc_bm25:           # small QReCC lucene index -> BM25 + doc-fetch (passage text)
     kind: sparse
     resident_ram_gb: 0.5

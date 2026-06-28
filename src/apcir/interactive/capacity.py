@@ -28,6 +28,9 @@ class IndexFootprint:
     embed_dim: Optional[int] = None      # dense units: query/doc embedding dim
     block_num: Optional[int] = None      # dense units: number of doc_emb blocks
     corpus: Optional[str] = None         # corpus tag; one active set must share a single corpus
+    query_encoder: Optional[str] = None  # dense units: HF id / local path of the QUERY encoder this
+                                         # index was built with (a leg routed here uses it unless the
+                                         # leg sets an explicit encoder_path). None -> global default.
 
 
 class CapacityError(RuntimeError):

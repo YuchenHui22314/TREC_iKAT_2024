@@ -131,7 +131,8 @@ def _persist_turn(store, pipeline, uid, req, result) -> bool:
         return False                             # session isn't this user's
     payload = {"citations": result.citations, "per_retriever": result.per_retriever,
                "shared_docs": result.shared_docs, "reformulations": result.reformulations,
-               "citation_spans": result.citation_spans}
+               "citation_spans": result.citation_spans,
+               "hits": [[d, s] for d, s in result.hits]}  # full fused ranking -> faithful reload
     try:
         store.add_turn(req.session_id, None, req.utterance, result.response or "", payload)
     except Exception as e:  # noqa: BLE001
