@@ -64,6 +64,23 @@ def test_models_status_surfaces_query_encoder():
     assert unit["query_encoder"] == "/enc/q"
 
 
+def test_should_build_remote_llm_gating():
+    """The resource-free OpenAI LLM is built eagerly (so rag/QR work in dynamic mode WITHOUT a
+    resident 'llm' capacity unit); local_vllm is NOT (needs an explicit GPU boot); extractive+no-QR
+    needs no LLM; a built LLM is never rebuilt."""
+    def pipe(cfg):
+        reg = IndexRegistry.from_yaml(CONFIG_YAML)
+        cap = CapacityManager(reg, free_ram_fn=lambda: 200.0,
+                              free_vram_fn=lambda: [24.0, 24.0, 24.0, 24.0])
+        return InteractivePipeline(cfg, registry=reg, capacity=cap)
+    assert pipe(PipelineConfig(llm_backend="openai", generation="rag"))._should_build_remote_llm() is True
+    assert pipe(PipelineConfig(llm_backend="local_vllm", generation="rag"))._should_build_remote_llm() is False
+    assert pipe(PipelineConfig(llm_backend="openai", generation="extractive"))._should_build_remote_llm() is False
+    p = pipe(PipelineConfig(llm_backend="openai", generation="rag"))
+    p._llm = object()                       # already built -> never rebuild
+    assert p._should_build_remote_llm() is False
+
+
 def test_set_active_loads_and_unloads_mini_dense():
     p = _pipe(200.0)
     plan = p.set_active(["qrecc_ance_mini"])

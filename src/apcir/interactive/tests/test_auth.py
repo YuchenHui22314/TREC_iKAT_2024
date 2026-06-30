@@ -123,13 +123,28 @@ def test_persist_turn_saves_and_extracts():
     assert store.list_ptkb(uid)[0]["source"] == "extracted"
 
 
+def test_persist_turn_returns_new_extracted_facts():
+    """_persist_turn returns (saved, new_facts) so /search can surface a per-turn 'learned …' line."""
+    from apcir.interactive.search_server import _persist_turn, SearchRequest
+    store = Store(":memory:")
+    uid = store.create_user("a", "p")
+    sid = store.create_session(uid)
+    req = SearchRequest(utterance="vegan?", session_id=sid, extract_ptkb=True)
+    saved, facts = _persist_turn(store, _FakePipe(), uid, req, _FakeResult())
+    assert saved is True
+    assert facts == ["I am a vegetarian."]                # only the NEW facts learned this turn
+    # a second identical turn learns nothing new (deduped) -> empty list
+    saved2, facts2 = _persist_turn(store, _FakePipe(), uid, req, _FakeResult())
+    assert saved2 is True and facts2 == []
+
+
 def test_persist_turn_auto_indexes_turns():
     from apcir.interactive.search_server import _persist_turn, SearchRequest
     store = Store(":memory:")
     uid = store.create_user("a", "p")
     sid = store.create_session(uid)
     assert _persist_turn(store, _FakePipe(), uid, SearchRequest(utterance="q1", session_id=sid),
-                         _FakeResult()) is True
+                         _FakeResult())[0] is True
     _persist_turn(store, _FakePipe(), uid, SearchRequest(utterance="q2", session_id=sid), _FakeResult())
     turns = store.list_turns(sid)
     assert [t["idx"] for t in turns] == [0, 1]                # server-allocated, no client collision
@@ -162,7 +177,8 @@ def test_persist_turn_isolates_extract_failure():
     uid = store.create_user("a", "p")
     sid = store.create_session(uid)
     req = SearchRequest(utterance="q", session_id=sid, extract_ptkb=True)
-    assert _persist_turn(store, BadPipe(), uid, req, _FakeResult()) is True   # must NOT raise
+    saved, facts = _persist_turn(store, BadPipe(), uid, req, _FakeResult())   # must NOT raise
+    assert saved is True and facts == []                                      # extract failed -> none
     assert len(store.list_turns(sid)) == 1                                    # turn still saved
     assert store.list_ptkb(uid) == []                                        # extract failed -> none
 

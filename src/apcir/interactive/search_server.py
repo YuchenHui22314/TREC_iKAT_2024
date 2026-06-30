@@ -21,7 +21,7 @@ from __future__ import annotations
 import threading
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, field_validator
@@ -80,6 +80,7 @@ class SearchResponse(BaseModel):
     reformulations: Dict[str, List[str]] = {}     # leg label -> reformulated query string(s)
     citation_spans: List[Dict[str, Any]] = []     # [{n, docid, start, end}] inline-[n] -> passage
     persisted: bool = False                       # was this turn saved to a session (authed + owned)?
+    extracted_ptkb: List[str] = []                # NEW user-profile facts learned THIS turn (if any)
 
 
 class LoginRequest(BaseModel):
@@ -120,15 +121,16 @@ def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
     return RunSpec(**fields) if fields else None
 
 
-def _persist_turn(store, pipeline, uid, req, result) -> bool:
+def _persist_turn(store, pipeline, uid, req, result) -> Tuple[bool, List[str]]:
     """If authed + a valid OWNED session_id, persist this turn (SERVER-allocated index) and, when
     req.extract_ptkb, extract + store NEW per-user PTKB facts. Best-effort + isolated: a save or
     extract error never breaks the /search response, and an extract failure never loses the saved
-    turn. Returns True iff the turn was saved."""
+    turn. Returns (saved, new_facts) — new_facts are the per-user PTKB statements learned THIS turn
+    (for the UI's per-turn 'learned …' line); empty when not saved / nothing new / extraction off."""
     if uid is None or req.session_id is None:
-        return False
+        return False, []
     if store.get_session(req.session_id, uid) is None:
-        return False                             # session isn't this user's
+        return False, []                         # session isn't this user's
     payload = {"citations": result.citations, "per_retriever": result.per_retriever,
                "shared_docs": result.shared_docs, "reformulations": result.reformulations,
                "citation_spans": result.citation_spans,
@@ -137,7 +139,8 @@ def _persist_turn(store, pipeline, uid, req, result) -> bool:
         store.add_turn(req.session_id, None, req.utterance, result.response or "", payload)
     except Exception as e:  # noqa: BLE001
         print(f"[persist_turn] save failed: {e}", flush=True)
-        return False
+        return False, []
+    new_facts: List[str] = []
     if req.extract_ptkb:                          # an extract error must NOT lose the saved turn
         try:
             existing = store.list_ptkb(uid)
@@ -148,9 +151,10 @@ def _persist_turn(store, pipeline, uid, req, result) -> bool:
                 if norm and norm not in seen:                              # dedup across turns + batch
                     seen.add(norm)
                     store.add_ptkb(uid, fact, source="extracted")
+                    new_facts.append(fact)
         except Exception as e:  # noqa: BLE001
             print(f"[persist_turn] ptkb extract failed: {e}", flush=True)
-    return True
+    return True, new_facts
 
 
 def create_app(config: PipelineConfig, eager_load: bool = True,
@@ -183,6 +187,7 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
             pipeline.load()
             print("[search_server] ready:", pipeline.health())
         else:
+            pipeline.setup_remote_llm_if_needed()  # build the resource-free OpenAI LLM up front (rag/QR)
             print("[search_server] ready (empty; load units via POST /activate).")
         try:
             yield
@@ -262,17 +267,17 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
             run_spec=run_spec,
         )
         try:                                               # never fail an OK search on persistence
-            persisted = _persist_turn(store, pipeline, uid, req, result)
+            persisted, extracted = _persist_turn(store, pipeline, uid, req, result)
         except Exception as e:  # noqa: BLE001
             print(f"[search] persist failed: {e}", flush=True)
-            persisted = False
+            persisted, extracted = False, []
         return SearchResponse(
             response=result.response, citations=result.citations,
             hits=[[d, s] for d, s in result.hits],
             ptkb_provenance=result.ptkb_provenance, qid=result.qid,
             per_retriever=result.per_retriever, shared_docs=result.shared_docs,
             reformulations=result.reformulations, citation_spans=result.citation_spans,
-            persisted=persisted,
+            persisted=persisted, extracted_ptkb=extracted,
         )
 
     # --- auth + session management ----------------------------------------- #

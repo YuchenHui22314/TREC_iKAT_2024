@@ -287,6 +287,19 @@ class InteractivePipeline:
             non_personalized_demo_file=c.non_personalized_demo_file, gtr_phi=c.gtr_phi))
         print(f"[pipeline] LLM ready: {self._llm}")
 
+    def _should_build_remote_llm(self) -> bool:
+        """The OpenAI LLM client is resource-free, so it can be built eagerly even in dynamic mode
+        (so rag + online-QR work WITHOUT a resident 'llm' capacity unit). local_vllm is NOT built
+        here — it needs an explicit GPU boot. No rebuild if already built or not needed."""
+        return (self._llm is None and self._needs_llm
+                and self.config.llm_backend == "openai")
+
+    def setup_remote_llm_if_needed(self):
+        """Build the resource-free remote (OpenAI) LLM up front in the empty/dynamic server, so
+        /search with generation='rag' is serviceable without activating an 'llm' unit."""
+        if self._should_build_remote_llm():
+            self._setup_llm()
+
     def shutdown(self):
         if self._vllm is not None:
             self._vllm.stop()
