@@ -119,6 +119,7 @@ def test_persist_turn_saves_and_extracts():
     # the full fused passage list must be persisted (JSON-friendly [[docid, score]]) so a reloaded
     # session re-renders identically, not a degraded citations-only fallback.
     assert turns[0]["payload"]["hits"] == [["d1", 1.0], ["d2", 0.5]]
+    assert turns[0]["payload"]["extracted_ptkb"] == ["I am a vegetarian."]  # for reloaded-session line
     assert [p["statement"] for p in store.list_ptkb(uid)] == ["I am a vegetarian."]
     assert store.list_ptkb(uid)[0]["source"] == "extracted"
 

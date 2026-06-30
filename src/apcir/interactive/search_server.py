@@ -131,18 +131,9 @@ def _persist_turn(store, pipeline, uid, req, result) -> Tuple[bool, List[str]]:
         return False, []
     if store.get_session(req.session_id, uid) is None:
         return False, []                         # session isn't this user's
-    payload = {"citations": result.citations, "per_retriever": result.per_retriever,
-               "shared_docs": result.shared_docs, "reformulations": result.reformulations,
-               "citation_spans": result.citation_spans,
-               "hits": [[d, s] for d, s in result.hits]}  # full fused ranking -> faithful reload
-    try:
-        store.add_turn(req.session_id, None, req.utterance, result.response or "", payload)
-    except Exception as e:  # noqa: BLE001
-        print(f"[persist_turn] save failed: {e}", flush=True)
-        return False, []
     new_facts: List[str] = []
-    if req.extract_ptkb:                          # an extract error must NOT lose the saved turn
-        try:
+    if req.extract_ptkb:                          # extract FIRST so the facts go INTO the saved payload
+        try:                                      # (an extract error must NOT lose the turn -> caught)
             existing = store.list_ptkb(uid)
             seen = {p["statement"].strip().lower() for p in existing}      # normalized dedup set
             current = [p["statement"] for p in existing]
@@ -154,6 +145,16 @@ def _persist_turn(store, pipeline, uid, req, result) -> Tuple[bool, List[str]]:
                     new_facts.append(fact)
         except Exception as e:  # noqa: BLE001
             print(f"[persist_turn] ptkb extract failed: {e}", flush=True)
+    payload = {"citations": result.citations, "per_retriever": result.per_retriever,
+               "shared_docs": result.shared_docs, "reformulations": result.reformulations,
+               "citation_spans": result.citation_spans,
+               "hits": [[d, s] for d, s in result.hits],  # full fused ranking -> faithful reload
+               "extracted_ptkb": new_facts}                # -> reloaded session shows the 'learned' line
+    try:
+        store.add_turn(req.session_id, None, req.utterance, result.response or "", payload)
+    except Exception as e:  # noqa: BLE001
+        print(f"[persist_turn] save failed: {e}", flush=True)
+        return False, []
     return True, new_facts
 
 
