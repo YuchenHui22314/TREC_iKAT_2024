@@ -83,6 +83,15 @@ def test_should_build_remote_llm_gating():
     assert p._should_build_remote_llm() is False
 
 
+def test_dense_load_reports_per_block_progress():
+    """load_dense streams per-block progress (so the activate bar actually moves on big indexes)."""
+    p = _pipe(200.0)
+    seen = []
+    p.load_dense("qrecc_ance_mini", progress_cb=lambda msg, frac: seen.append((msg, frac)))
+    assert any("block 1/1" in msg for msg, _ in seen)   # per-block message emitted
+    assert 1.0 in [frac for _, frac in seen]            # reaches 100%
+
+
 def test_set_active_loads_and_unloads_mini_dense():
     p = _pipe(200.0)
     plan = p.set_active(["qrecc_ance_mini"])

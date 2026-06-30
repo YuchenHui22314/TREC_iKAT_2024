@@ -67,7 +67,7 @@ class RamBlockSource:
     """
 
     def __init__(self, index_dir: str, num_blocks: int, dim: Optional[int] = None,
-                 verbose: bool = True, store_dtype: str = "float32"):
+                 verbose: bool = True, store_dtype: str = "float32", progress_cb=None):
         self.index_dir = index_dir
         self.num_blocks = num_blocks
         self.dim = dim
@@ -77,7 +77,7 @@ class RamBlockSource:
         # retrieval is standard (cf. faiss GpuIndexFlatConfig.useFloat16) with negligible quality loss.
         self.store_dtype = np.dtype(store_dtype)
         self._blocks: List[Tuple[int, np.ndarray, np.ndarray]] = []
-        self._load(verbose)
+        self._load(verbose, progress_cb)
 
     def validate(self):
         """Pre-flight (per CLAUDE.md): all 2*num_blocks files exist and it's a MERGED
@@ -89,7 +89,7 @@ class RamBlockSource:
                     raise FileNotFoundError(
                         f"RamBlockSource missing {p} (merged index? right block_num?)")
 
-    def _load(self, verbose: bool):
+    def _load(self, verbose: bool, progress_cb=None):
         self.validate()
         t0 = time.time()
         total_vecs = 0
@@ -117,6 +117,8 @@ class RamBlockSource:
             # not (fp16 resident + ALL fp32 temporaries) — the glibc-arena retention that caused
             # the ~235G RSS / OOM when loading qrecc_ance (169G fp32) as fp16.
             _reclaim_libc_heap()
+            if progress_cb is not None:                 # per-block progress for the activate bar
+                progress_cb(block_id + 1, self.num_blocks)
             if verbose:
                 print(f"[RamBlockSource] block {block_id}: {emb.shape} "
                       f"({emb.nbytes/1e9:.1f} GB)  RSS={_rss_gb():.1f}G  in {time.time()-tb:.1f}s")

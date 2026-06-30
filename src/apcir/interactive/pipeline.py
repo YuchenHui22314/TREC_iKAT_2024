@@ -98,6 +98,7 @@ class PipelineConfig:
     llm_gpu_id: int = 3                    # vLLM server pinned here (CUDA_VISIBLE_DEVICES=3); faiss uses 0..n-1
     llm_max_tokens: int = 2048
     llm_temperature: float = 0.0
+    llm_reasoning_effort: Optional[str] = None   # gpt-5: minimal|low|medium|high (speed vs depth)
     # online-QR promptor demos + GtR fan-out
     demo_file: str = ("/data/rech/huiyuche/TREC_iKAT_2024/data/topics/ikat23/"
                       "original_demonstration.json")                       # rar (no ptkb)
@@ -281,7 +282,8 @@ class InteractivePipeline:
             base_url = self._vllm.base_url()
         self._llm = SharedLLMClient(
             backend=c.llm_backend, model=c.llm_model, base_url=base_url,
-            max_tokens=c.llm_max_tokens, temperature=c.llm_temperature)
+            max_tokens=c.llm_max_tokens, temperature=c.llm_temperature,
+            reasoning_effort=c.llm_reasoning_effort)
         self._rewriter = OnlineRewriter(self._llm, RewriterConfig(
             demo_file=c.demo_file, personalized_demo_file=c.personalized_demo_file,
             non_personalized_demo_file=c.non_personalized_demo_file, gtr_phi=c.gtr_phi))
@@ -436,8 +438,11 @@ class InteractivePipeline:
         with self._residency_lock:
             fp = self.registry.get(unit)
             self._progress(progress_cb, f"loading {unit}", 0.0)
-            ram = RamBlockSource(fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
-                                 store_dtype=fp.dtype or "float16")
+            ram = RamBlockSource(
+                fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
+                store_dtype=fp.dtype or "float16",
+                progress_cb=lambda done, total: self._progress(
+                    progress_cb, f"loading {unit}: block {done}/{total}", done / total))
             self._dense[unit] = ram
             self._resident.add(unit)
             self._progress(progress_cb, f"loaded {unit} ({ram.total_vecs:,} vecs)", 1.0)
