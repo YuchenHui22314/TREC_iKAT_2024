@@ -24,6 +24,8 @@ class IndexFootprint:
     load_peak_ram_gb: float         # transient peak DURING load (>= resident)
     vram_gb: float = 0.0           # steady-state VRAM (rerankers); dense fp16 search VRAM is transient -> 0
     index_dir: Optional[str] = None
+    index_dir_alts: Optional[List[str]] = None  # fallback dirs tried (in order) if index_dir is missing
+                                   # -> prefer fast local SSD (/part on octal31/40), fall back to NFS.
     dtype: Optional[str] = None
     embed_dim: Optional[int] = None      # dense units: query/doc embedding dim
     block_num: Optional[int] = None      # dense units: number of doc_emb blocks
@@ -31,6 +33,25 @@ class IndexFootprint:
     query_encoder: Optional[str] = None  # dense units: HF id / local path of the QUERY encoder this
                                          # index was built with (a leg routed here uses it unless the
                                          # leg sets an explicit encoder_path). None -> global default.
+
+    def _candidate_dirs(self) -> List[str]:
+        return [p for p in [self.index_dir, *(self.index_dir_alts or [])] if p]
+
+    def resolved_index_dir(self) -> Optional[str]:
+        """The dir to actually load from: the FIRST existing of index_dir then index_dir_alts (so a
+        unit is served from fast local SSD when present, else the NFS copy). Falls back to index_dir
+        (possibly missing) so a caller can still report a path."""
+        import os
+        for p in self._candidate_dirs():
+            if os.path.isdir(p):
+                return p
+        return self.index_dir
+
+    @property
+    def is_available(self) -> bool:
+        """True if no index dir is needed (e.g. reranker) or ANY candidate dir exists on disk."""
+        import os
+        return self.index_dir is None or any(os.path.isdir(p) for p in self._candidate_dirs())
 
 
 class CapacityError(RuntimeError):

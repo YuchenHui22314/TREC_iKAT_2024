@@ -344,10 +344,10 @@ class InteractivePipeline:
         for name in self.registry.names():
             fp = self.registry.get(name)
             units.append({
-                "name": name, "kind": fp.kind,
+                "name": name, "kind": fp.kind, "corpus": fp.corpus,
                 "resident_ram_gb": fp.resident_ram_gb, "load_peak_ram_gb": fp.load_peak_ram_gb,
                 "vram_gb": fp.vram_gb, "dtype": fp.dtype, "query_encoder": fp.query_encoder,
-                "available": fp.index_dir is None or os.path.isdir(fp.index_dir),
+                "available": fp.is_available,
             })
         try:                                              # best-effort: torch.cuda probe may fail
             free_vram = [round(v, 1) for v in self.capacity.free_vram_fn()]
@@ -436,7 +436,7 @@ class InteractivePipeline:
         with self._residency_lock:
             fp = self.registry.get(unit)
             self._progress(progress_cb, f"loading {unit}", 0.0)
-            ram = RamBlockSource(fp.index_dir, fp.block_num, fp.embed_dim,
+            ram = RamBlockSource(fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
                                  store_dtype=fp.dtype or "float16")
             self._dense[unit] = ram
             self._resident.add(unit)
@@ -463,9 +463,9 @@ class InteractivePipeline:
         with self._residency_lock:
             fp = self.registry.get(unit)
             self._progress(progress_cb, f"loading {unit} (BM25 + doc-fetch)", 0.0)
-            self._bm25 = LuceneSearcher(fp.index_dir)
+            self._bm25 = LuceneSearcher(fp.resolved_index_dir())
             self._bm25.set_bm25(self.config.bm25_k1, self.config.bm25_b)
-            self._docfetch = LuceneSearcher(fp.index_dir)
+            self._docfetch = LuceneSearcher(fp.resolved_index_dir())
             self._resident.add(unit)
             self._progress(progress_cb, f"loaded {unit}", 1.0)
 
@@ -489,7 +489,7 @@ class InteractivePipeline:
             fp = self.registry.get(unit)
             self._progress(progress_cb, f"loading {unit} (SPLADE inverted index)", 0.0)
             from apcir.splade_index import SparseRetrieval
-            self._splade = SparseRetrieval(fp.index_dir, "None", self.config.splade_dim_voc,
+            self._splade = SparseRetrieval(fp.resolved_index_dir(), "None", self.config.splade_dim_voc,
                                            self.config.retrieval_top_k,
                                            value_dtype=self.config.splade_value_dtype)
             self._resident.add(unit)

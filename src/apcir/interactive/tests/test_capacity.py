@@ -19,6 +19,27 @@ def _mgr(free_ram_gb, reg=None):
                            free_vram_fn=lambda: [24.0, 24.0, 24.0, 24.0])
 
 
+def test_footprint_resolves_first_existing_dir_then_falls_back():
+    """resolved_index_dir() picks the first existing of index_dir then index_dir_alts (fast SSD over
+    NFS); is_available is True iff any candidate exists; missing-everywhere keeps the primary path."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as real:
+        # primary missing -> NFS fallback wins
+        fp = IndexFootprint("u", "dense", 1.0, 1.0, index_dir="/no/such/primary",
+                            index_dir_alts=[real])
+        assert fp.resolved_index_dir() == real
+        assert fp.is_available is True
+        # primary exists -> use it (don't fall back)
+        fp2 = IndexFootprint("u", "dense", 1.0, 1.0, index_dir=real, index_dir_alts=["/no/such"])
+        assert fp2.resolved_index_dir() == real
+        # none exist -> keep the primary (for reporting) + unavailable
+        fp3 = IndexFootprint("u", "dense", 1.0, 1.0, index_dir="/no/a", index_dir_alts=["/no/b"])
+        assert fp3.resolved_index_dir() == "/no/a"
+        assert fp3.is_available is False
+        # no dir needed (reranker) -> always available
+        assert IndexFootprint("r", "reranker", 1.0, 1.0).is_available is True
+
+
 # --------------------------------------------------------------------------- #
 # Task 1 — IndexRegistry
 # --------------------------------------------------------------------------- #

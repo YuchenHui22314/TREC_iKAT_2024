@@ -1,37 +1,77 @@
-# Loadable capacity units for the RALI Searcher.
+# Loadable capacity units for the Magpie / RALI Searcher.
 #
-# NOTE: index paths are MACHINE-SPECIFIC. This file is for **octal31** (251G RAM), whose only
-# /part/01 index dir is /part/01/Tmp/yuchenhui/indexes/ — it holds the ClueWeb qwen index plus the
-# QReCC dev/test indexes. The full ClueWeb ance/splade/bm25 indexes live on **octal40** under
-# /part/01/Tmp/yuchen/ ; deploy there with a sibling capacity_config.octal40.yaml.
+# ALT-PATH: each unit lists index_dir (fast LOCAL SSD on octal31: /part/01/Tmp/yuchenhui) plus
+# index_dir_alts tried in order — octal40's local SSD (/part/01/Tmp/yuchen) then the shared NFS
+# store (TREC_iKAT_2024/data/{embeddings,indexes}). The loader uses the FIRST existing dir, so the
+# same config is portable across octal31/40 and falls back to NFS when a local copy is absent.
 #
 # resident_ram_gb = steady-state RAM once loaded; load_peak_ram_gb = transient peak DURING load
-# (dense = read fp32 block + cast to fp16, block by block, so peak = resident + one fp32 block +
-# its fp16 cast). vram_gb = steady-state VRAM (rerankers only; dense fp16 search VRAM is transient).
-# embed_dim/block_num = dense-index geometry (passed to RamBlockSource at load).
+# (dense = read fp32 block + cast to fp16 block-by-block, so peak = resident + one fp32 block + its
+# fp16 cast). vram_gb = steady-state VRAM (rerankers only). embed_dim/block_num = dense geometry.
+# Big indexes may exceed octal31's ~237G free RAM -> the capacity guard REFUSES them here (need octal40).
 indexes:
-  # --- ClueWeb22-B production corpus. Only qwen is present on octal31, and its fp16 LOAD PEAK
-  #     (~320G) exceeds octal31's ~237G free RAM, so the guard REFUSES it here (needs octal40). ---
-  clueweb_qwen:
+  # =================== ClueWeb22-B (production corpus) ===================
+  clueweb_ance:         # ANCE 768-d, ~12 blocks (~116M passages); on NFS embeddings here
+    kind: dense
+    resident_ram_gb: 168.0
+    load_peak_ram_gb: 210.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_ance_merged
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_ance_merged_2
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged
+    dtype: float16
+    embed_dim: 768
+    block_num: 12
+    corpus: clueweb
+    query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+  clueweb_qwen:         # Qwen3-Embedding 1024-d, 6 blocks
     kind: dense
     resident_ram_gb: 235.0
     load_peak_ram_gb: 320.0
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_qwen_merged
     dtype: float16
     embed_dim: 1024
     block_num: 6
     corpus: clueweb
     query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
+  clueweb_splade:       # SPLADE-v3 learned-sparse inverted index (large; octal40)
+    kind: splade
+    resident_ram_gb: 235.0
+    load_peak_ram_gb: 250.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchenhui/indexes/splade_v3_clueweb22B
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/splade_v3_clueweb22B
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/splade_v3_clueweb22B
+    dtype: null
+    corpus: clueweb
+  clueweb_bm25:         # ClueWeb22-B BM25 + doc-fetch (Lucene, 116M passages, stores raw text)
+    kind: sparse
+    resident_ram_gb: 5.0
+    load_peak_ram_gb: 5.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_fengran_sparse_index_2
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_fengran_sparse_index_2
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/indexes/clueweb22b_ikat23_fengran_sparse_index_2
+    dtype: null
+    corpus: clueweb
 
-  # --- QReCC dev/test indexes (present on octal31, fit in RAM — exercise the real load/unload +
-  #     capacity machinery without needing octal40). ---
+  # =================== QReCC ===================
   qrecc_ance:           # 55 blocks, 768-d, ~55M passages
     kind: dense
     resident_ram_gb: 80.0
     load_peak_ram_gb: 85.0
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_ance_merged
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/qrecc_ance_merged
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/qrecc_ance_merged
     dtype: float16
     embed_dim: 768
     block_num: 55
@@ -43,12 +83,15 @@ indexes:
     load_peak_ram_gb: 112.0
     vram_gb: 0.0
     index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_qwen_emb_0.6_merged
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/qrecc_qwen_emb_0.6_merged
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/qrecc_qwen_emb_0.6_merged
     dtype: float16
     embed_dim: 1024
     block_num: 55
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
-  qrecc_ance_mini:      # 1 block, 1000 vecs — fast smoke test
+  qrecc_ance_mini:      # 1 block, 1000 vecs — fast smoke test (octal31 /part only)
     kind: dense
     resident_ram_gb: 0.01
     load_peak_ram_gb: 0.02
@@ -68,6 +111,23 @@ indexes:
     dtype: null
     corpus: qrecc
 
+  # =================== TopiOCQA ===================
+  topiocqa_ance:        # ANCE 768-d, ~26 blocks
+    kind: dense
+    resident_ram_gb: 37.0
+    load_peak_ram_gb: 42.0
+    vram_gb: 0.0
+    index_dir: /part/01/Tmp/yuchenhui/indexes/topiocqa_ance_merged
+    index_dir_alts:
+      - /part/01/Tmp/yuchen/indexes/topiocqa_ance_merged
+      - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/topiocqa_ance_merged
+    dtype: float16
+    embed_dim: 768
+    block_num: 26
+    corpus: topiocqa
+    query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+
+  # =================== reranker (corpus-agnostic) ===================
   reranker_qwen3:       # GPU-resident, co-hosted on the gen-LLM GPU (bf16 ~9G VRAM)
     kind: reranker
     resident_ram_gb: 1.0

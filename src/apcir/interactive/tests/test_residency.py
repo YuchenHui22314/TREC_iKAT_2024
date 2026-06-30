@@ -58,10 +58,12 @@ def test_models_status_surfaces_query_encoder():
     encoder a unit needs."""
     from apcir.interactive.capacity import IndexFootprint
     p = _custom_pipe({
-        "u": IndexFootprint("u", "dense", 0.01, 0.02, index_dir="/x", query_encoder="/enc/q"),
+        "u": IndexFootprint("u", "dense", 0.01, 0.02, index_dir="/x", corpus="qrecc",
+                            query_encoder="/enc/q"),
     })
     unit = next(x for x in p.models_status()["units"] if x["name"] == "u")
     assert unit["query_encoder"] == "/enc/q"
+    assert unit["corpus"] == "qrecc"
 
 
 def test_should_build_remote_llm_gating():

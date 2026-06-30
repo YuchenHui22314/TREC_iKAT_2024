@@ -23,6 +23,30 @@ def _client(free_ram=200.0):
     return TestClient(app), pipe
 
 
+def test_doc_endpoint_409_without_docfetch_then_returns_text():
+    """GET /doc/{docid} -> 409 until a doc-fetch (sparse) index is resident, then the passage text."""
+    import json as _json
+    client, pipe = _client()
+    assert pipe._docfetch is None
+    assert client.get("/doc", params={"docid": "anything"}).status_code == 409
+
+    class _FakeDoc:
+        def __init__(self, did):
+            self._did = did
+
+        def raw(self):
+            return _json.dumps({"contents": f"text of {self._did}"})
+
+    class _FakeDocfetch:
+        def doc(self, did):
+            return _FakeDoc(did)
+
+    pipe._docfetch = _FakeDocfetch()
+    r = client.get("/doc", params={"docid": "somedoc"})
+    assert r.status_code == 200
+    assert r.json() == {"docid": "somedoc", "text": "text of somedoc"}
+
+
 def _wait_status(client, tid, timeout=12.0):
     st = {"state": "running"}
     for _ in range(int(timeout / 0.2)):

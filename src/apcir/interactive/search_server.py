@@ -280,6 +280,16 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
             persisted=persisted, extracted_ptkb=extracted,
         )
 
+    @app.get("/doc")
+    def get_doc(docid: str):
+        """Fetch a passage's full text for the UI's 'view passage' modal. Needs a resident
+        doc-fetch (sparse/BM25) index; 409 otherwise. docid is a QUERY param (robust for
+        URL-shaped qrecc docids with slashes/colons): GET /doc?docid=..."""
+        if pipeline._docfetch is None:
+            raise HTTPException(status_code=409,
+                                detail="no doc-fetch index resident; activate a sparse/BM25 unit")
+        return {"docid": docid, "text": pipeline._passage_text(docid)}
+
     # --- auth + session management ----------------------------------------- #
     def _current_user(authorization: Optional[str] = Header(None)) -> int:
         if not authorization or not authorization.startswith("Bearer "):
