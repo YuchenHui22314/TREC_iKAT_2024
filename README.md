@@ -45,6 +45,7 @@ Let us get started!
     - [7. iKAT Project Specific parameters](#7-ikat-project-specific-parameters)
 - [🔁 Reranking with a multi-GPU server pool](#-reranking-with-a-multi-gpu-server-pool)
 - [💬 iKAT'26 Interactive Submission (Sim.API)](#-ikat26-interactive-submission-simapi)
+- [🔎 Magpie — interactive search web app](#-magpie--interactive-search-web-app)
 - [⚡ Shared-Corpus Evaluation (stream once, fan out)](#-shared-corpus-evaluation-stream-once-fan-out)
 - [📄 Citation](#citation)
 - [🙏 Acknowledgement](#acknowledgement)
@@ -541,6 +542,19 @@ IKAT_SIM_TOKEN=<tok> python -m apcir.interactive.run_driver --mode debug --max_c
 Records land in `results/ClueWeb_ikat/ikat_26_sim_debug/{ranking,interactive}/`. Official
 `--mode run` requires `--i_understand_run_is_scored` (protects the scored runs). See the
 `ikat-interactive-submission` skill for the full option matrix + gotchas.
+
+## 🔎 Magpie — interactive search web app
+
+> Extension beyond the paper. The same `apcir/interactive/` engine also powers **Magpie**, a
+> log-in web app for personalized conversational search over ClueWeb22-B / QReCC / TopiOCQA:
+> pick corpora, retrievers and rerankers at runtime (indexes load/evict on demand,
+> capacity-guarded), and get inline-cited RAG answers with a side-by-side retriever comparison
+> grid and an auto-learning user profile (PTKB).
+>
+> - **Backend (this repo)**: [`src/apcir/interactive/README.md`](./src/apcir/interactive/README.md)
+>   — architecture, endpoints, corpus memory-footprint table, runbook.
+> - **Frontend (separate repo)**: [YuchenHui22314/pica](https://github.com/YuchenHui22314/pica)
+>   — React SPA; in production the backend serves its built bundle from one port.
 
 ## ⚡ Shared-Corpus Evaluation (stream once, fan out)
 
