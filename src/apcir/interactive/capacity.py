@@ -33,6 +33,10 @@ class IndexFootprint:
     query_encoder: Optional[str] = None  # dense units: HF id / local path of the QUERY encoder this
                                          # index was built with (a leg routed here uses it unless the
                                          # leg sets an explicit encoder_path). None -> global default.
+    query_encoders: Optional[List[dict]] = None  # dense units: OPTIONAL list of selectable query-
+                                         # encoder checkpoints that all search this same doc index
+                                         # (query-encoder-only fine-tunes). Each entry:
+                                         # {label, path, leg_name, default_query_type}.
 
     def _candidate_dirs(self) -> List[str]:
         return [p for p in [self.index_dir, *(self.index_dir_alts or [])] if p]

@@ -9,6 +9,38 @@
 # (dense = read fp32 block + cast to fp16 block-by-block, so peak = resident + one fp32 block + its
 # fp16 cast). vram_gb = steady-state VRAM (rerankers only). embed_dim/block_num = dense geometry.
 # Big indexes may exceed octal31's ~237G free RAM -> the capacity guard REFUSES them here (need octal40).
+#
+# QUERY-ENCODER CHOICES: dense doc embeddings are frozen (encoded once with the base encoder);
+# the fine-tuned variants below are QUERY-ENCODER-ONLY fine-tunes that search the SAME doc index.
+# `query_encoders` lists the selectable checkpoints per unit ({label, path, leg_name,
+# default_query_type}); `query_encoder` stays the single default. leg_name = the model-family name
+# the pipeline dispatches on (pers-conv is dispatched as qwen3 + per-leg encoder override).
+_encoder_sets:
+  ance: &ance_encoders
+    - label: ANCE
+      path: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+      leg_name: ance
+      default_query_type: raw
+    - label: Conv-ANCE
+      path: /data/rech/huiyuche/huggingface/continual_ir/ance_topiocqa_nosched/checkpoint-step-1900
+      leg_name: conv-ance
+      default_query_type: full_conversation_dense
+  qwen: &qwen_encoders
+    - label: Base-Qwen3-0.6B
+      path: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
+      leg_name: qwen3
+      default_query_type: qwen_conversation
+    # = the $CONV of the iKAT'26 submission runs (logs/runs_2_3_commands.sh); the offline-eval
+    # alternative is continual_ir/instruct3_qwen_nosched/checkpoint-step-1880.
+    - label: Conv-Qwen3-0.6B
+      path: /data/rech/huiyuche/huggingface/continual_ir/instruct3fp32infonce_qwen_nosched/checkpoint-step-94
+      leg_name: conv-qwen3
+      default_query_type: qwen_conversation
+    # personalized graded retriever (full merged model; the paper-best LoRA lives only on octal40).
+    - label: Pers-Conv-Qwen3-0.6B
+      path: /data/rech/huiyuche/huggingface/continual_ir/ikat_perso_best_infonce_r64_33p1
+      leg_name: qwen3
+      default_query_type: qwen_conversation_ptkb
 indexes:
   # =================== ClueWeb22-B (production corpus) ===================
   clueweb_ance:         # ANCE 768-d, ~12 blocks (~116M passages); on NFS embeddings here
@@ -25,6 +57,7 @@ indexes:
     block_num: 12
     corpus: clueweb
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+    query_encoders: *ance_encoders
   clueweb_qwen:         # Qwen3-Embedding 1024-d, 6 blocks
     kind: dense
     resident_ram_gb: 235.0
@@ -39,6 +72,7 @@ indexes:
     block_num: 6
     corpus: clueweb
     query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
+    query_encoders: *qwen_encoders
   clueweb_splade:       # SPLADE-v3 learned-sparse inverted index (large; octal40)
     kind: splade
     resident_ram_gb: 235.0
@@ -77,6 +111,7 @@ indexes:
     block_num: 55
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+    query_encoders: *ance_encoders
   qrecc_qwen:           # 55 blocks, 1024-d
     kind: dense
     resident_ram_gb: 107.0
@@ -91,6 +126,7 @@ indexes:
     block_num: 55
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
+    query_encoders: *qwen_encoders
   qrecc_ance_mini:      # 1 block, 1000 vecs — fast smoke test (octal31 /part only)
     kind: dense
     resident_ram_gb: 0.01
@@ -102,6 +138,7 @@ indexes:
     block_num: 1
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+    query_encoders: *ance_encoders
   qrecc_bm25:           # small QReCC lucene index -> BM25 + doc-fetch (passage text)
     kind: sparse
     resident_ram_gb: 0.5
@@ -126,6 +163,7 @@ indexes:
     block_num: 26
     corpus: topiocqa
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
+    query_encoders: *ance_encoders
 
   # =================== reranker (corpus-agnostic) ===================
   reranker_qwen3:       # GPU-resident, co-hosted on the gen-LLM GPU (bf16 ~9G VRAM)

@@ -37,6 +37,7 @@ class RetrieverLeg(BaseModel):
     qr: str = ""
     encoder_path: Optional[str] = None
     unit: Optional[str] = None              # resident capacity unit to search
+    encoder_label: Optional[str] = None     # short display label of the chosen encoder (leg-label seg)
 
 
 class ActivateRequest(BaseModel):
@@ -110,7 +111,7 @@ def _build_run_spec(req: SearchRequest) -> Optional[RunSpec]:
     if req.retrievers is not None:
         fields["retrievers"] = [
             RetrieverSpec(name=l.name, query_type=l.query_type, qr=l.qr,
-                          encoder_path=l.encoder_path, unit=l.unit)
+                          encoder_path=l.encoder_path, unit=l.unit, encoder_label=l.encoder_label)
             for l in req.retrievers
         ]
     for f in ("fusion_type", "reranker", "generation", "generation_top_k", "retrieval_top_k",

@@ -371,3 +371,34 @@ def test_fuse_honors_cfg_override():
         assert False, "expected ValueError for the bogus fusion_type from cfg"
     except ValueError as e:
         assert "BOGUS_FUSION" in str(e)
+
+
+def test_models_status_surfaces_query_encoders_choices():
+    """A dense unit may advertise MULTIPLE query-encoder checkpoints (Base/Conv/Pers-Conv) that all
+    search the same doc index; GET /models must surface the list so the UI can offer the choice."""
+    from apcir.interactive.capacity import IndexFootprint
+    choices = [
+        {"label": "Base-Qwen3-0.6B", "path": "/enc/base", "leg_name": "qwen3",
+         "default_query_type": "qwen_conversation"},
+        {"label": "Pers-Conv-Qwen3-0.6B", "path": "/enc/pers", "leg_name": "qwen3",
+         "default_query_type": "qwen_conversation_ptkb"},
+    ]
+    p = _custom_pipe({
+        "u": IndexFootprint("u", "dense", 0.01, 0.02, index_dir="/x", corpus="qrecc",
+                            query_encoder="/enc/base", query_encoders=choices),
+    })
+    unit = next(x for x in p.models_status()["units"] if x["name"] == "u")
+    assert unit["query_encoders"] == choices
+    assert unit["query_encoder"] == "/enc/base"       # the single default stays
+
+
+def test_leg_label_encoder_segment():
+    """Two legs on the SAME unit with different encoders must get distinct labels (grid columns/
+    reformulations key on the label): name[@unit][#encoder_label][:qr]."""
+    from apcir.interactive.pipeline import RetrieverSpec, InteractivePipeline as P
+    assert P._leg_label(RetrieverSpec("qwen3", "raw", unit="u", encoder_label="Pers-Conv")) == \
+        "qwen3@u#Pers-Conv"
+    assert P._leg_label(RetrieverSpec("qwen3", "raw", unit="u", encoder_label="Conv", qr="rar")) == \
+        "qwen3@u#Conv:rar"
+    # no encoder_label -> unchanged legacy labels
+    assert P._leg_label(RetrieverSpec("qwen3", "raw", unit="u")) == "qwen3@u"

@@ -60,6 +60,9 @@ class RetrieverSpec:
                               # dense_query_encoder_path. Lets two qwen3 legs (e.g. conv-qwen3 +
                               # pers-conv-qwen3) use DIFFERENT encoders while sharing one doc index.
     unit: Optional[str] = None  # capacity unit (resident dense index) to search; None -> legacy self._ram
+    encoder_label: Optional[str] = None  # SHORT display label of the chosen encoder (e.g. "Pers-Conv");
+                              # display-only: disambiguates leg labels when several encoders run on
+                              # the same unit (grid columns / reformulations key on the label).
 
 
 @dataclass
@@ -349,6 +352,7 @@ class InteractivePipeline:
                 "name": name, "kind": fp.kind, "corpus": fp.corpus,
                 "resident_ram_gb": fp.resident_ram_gb, "load_peak_ram_gb": fp.load_peak_ram_gb,
                 "vram_gb": fp.vram_gb, "dtype": fp.dtype, "query_encoder": fp.query_encoder,
+                "query_encoders": fp.query_encoders,
                 "available": fp.is_available,
             })
         try:                                              # best-effort: torch.cuda probe may fail
@@ -651,10 +655,13 @@ class InteractivePipeline:
 
     @staticmethod
     def _leg_label(spec) -> str:
-        """Stable display label for a retriever leg: name[@unit][:qr]."""
+        """Stable display label for a retriever leg: name[@unit][#encoder_label][:qr]. The encoder
+        segment keeps labels distinct when several encoders search the same unit."""
         label = spec.name
         if getattr(spec, "unit", None):
             label += f"@{spec.unit}"
+        if getattr(spec, "encoder_label", None):
+            label += f"#{spec.encoder_label}"
         if getattr(spec, "qr", "") and spec.qr != "none":
             label += f":{spec.qr}"
         return label

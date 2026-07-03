@@ -180,3 +180,21 @@ def test_plan_on_octal31_config_refuses_clueweb_qwen_but_fits_qrecc_ance():
     # switching from qrecc_ance to qrecc_qwen evicts the first, loads the second
     p = mgr.plan(active_set=["qrecc_qwen"], resident=["qrecc_ance"])
     assert p.to_unload == ["qrecc_ance"] and p.to_load == ["qrecc_qwen"] and p.fits
+
+
+def test_registry_parses_query_encoders_list():
+    """capacity_config.yaml may declare per-unit query_encoders (list of {label,path,leg_name,
+    default_query_type}); from_yaml must accept it (dataclass field exists)."""
+    import tempfile, os, yaml as _yaml
+    cfg = {"indexes": {"u": {
+        "kind": "dense", "resident_ram_gb": 1.0, "load_peak_ram_gb": 1.0,
+        "query_encoder": "/enc/base",
+        "query_encoders": [{"label": "ANCE", "path": "/enc/base", "leg_name": "ance",
+                            "default_query_type": "raw"}],
+    }}}
+    with tempfile.TemporaryDirectory() as d:
+        pth = os.path.join(d, "c.yaml")
+        with open(pth, "w") as f:
+            _yaml.safe_dump(cfg, f)
+        reg = IndexRegistry.from_yaml(pth)
+    assert reg.get("u").query_encoders[0]["label"] == "ANCE"
