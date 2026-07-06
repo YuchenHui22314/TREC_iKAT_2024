@@ -107,3 +107,37 @@ def test_search_dense_unit_rejects_non_fp16():
         assert False, "expected a clear fp16-only error"
     except (ValueError, NotImplementedError) as e:
         assert "fp16" in str(e) or "float16" in str(e)
+
+class _TinySrc:
+    """Minimal RamBlockSource stand-in: one fp16 block."""
+    def __init__(self, emb, ids):
+        self._emb = np.ascontiguousarray(emb, dtype=np.float16)
+        self._ids = np.array(ids, dtype=object)
+    def iter_blocks(self):
+        yield 0, self._emb, self._ids
+
+
+def test_fp16_search_scores_are_fp32_and_resolve_sub_ulp_ties():
+    """At ANCE score magnitude (~700) fp16 ulp is 0.5: an fp16-output GEMM quantizes near-tied
+    docs together and can rank them wrongly. Scores must be computed/emitted in fp32 so docs whose
+    true IPs differ by < 0.5 still rank correctly."""
+    from apcir.interactive.ram_index import _search_ram_fp16_gpu
+    rng = np.random.default_rng(0)
+    dim = 768
+    q = rng.standard_normal((1, dim)).astype(np.float32)
+    q /= np.linalg.norm(q)
+    base = q[0] * 700.0                    # doc collinear with q -> IP ~= 700 (ANCE-like magnitude)
+    # three docs with true IPs 700.0 / 700.35 / 700.70 — gaps BELOW the fp16 ulp (0.5) at this
+    # magnitude, injected via ONE component so fp16 DOC storage still distinguishes the docs
+    # (per-component change is large); only an fp16 SCORE cannot resolve the gap.
+    j = int(np.argmax(np.abs(q[0])))
+    docs = np.stack([base.copy() for _ in range(3)])
+    for k in range(3):
+        docs[k, j] += 0.35 * k / q[0, j]
+    filler = rng.standard_normal((61, dim)).astype(np.float32)   # low-score fillers
+    emb = np.concatenate([docs, filler])
+    ids = [f"d{i}" for i in range(len(emb))]
+    D, I = _search_ram_fp16_gpu(np.ascontiguousarray(q), _TinySrc(emb, ids), topN=3, gpus=[0])
+    assert D.dtype == np.float32
+    assert list(I[0]) == ["d2", "d1", "d0"]            # correct sub-ulp ordering
+    assert D[0][0] > D[0][1] > D[0][2]                 # strictly descending fp32 scores

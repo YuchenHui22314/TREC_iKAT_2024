@@ -171,21 +171,26 @@ def search_query_against_ram(query_embeddings: np.ndarray,
 
 
 def _search_ram_fp16_gpu(query_embeddings, ram_src, topN, merge_fn=merge_topk,
-                         gpus=None, row_chunk=4_000_000):
+                         gpus=None, row_chunk=2_000_000):
     """fp16 dense search WITHOUT faiss, sharded across `gpus` (default [0]).
 
     Each block's rows are split evenly across the GPUs; on each GPU the shard is streamed in
-    row_chunks (bounding GPU memory) while keeping a running per-shard top-k (scores = Q @ shard.T
-    with tensor cores, fp16 in / fp32 accumulate, then top-k). The per-(block, shard) top-k's are
-    merged by `merge_fn` into the global top-N. Sharding lets a 41G fp16 block fit even 24G cards
-    and lets the GPUs work in parallel (each GPU's shard work is issued before any `.cpu()` sync);
-    gpus=[0] is the legacy whole-block-on-one-card path. Same global top-N and the same
-    (D, ids[I]) contract as the faiss path.
+    row_chunks (bounding GPU memory) while keeping a running per-shard top-k. The per-(block,
+    shard) top-k's are merged by `merge_fn` into the global top-N. Sharding lets a 41G fp16 block
+    fit even 24G cards and lets the GPUs work in parallel (each GPU's shard work is issued before
+    any `.cpu()` sync); gpus=[0] is the legacy whole-block-on-one-card path. Same global top-N and
+    the same (D, ids[I]) contract as the faiss path.
+
+    Numerics: docs are STORED fp16 (RAM + the H2D copy stays half-sized) but each chunk is upcast
+    on-GPU and scored with an fp32 GEMM against the fp32 query, so the SCORES are fp32. An
+    fp16-output GEMM quantizes scores to ulp=0.5 at ANCE's ~700 magnitude, shuffling near-tied
+    docs (measured recall@10 0.83 vs 0.98, see docs/dense_search_benchmark_report.md). row_chunk
+    default is 2M (not 4M) to bound the transient fp32 chunk (2M x 1024 x 4B = 8G/GPU).
     """
     import torch
     gpus = list(gpus) if gpus else [0]
     devs = [(g, f"cuda:{g}") for g in gpus]
-    Qf = np.ascontiguousarray(query_embeddings, dtype=np.float16)
+    Qf = np.ascontiguousarray(query_embeddings, dtype=np.float32)
     Qt = {d: torch.from_numpy(Qf).to(d) for _, d in devs}
     sources = []
     with torch.no_grad():
@@ -200,8 +205,8 @@ def _search_ram_fp16_gpu(query_embeddings, ram_src, topN, merge_fn=merge_topk,
                 bv = bi = None                                   # running per-shard top-k (on d)
                 for s in range(s0, s1, row_chunk):
                     e = min(s + row_chunk, s1)
-                    ct = torch.from_numpy(emb[s:e]).to(d)        # fp16 (m, dim)
-                    sc = (Qt[d] @ ct.T).float()                  # (nq, m) inner product
+                    ct = torch.from_numpy(emb[s:e]).to(d)        # fp16 (m, dim) — half-size H2D
+                    sc = Qt[d] @ ct.float().T                    # fp32 GEMM -> fp32 scores
                     cv, ci = torch.topk(sc, min(topN, sc.shape[1]), dim=1)   # (nq, k) sorted desc
                     ci = ci + s                                  # chunk-local -> block-row index
                     if bv is None:
