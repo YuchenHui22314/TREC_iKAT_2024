@@ -347,17 +347,33 @@ class PQRefineDense:
         assert self._index.ntotal == self._offs[-1], \
             f"PQ index ntotal {self._index.ntotal} != store vectors {self._offs[-1]} " \
             f"(index built from a different corpus/blocks?)"
+        meta_path = pq_path + ".meta.json"
+        if os.path.exists(meta_path):                       # docid-order fingerprint (build meta)
+            import json
+            with open(meta_path) as fh:
+                meta = json.load(fh)
+            assert (str(self._ids[0]) == meta["first_docid"]
+                    and str(self._ids[-1]) == meta["last_docid"]), \
+                f"PQ index {pq_path} docid fingerprint mismatch — built from a different " \
+                f"block order than the RAM store"
+        else:
+            print(f"[pq_refine] WARNING: {meta_path} missing — row-order vs RAM store "
+                  f"verified by ntotal only", flush=True)
         if verbose:
             print(f"[pq_refine] index {pq_path} on cuda:{gpu_id} ntotal={self._index.ntotal}",
                   flush=True)
 
     def search_topn(self, Q: np.ndarray, topN: int):
         Qf = np.ascontiguousarray(Q, dtype=np.float32)
-        _D, I = self._index.search(Qf, self._cand_k)          # (nq, cand_k) global rows
+        # candidates must cover topN (default retrieval_top_k is 1000 > the 512 default) — GPU
+        # PQ64 handles k<=2048 (verified on SM86); beyond that we cap and TRIM the output.
+        cand_k = min(max(self._cand_k, topN), 2048, self._index.ntotal)
+        _D, I = self._index.search(Qf, cand_k)                # (nq, cand_k) global rows
         I = np.where(I < 0, 0, I)
         blocks = [b[1] for b in self._ram._blocks]
-        out_D = np.empty((len(Qf), topN), dtype=np.float32)
-        out_I = np.empty((len(Qf), topN), dtype=object)
+        k_out = min(topN, cand_k)
+        out_D = np.empty((len(Qf), k_out), dtype=np.float32)
+        out_I = np.empty((len(Qf), k_out), dtype=object)
         for r in range(len(Qf)):
             rows = I[r]
             bidx = np.searchsorted(self._offs, rows, side="right") - 1
@@ -366,11 +382,10 @@ class PQRefineDense:
                 m = bidx == b
                 cand[m] = blocks[b][rows[m] - self._offs[b]].astype(np.float32)
             sc = cand @ Qf[r]
-            k = min(topN, len(sc))
-            top = np.argpartition(-sc, k - 1)[:k]
+            top = np.argpartition(-sc, k_out - 1)[:k_out]
             top = top[np.argsort(-sc[top])]
-            out_D[r, :k] = sc[top]
-            out_I[r, :k] = self._ids[rows[top]]
+            out_D[r] = sc[top]
+            out_I[r] = self._ids[rows[top]]
         return out_D, out_I
 
     def close(self):

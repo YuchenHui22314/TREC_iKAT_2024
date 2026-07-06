@@ -90,7 +90,18 @@ def main():
 
     final = faiss.index_gpu_to_cpu(gpu)
     faiss.write_index(final, out)
-    log(f"wrote {out} ({os.path.getsize(out) / 1e9:.2f} GB)")
+    # docid fingerprint: lets pq_refine verify the PQ row order matches the RAM store's block
+    # order (ntotal alone can't catch a same-size different-order build)
+    import json
+    with open(os.path.join(args.index_dir, "doc_embid_block.0.pb"), "rb") as fh:
+        first_ids = pickle.load(fh)
+    with open(os.path.join(args.index_dir, f"doc_embid_block.{args.blocks - 1}.pb"), "rb") as fh:
+        last_ids = pickle.load(fh)
+    meta = dict(ntotal=int(gpu.ntotal), dim=args.dim, blocks=args.blocks, nlist=int(nlist),
+                first_docid=str(first_ids[0]), last_docid=str(last_ids[-1]))
+    with open(out + ".meta.json", "w") as fh:
+        json.dump(meta, fh)
+    log(f"wrote {out} ({os.path.getsize(out) / 1e9:.2f} GB) + meta")
 
 
 if __name__ == "__main__":

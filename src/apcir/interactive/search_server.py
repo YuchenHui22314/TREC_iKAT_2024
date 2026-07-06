@@ -218,7 +218,7 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
                 raise HTTPException(status_code=409,
                                     detail="an activation is already in progress; wait for it")
             # synchronous fast-fail on capacity (set_active re-plans + is the real gate)
-            plan = pipeline.capacity.plan(req.units, list(pipeline.resident()))
+            plan = pipeline.capacity.plan(req.units, list(pipeline.resident()), modes=req.modes)
             if not plan.fits:
                 raise HTTPException(status_code=409, detail=plan.reason)
             inflight["v"] = True

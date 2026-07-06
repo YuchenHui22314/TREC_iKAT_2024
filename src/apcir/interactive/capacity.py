@@ -185,6 +185,9 @@ class CapacityManager:
         # unit -> {gpu_id: gb} — where each resident unit's VRAM actually sits. Lets plan() credit
         # evictions per-GPU on multi-GPU hosts (the old single-GPU-only limitation is gone).
         self._placements: Dict[str, Dict[int, float]] = {}
+        # unit -> load mode it was ACTUALLY loaded under (evicting a gpu_resident unit frees its
+        # small streaming RAM, not the full fp16 store — codex review #4)
+        self._loaded_modes: Dict[str, str] = {}
 
     # ------------------------------ VRAM fitting --------------------------- #
     def _vram_fit(self, gpu_free: List[float], singles: List[tuple],
@@ -239,7 +242,8 @@ class CapacityManager:
 
         # RAM: evicting to_unload frees their resident; load to_load biggest-transient-first
         # (so the largest transient peak happens when the most RAM is free).
-        free = self.free_ram_fn() + sum(self.reg.get(n).resident_ram_gb for n in to_unload)
+        free = self.free_ram_fn() + sum(
+            self._needs(n, self._loaded_modes.get(n))["ram_gb"] for n in to_unload)
         order = sorted(to_load, key=lambda n: req[n]["load_peak_ram_gb"] - req[n]["ram_gb"],
                        reverse=True)
         fits, reason = True, ""
@@ -291,7 +295,13 @@ class CapacityManager:
             raise CapacityError(why)
         alloc = placed.get(name, {})
         self._placements[name] = dict(alloc)
+        self._loaded_modes[name] = mode
         return sorted(alloc.items())
+
+    def note_loaded(self, name: str, mode: str) -> None:
+        """Record the mode a unit was loaded under (RAM-only modes never call allocate_gpus)."""
+        self._loaded_modes[name] = mode
 
     def release_gpus(self, name: str) -> None:
         self._placements.pop(name, None)
+        self._loaded_modes.pop(name, None)

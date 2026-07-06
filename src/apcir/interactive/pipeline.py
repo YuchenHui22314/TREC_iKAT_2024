@@ -442,11 +442,20 @@ class InteractivePipeline:
                                  f"build one with apcir.indexing.build_ivfpq_index")
         with self._residency_lock:
             self._validate_active_set(list(active_set))    # one corpus, <=1 per singleton kind
-            # a resident dense unit whose REQUESTED mode differs must be reloaded: evict it up
-            # front so the plan treats it as a fresh load under the new mode.
-            for u in list(active_set):
-                if (u in self._resident and u in self._dense_modes
-                        and modes.get(u, self._dense_modes[u]) != self._dense_modes[u]):
+            # a resident dense unit whose REQUESTED mode differs must be reloaded. Check the
+            # plan FIRST with those units modeled as fresh loads (conservative: their current
+            # memory is NOT credited), so a refused mode switch leaves the working unit intact
+            # (codex review #3); only then evict + re-plan for real.
+            changed = [u for u in list(active_set)
+                       if (u in self._resident and u in self._dense_modes
+                           and modes.get(u, self._dense_modes[u]) != self._dense_modes[u])]
+            if changed:
+                dry = self.capacity.plan(list(active_set),
+                                         [r for r in self._resident if r not in changed],
+                                         modes=modes)
+                if not dry.fits:
+                    raise CapacityError(f"mode change refused: {dry.reason}")
+                for u in changed:
                     self._unload_unit(u, progress_cb)
             plan = self.capacity.plan(list(active_set), list(self._resident), modes=modes)
             if not plan.fits:
@@ -523,6 +532,7 @@ class InteractivePipeline:
                                      store_dtype=fp.dtype or "float16", progress_cb=blk_cb)
             self._dense[unit] = obj
             self._dense_modes[unit] = mode
+            self.capacity.note_loaded(unit, mode)
             self._resident.add(unit)
             self._progress(progress_cb, f"loaded {unit} [{mode}] ({obj.total_vecs:,} vecs)", 1.0)
 
@@ -530,12 +540,11 @@ class InteractivePipeline:
         """Drop the resident dense index for `unit` and reclaim its RAM/VRAM. Acquires the lock."""
         with self._residency_lock:
             self._progress(progress_cb, f"unloading {unit}", 0.0)
-            obj = self._dense.pop(unit, None)
-            if obj is not None and hasattr(obj, "close"):
-                try:
-                    obj.close()                            # frees GPU shards / PQ index
-                except Exception:
-                    pass
+            self._dense.pop(unit, None)
+            # deliberately NOT calling obj.close(): a concurrent /search may have snapshotted the
+            # container (its ref keeps tensors/index alive until the search returns); refcount-drop
+            # then frees them and the empty_cache below reclaims what torch has cached. Actively
+            # freeing here would crash an in-flight GPU search (codex review #1).
             self._dense_modes.pop(unit, None)
             self.capacity.release_gpus(unit)
             self._resident.discard(unit)
