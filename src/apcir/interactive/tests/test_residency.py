@@ -447,3 +447,14 @@ def test_reject_unknown_load_mode():
         assert False, "expected ValueError for unknown mode"
     except ValueError as e:
         assert "warp_drive" in str(e)
+
+
+def test_mode_change_reloads_resident_unit():
+    pipe = _pipe(free_ram_gb=200.0)
+    pipe.set_active(["qrecc_ance_mini"], modes={"qrecc_ance_mini": "ram_fp16"})
+    assert pipe._dense_modes["qrecc_ance_mini"] == "ram_fp16"
+    obj1 = pipe._dense["qrecc_ance_mini"]
+    pipe.set_active(["qrecc_ance_mini"], modes={"qrecc_ance_mini": "gpu_resident"})
+    assert pipe._dense_modes["qrecc_ance_mini"] == "gpu_resident"
+    assert pipe._dense["qrecc_ance_mini"] is not obj1          # actually reloaded
+    pipe.set_active([])

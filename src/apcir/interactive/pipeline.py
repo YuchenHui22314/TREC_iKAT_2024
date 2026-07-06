@@ -442,6 +442,12 @@ class InteractivePipeline:
                                  f"build one with apcir.indexing.build_ivfpq_index")
         with self._residency_lock:
             self._validate_active_set(list(active_set))    # one corpus, <=1 per singleton kind
+            # a resident dense unit whose REQUESTED mode differs must be reloaded: evict it up
+            # front so the plan treats it as a fresh load under the new mode.
+            for u in list(active_set):
+                if (u in self._resident and u in self._dense_modes
+                        and modes.get(u, self._dense_modes[u]) != self._dense_modes[u]):
+                    self._unload_unit(u, progress_cb)
             plan = self.capacity.plan(list(active_set), list(self._resident), modes=modes)
             if not plan.fits:
                 raise CapacityError(plan.reason)
