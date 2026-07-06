@@ -52,8 +52,21 @@ UNITS = {
                        encoder=f"{HF}/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"),
 }
 QUERY_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/topics/qrecc/qrecc_valid.jsonl"
+QREL_FILE = "/data/rech/huiyuche/TREC_iKAT_2024/data/qrels/qrecc_qrel.trec"
 GPUS = [0, 1, 2, 3]
 K = 100
+
+
+def load_qrels() -> Dict[str, Dict[str, int]]:
+    """TREC qrels: qid Q0 docid rel — qids are qrecc sample_ids ('conv-turn')."""
+    qrels: Dict[str, Dict[str, int]] = {}
+    with open(QREL_FILE) as f:
+        for line in f:
+            parts = line.split()
+            if len(parts) >= 4:
+                qid, _, docid, rel = parts[0], parts[1], parts[2], int(parts[3])
+                qrels.setdefault(qid, {})[docid] = rel
+    return qrels
 
 
 def log(msg: str):
@@ -98,35 +111,47 @@ def done_keys(out_path: str) -> set:
 # --------------------------------------------------------------------------- #
 # Stage 1 — queries (encode once, cache)
 # --------------------------------------------------------------------------- #
-def load_queries(unit: dict, out_dir: str, n: int = 128) -> np.ndarray:
-    cache = oj(out_dir, f"queries_{unit['model']}.npz")
+def load_queries(unit: dict, out_dir: str, n: int = 128) -> Tuple[np.ndarray, List[str]]:
+    """Encode n JUDGED queries (sample_id has >=1 qrel) so NDCG is computable. Cache: _j suffix
+    (the original unjudged 128-query cache/GT/ids files are a different query set — kept apart)."""
+    cache = oj(out_dir, f"queries_{unit['model']}_j.npz")
     if os.path.exists(cache):
-        return np.load(cache)["q"]
+        z = np.load(cache, allow_pickle=True)
+        return z["q"], [str(x) for x in z["qid"]]
     import types
-    texts = []
+    judged = set(load_qrels().keys())
+    texts, qids = [], []
     with open(QUERY_FILE) as f:
         for line in f:
             d = json.loads(line)
             t = (d.get("Truth_rewrite") or "").strip()
-            if t:
+            if t and d.get("sample_id") in judged:
                 texts.append(t)
+                qids.append(str(d["sample_id"]))
             if len(texts) >= n:
                 break
+    assert len(texts) == n, f"only {len(texts)} judged queries found"
     from apcir.search.dense_search import get_test_query_embedding
     args = types.SimpleNamespace(
         retrieval_model=unit["model"], retrieval_query_type="raw",
         dense_query_encoder_path=unit["encoder"], query_gpu_id=0,
         query_encoder_batch_size=32, seed=42,
-        retrieval_query_list=texts, qid_list_string=[str(i) for i in range(len(texts))],
+        retrieval_query_list=texts, qid_list_string=qids,
     )
     q, _ = get_test_query_embedding(args)
     q = np.ascontiguousarray(q, dtype=np.float32)
-    np.savez(cache, q=q)
+    np.savez(cache, q=q, qid=np.array(qids))
     import torch
     torch.cuda.empty_cache()
     _reclaim_libc_heap()
-    log(f"encoded+cached {q.shape} queries -> {cache}")
-    return q
+    log(f"encoded+cached {q.shape} JUDGED queries -> {cache}")
+    return q, qids
+
+
+def save_ids(out_dir: str, unit_name: str, config: str, param, I: np.ndarray):
+    tag = f"{config}" + (f"_{param}" if param not in (None, "exact") else "")
+    tag = tag.replace("=", "").replace("(", "_").replace(")", "")
+    np.savez(oj(out_dir, f"run_{unit_name}_{tag}_j.npz"), ids=I[:, :K].astype(str))
 
 
 # --------------------------------------------------------------------------- #
@@ -295,18 +320,64 @@ def cfg_d_resident_torch_fp16(src16_blocks, gpus):
     ids_cat = np.concatenate(ids_all)
     build_s = round(time.time() - t0, 1)
 
-    def fn(Qb):
+    def fn(Qb, chunk=2_000_000):
+        # FIXED semantics (matches production after the fp32-score fix): docs resident fp16,
+        # chunks upcast on-GPU, fp32 GEMM vs fp32 query -> fp32 scores.
         with torch.no_grad():
-            Qf = np.ascontiguousarray(Qb, dtype=np.float16)
+            Qf = np.ascontiguousarray(Qb, dtype=np.float32)
             Qt = {d: torch.from_numpy(Qf).to(d) for d in devs}
             parts = []
             for d, t, goff in shards:        # issue all GPUs' work before any sync
-                sc = (Qt[d] @ t.T).float()
-                v, i = torch.topk(sc, min(K, sc.shape[1]), dim=1)
-                parts.append((v, i + goff))
+                bv = bi = None
+                for s in range(0, t.shape[0], chunk):
+                    sc = Qt[d] @ t[s:s + chunk].float().T
+                    v, i = torch.topk(sc, min(K, sc.shape[1]), dim=1)
+                    i = i + s
+                    if bv is None:
+                        bv, bi = v, i
+                    else:
+                        cat_v = torch.cat([bv, v], dim=1)
+                        cat_i = torch.cat([bi, i], dim=1)
+                        bv, sel = torch.topk(cat_v, min(K, cat_v.shape[1]), dim=1)
+                        bi = torch.gather(cat_i, 1, sel)
+                parts.append((bv, bi + goff))
             per = [(v.cpu().numpy(), ids_cat[i.cpu().numpy()]) for v, i in parts]
         return merge_topk(per, K)
     return fn, shards, build_s
+
+
+def run_legacy_fp16out(ram16, Q, gpus):
+    """The PRE-FIX scoring (fp16-output GEMM, fp16 query) — bench-only replica for the 'before'
+    NDCG row. Accuracy only; latency for this path is already in results.jsonl (old run)."""
+    import torch
+    devs = [f"cuda:{g}" for g in gpus]
+    Qf = np.ascontiguousarray(Q, dtype=np.float16)
+    Qt = {d: torch.from_numpy(Qf).to(d) for d in devs}
+    sources = []
+    with torch.no_grad():
+        for _bid, emb, ids in ram16.iter_blocks():
+            n = emb.shape[0]
+            edges = np.linspace(0, n, len(devs) + 1, dtype=np.int64)
+            for gi, d in enumerate(devs):
+                s0, s1 = int(edges[gi]), int(edges[gi + 1])
+                bv = bi = None
+                for s in range(s0, s1, 2_000_000):
+                    e = min(s + 2_000_000, s1)
+                    ct = torch.from_numpy(emb[s:e]).to(d)
+                    sc = (Qt[d] @ ct.T).float()          # fp16-OUT GEMM then upcast = OLD behavior
+                    v, i = torch.topk(sc, min(K, sc.shape[1]), dim=1)
+                    i = i + s
+                    if bv is None:
+                        bv, bi = v, i
+                    else:
+                        cat_v = torch.cat([bv, v], dim=1)
+                        cat_i = torch.cat([bi, i], dim=1)
+                        bv, sel = torch.topk(cat_v, min(K, cat_v.shape[1]), dim=1)
+                        bi = torch.gather(cat_i, 1, sel)
+                    del ct, sc
+                if bv is not None:
+                    sources.append((bv.cpu().numpy(), ids[bi.cpu().numpy()]))
+    return merge_topk(sources, K)
 
 
 def build_ivf(src32, factory_kind: str, nlist: int, n_gpu: int, train_n: int = 2_000_000):
@@ -330,8 +401,13 @@ def build_ivf(src32, factory_kind: str, nlist: int, n_gpu: int, train_n: int = 2
     elif factory_kind == "sq8":
         cpu = faiss.IndexIVFScalarQuantizer(quant, dim, nlist, faiss.ScalarQuantizer.QT_8bit,
                                             faiss.METRIC_INNER_PRODUCT)
+    elif factory_kind == "sq4":
+        cpu = faiss.IndexIVFScalarQuantizer(quant, dim, nlist, faiss.ScalarQuantizer.QT_4bit,
+                                            faiss.METRIC_INNER_PRODUCT)
     elif factory_kind == "pq96":
         cpu = faiss.IndexIVFPQ(quant, dim, nlist, 96, 8, faiss.METRIC_INNER_PRODUCT)
+    elif factory_kind == "pq128":
+        cpu = faiss.IndexIVFPQ(quant, dim, nlist, 128, 8, faiss.METRIC_INNER_PRODUCT)
     elif factory_kind == "pq64":
         cpu = faiss.IndexIVFPQ(quant, dim, nlist, 64, 8, faiss.METRIC_INNER_PRODUCT)
     else:
@@ -381,6 +457,41 @@ def build_ivf(src32, factory_kind: str, nlist: int, n_gpu: int, train_n: int = 2
     return make_fn, index, dict(train_s=train_s, add_s=add_s, where=where), res
 
 
+def make_refine_fn(ivf_index, src32_single, cand_k: int = 512):
+    """Two-stage search: IVF candidates (top-cand_k ROW indices) -> exact fp32 rescore of those
+    rows from the collapsed CPU block -> top-K. Candidate search runs on a CPU clone of the IVF:
+    this faiss 1.8 build's GPU interleaved-scan kernel ABORTS (uncatchable C++ assert, SM86) for
+    SQ8/SQ4 at k>~100, and refine needs k=512. CPU nprobe=128 candidate scan is seconds-class for
+    a query batch; the refine row measures feasibility+quality, labeled where=cpu-cand.
+    Requires src32_single to be a SINGLE collapsed block (row index == global index)."""
+    import faiss
+    assert len(src32_single._blocks) == 1, "refine requires the collapsed single block"
+    big = src32_single._blocks[0][1]
+    ids_cat = src32_single._blocks[0][2]
+    try:
+        cpu_index = faiss.index_gpu_to_cpu(ivf_index)
+    except Exception:
+        cpu_index = ivf_index                       # already CPU (the build fell back)
+    faiss.ParameterSpace().set_index_parameter(cpu_index, "nprobe", 128)
+    faiss.omp_set_num_threads(os.cpu_count() or 16)
+
+    def fn(Qb):
+        Qb = np.ascontiguousarray(Qb, dtype=np.float32)
+        _D, I = cpu_index.search(Qb, cand_k)
+        I = np.where(I < 0, 0, I)
+        out_D = np.empty((Qb.shape[0], K), dtype=np.float32)
+        out_I = np.empty((Qb.shape[0], K), dtype=object)
+        for r in range(Qb.shape[0]):
+            cand = big[I[r]]                          # (cand_k, dim) fp32 gather from RAM
+            sc = cand @ Qb[r]
+            top = np.argpartition(-sc, K - 1)[:K]
+            top = top[np.argsort(-sc[top])]
+            out_D[r] = sc[top]
+            out_I[r] = ids_cat[I[r][top]]
+        return out_D, out_I
+    return fn
+
+
 def cfg_g_hnsw(src32, max_docs: int):
     import faiss
     dim = src32._blocks[0][1].shape[1]
@@ -424,6 +535,9 @@ def main():
     ap.add_argument("--out-dir", default="/part/01/Tmp/yuchenhui/bench_dense")
     ap.add_argument("--skip-done", action="store_true")
     ap.add_argument("--n-gpu", type=int, default=4)
+    ap.add_argument("--f-kinds", default="sq8,pq96", help="comma IVF kinds for config f")
+    ap.add_argument("--refine", action="store_true", help="two-stage refine per f-kind")
+    ap.add_argument("--ndcg", action="store_true", help="score all saved runs against qrels")
     args = ap.parse_args()
 
     if args.smoke:
@@ -455,11 +569,11 @@ def main():
                           blocks=n_blocks, host=os.uname().nodename))
     rss0 = _rss_gb()
 
-    # ---- Stage 1: queries ---------------------------------------------------
-    Q = load_queries(unit, args.out_dir)
+    # ---- Stage 1: queries (judged -> NDCG computable) -----------------------
+    Q, qids = load_queries(unit, args.out_dir)
     gpus = GPUS[: args.n_gpu]
 
-    gt_path = oj(args.out_dir, f"gt_{args.unit}_{n_blocks}b.npz")
+    gt_path = oj(args.out_dir, f"gt_{args.unit}_{n_blocks}b_j.npz")
     gt_ids = None
     if os.path.exists(gt_path):
         gt_ids = np.load(gt_path, allow_pickle=True)["ids"]
@@ -484,15 +598,19 @@ def main():
             a_ids = I
             mem = dict(rss_extra_gb=rss16, vram_gb=max(vram_used_gb()), build_s=load16_s)
             # recall filled after GT exists (streaming exact — expect ~1.0); store ids for later
-            np.savez(oj(args.out_dir, f"ids_a_{args.unit}.npz"), ids=I[:, :K].astype(str))
+            save_ids(args.out_dir, args.unit, "a_stream_fp16_torch", None, I)
             bench_rows(out_path, args.unit, "a_stream_fp16_torch", "exact", mem, timing,
                        None, None, skip)
+            # legacy PRE-FIX scoring (fp16-output GEMM), NDCG "before" row — accuracy only
+            _D, I = run_legacy_fp16out(ram16, Q, gpus)
+            save_ids(args.out_dir, args.unit, "legacy_fp16out", None, I)
+            log("legacy fp16-out run saved (accuracy-only row)")
         if "d" in configs:
             fn, shards, build_s = cfg_d_resident_torch_fp16(ram16._blocks, gpus)
             del ram16                        # CPU fp16 no longer needed once shards are on GPU
             _reclaim_libc_heap()
             timing, (D, I) = time_config(fn, Q, batches, warm, reps_fast)
-            np.savez(oj(args.out_dir, f"ids_d_{args.unit}.npz"), ids=I[:, :K].astype(str))
+            save_ids(args.out_dir, args.unit, "d_resident_torch_fp16", None, I)
             bench_rows(out_path, args.unit, "d_resident_torch_fp16", "exact",
                        dict(rss_extra_gb=round(_rss_gb() - rss0, 1), vram_gb=max(vram_used_gb()),
                             build_s=build_s), timing, None, None, skip)
@@ -515,6 +633,7 @@ def main():
         if gt_ids is None:
             gt_ids = I[:, :K].astype(str)
             np.savez(gt_path, ids=gt_ids)
+            save_ids(args.out_dir, args.unit, "b_exact_fp32", None, I)
             log(f"ground truth saved -> {gt_path}")
         if "b" in configs:
             bench_rows(out_path, args.unit, "b_stream_faiss_fp32", "exact",
@@ -524,9 +643,9 @@ def main():
         index.reset()
         del fn, index
 
-    # backfill recall for (a)/(d) now that GT exists
-    for c in ("a", "d"):
-        p = oj(args.out_dir, f"ids_{c}_{args.unit}.npz")
+    # backfill recall for (a)/(d)/legacy now that GT exists
+    for c in ("a_stream_fp16_torch", "d_resident_torch_fp16", "legacy_fp16out"):
+        p = oj(args.out_dir, f"run_{args.unit}_{c}_j.npz")
         if os.path.exists(p) and gt_ids is not None:
             ids = np.load(p, allow_pickle=True)["ids"]
             record(out_path, dict(unit=args.unit, config=f"{c}_recall_backfill", param="exact",
@@ -541,6 +660,7 @@ def main():
         v0 = vram_used_gb()
         fn, index, build_s, _res = cfg_c_resident_faiss_fp16(src32, args.n_gpu)
         timing, (D, I) = time_config(fn, Q, batches, warm, reps_fast)
+        save_ids(args.out_dir, args.unit, "c_resident_faiss_fp16", None, I)
         bench_rows(out_path, args.unit, "c_resident_faiss_fp16", "exact",
                    dict(rss_extra_gb=round(_rss_gb() - rss0, 1),
                         vram_gb=round(max(vram_used_gb()) - min(v0), 2), build_s=build_s), timing,
@@ -553,7 +673,7 @@ def main():
     if "e" in configs:
         ivf_matrix.append(("e_gpu_ivf_sqfp16", "sqfp16"))
     if "f" in configs:
-        ivf_matrix += [("f_gpu_ivf_sq8", "sq8"), ("f_ivf_pq96", "pq96")]
+        ivf_matrix += [(f"f_ivf_{k}", k) for k in args.f_kinds.split(",") if k]
     for cname, kind in ivf_matrix:
         try:
             v0 = vram_used_gb()
@@ -573,7 +693,21 @@ def main():
         for nprobe in (8, 32, 128):
             fn = make_fn(nprobe)
             timing, (D, I) = time_config(fn, Q, batches, warm, reps_fast)
+            save_ids(args.out_dir, args.unit, cname, f"nprobe{nprobe}", I)
             bench_rows(out_path, args.unit, cname, f"nprobe={nprobe}",
+                       dict(rss_extra_gb=round(_rss_gb() - rss0, 1),
+                            vram_gb=round(max(vram_used_gb()) - min(v0), 2),
+                            build_s=meta["train_s"] + meta["add_s"], where=meta["where"]),
+                       timing, recall_vs(gt_ids, I.astype(str), 10),
+                       recall_vs(gt_ids, I.astype(str), 100), skip)
+        if args.refine:
+            # two-stage: IVF candidates (nprobe=128, top-1000 rows) -> fp32 rescore from the
+            # collapsed CPU block -> top-K. VRAM = the IVF index only; the fix for corpora whose
+            # exact fp16 index cannot fit VRAM (ClueWeb-Qwen).
+            fn = make_refine_fn(index, src32)
+            timing, (D, I) = time_config(fn, Q, batches, warm, reps_fast)
+            save_ids(args.out_dir, args.unit, cname, "refine512", I)
+            bench_rows(out_path, args.unit, f"{cname}+refine", "cand512,nprobe=128",
                        dict(rss_extra_gb=round(_rss_gb() - rss0, 1),
                             vram_gb=round(max(vram_used_gb()) - min(v0), 2),
                             build_s=meta["train_s"] + meta["add_s"], where=meta["where"]),
@@ -606,7 +740,56 @@ def main():
                        recall_vs(sub_gt, I.astype(str), 100), skip)
         del make_fn, index
 
+    # ---- Stage 7: NDCG vs qrels over every saved run ------------------------
+    if args.ndcg:
+        import glob
+        qrels = load_qrels()
+        rows = []
+        for p in sorted(glob.glob(oj(args.out_dir, f"run_{args.unit}_*_j.npz"))):
+            tag = os.path.basename(p)[len(f"run_{args.unit}_"):-len("_j.npz")]
+            ids = np.load(p, allow_pickle=True)["ids"]
+            m = qrel_metrics(ids, qids, qrels)
+            m.update(unit=args.unit, config="_ndcg", param=tag, batch=None)
+            record(out_path, m)
+            rows.append((tag, m))
+        log("── NDCG table ──")
+        for tag, m in sorted(rows, key=lambda r: -r[1]["ndcg3"]):
+            log(f"  {tag:38s} ndcg@3={m['ndcg3']:.4f} ndcg@10={m['ndcg10']:.4f} "
+                f"mrr@10={m['mrr10']:.4f} r@100={m['r100']:.4f} judged={m['n_q']}")
+
     log(f"DONE. results -> {out_path}")
+
+
+def qrel_metrics(ids: np.ndarray, qids: List[str], qrels: Dict[str, Dict[str, int]]) -> dict:
+    """NDCG@3/@10, MRR@10, Recall@100 for a (n_q, K) docid matrix (rank order = column order).
+    qrecc rels are binary; ideal DCG uses the total number of judged positives."""
+    n3 = n10 = mrr = r100 = 0.0
+    n_q = 0
+    for r, qid in enumerate(qids):
+        rel = {d for d, v in qrels.get(qid, {}).items() if v > 0}
+        if not rel:
+            continue
+        n_q += 1
+        hits = [1.0 if str(d) in rel else 0.0 for d in ids[r][:100]]
+        def dcg(g):
+            return sum(h / np.log2(i + 2) for i, h in enumerate(g))
+        for k, acc in ((3, "n3"), (10, "n10")):
+            ideal = dcg([1.0] * min(len(rel), k))
+            val = dcg(hits[:k]) / ideal if ideal > 0 else 0.0
+            if k == 3:
+                n3 += val
+            else:
+                n10 += val
+        rr = 0.0
+        for i, h in enumerate(hits[:10]):
+            if h > 0:
+                rr = 1.0 / (i + 1)
+                break
+        mrr += rr
+        r100 += sum(hits) / len(rel)
+    assert n_q > 0, "no judged queries — qid mismatch?"
+    return dict(ndcg3=round(n3 / n_q, 4), ndcg10=round(n10 / n_q, 4),
+                mrr10=round(mrr / n_q, 4), r100=round(r100 / n_q, 4), n_q=n_q)
 
 
 if __name__ == "__main__":
