@@ -141,3 +141,24 @@ def test_fp16_search_scores_are_fp32_and_resolve_sub_ulp_ties():
     assert D.dtype == np.float32
     assert list(I[0]) == ["d2", "d1", "d0"]            # correct sub-ulp ordering
     assert D[0][0] > D[0][1] > D[0][2]                 # strictly descending fp32 scores
+
+
+def test_int8_store_rescore_matches_fp32_ranking():
+    """int8 rescore store (pq_refine): per-row symmetric quantization must preserve IP RANKING
+    (scores within ~0.5% of fp32) — the octal31 ClueWeb-Qwen enabler (235G fp16 -> 119G int8)."""
+    from apcir.interactive.ram_index import quantize_int8, dequantize_int8
+    rng = np.random.default_rng(1)
+    X = rng.standard_normal((500, 256)).astype(np.float32)
+    X /= np.linalg.norm(X, axis=1, keepdims=True)              # qwen-like normalized rows
+    q, scales = quantize_int8(X)
+    assert q.dtype == np.int8 and scales.shape == (500, 1)
+    Xr = dequantize_int8(q, scales)
+    Q = X[:8]
+    exact = Q @ X.T
+    approx = Q @ Xr.T
+    assert np.abs(exact - approx).max() < 0.01                 # tight for normalized vectors
+    # top-10 rankings essentially identical
+    for r in range(8):
+        a = np.argsort(-exact[r])[:10]
+        b = np.argsort(-approx[r])[:10]
+        assert len(set(a) & set(b)) >= 9

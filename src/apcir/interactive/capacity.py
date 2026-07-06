@@ -81,7 +81,11 @@ class IndexFootprint:
             return dict(ram_gb=ram, load_peak_ram_gb=ram,
                         vram_total_gb=self.resident_ram_gb, vram_single_gb=0.0)
         if mode == "pq_refine":
-            return dict(ram_gb=self.resident_ram_gb, load_peak_ram_gb=self.load_peak_ram_gb,
+            # rescore store is INT8 (half of the fp16 resident figure); peak = int8 store + the
+            # same fp32-block transient the fp16 load has (load_peak - resident).
+            ram = self.resident_ram_gb / 2
+            peak = ram + max(0.0, self.load_peak_ram_gb - self.resident_ram_gb)
+            return dict(ram_gb=round(ram, 1), load_peak_ram_gb=round(peak, 1),
                         vram_total_gb=0.0, vram_single_gb=self.pq_vram_gb)
         raise ValueError(f"unknown load mode {mode!r} (known: {self.MODES})")
 

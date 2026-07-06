@@ -58,6 +58,21 @@ def _reclaim_libc_heap():
         pass
 
 
+def quantize_int8(emb32: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Per-row symmetric int8 quantization for the pq_refine RESCORE store: halves the fp16
+    footprint again (ClueWeb-Qwen 235G -> ~119G, which FITS octal31). Rescoring from int8 rows
+    ranks essentially identically to fp32 for normalized embeddings (measured: IVF-SQ8's NDCG@3
+    equals the refine ceiling). Returns (int8 codes, float32 (n,1) per-row scales)."""
+    scales = np.abs(emb32).max(axis=1, keepdims=True).astype(np.float32) / 127.0
+    scales[scales == 0] = 1.0
+    q = np.clip(np.rint(emb32 / scales), -127, 127).astype(np.int8)
+    return q, scales
+
+
+def dequantize_int8(q: np.ndarray, scales: np.ndarray) -> np.ndarray:
+    return q.astype(np.float32) * scales
+
+
 class RamBlockSource:
     """Loads all `num_blocks` (emb, ids) blocks into RAM at construction and keeps
     them resident. `iter_blocks()` yields from RAM (no disk touch after __init__).
@@ -77,6 +92,7 @@ class RamBlockSource:
         # retrieval is standard (cf. faiss GpuIndexFlatConfig.useFloat16) with negligible quality loss.
         self.store_dtype = np.dtype(store_dtype)
         self._blocks: List[Tuple[int, np.ndarray, np.ndarray]] = []
+        self._scales: List[np.ndarray] = []      # int8 store only: per-block (n,1) row scales
         self._load(verbose, progress_cb)
 
     def validate(self):
@@ -105,9 +121,14 @@ class RamBlockSource:
                     # LONGEST docid: qrecc URL docids reach 6335 chars -> ~25G/block, which (kept
                     # across 55 blocks) OOM'd the loader. The fp16 embeddings were never the issue.
                     ids = np.array(ids, dtype=object)
-            emb = np.ascontiguousarray(emb32, dtype=self.store_dtype)
-            if emb is not emb32:
-                del emb32                    # drop the fp32 source NOW (always a copy for fp16 store)
+            if self.store_dtype == np.int8:      # pq_refine rescore store: int8 + per-row scales
+                emb, sc = quantize_int8(np.asarray(emb32, dtype=np.float32))
+                self._scales.append(sc)
+                del emb32
+            else:
+                emb = np.ascontiguousarray(emb32, dtype=self.store_dtype)
+                if emb is not emb32:
+                    del emb32                # drop the fp32 source NOW (always a copy for fp16 store)
             if self.dim is not None and emb.shape[1] != self.dim:
                 raise ValueError(
                     f"block {block_id} dim {emb.shape[1]} != expected {self.dim}")
@@ -371,6 +392,7 @@ class PQRefineDense:
         _D, I = self._index.search(Qf, cand_k)                # (nq, cand_k) global rows
         I = np.where(I < 0, 0, I)
         blocks = [b[1] for b in self._ram._blocks]
+        int8_store = self._ram.store_dtype == np.int8
         k_out = min(topN, cand_k)
         out_D = np.empty((len(Qf), k_out), dtype=np.float32)
         out_I = np.empty((len(Qf), k_out), dtype=object)
@@ -380,7 +402,11 @@ class PQRefineDense:
             cand = np.empty((len(rows), Qf.shape[1]), dtype=np.float32)
             for b in np.unique(bidx):
                 m = bidx == b
-                cand[m] = blocks[b][rows[m] - self._offs[b]].astype(np.float32)
+                loc = rows[m] - self._offs[b]
+                if int8_store:                            # dequantize gathered rows (per-row scales)
+                    cand[m] = dequantize_int8(blocks[b][loc], self._ram._scales[b][loc])
+                else:
+                    cand[m] = blocks[b][loc].astype(np.float32)
             sc = cand @ Qf[r]
             top = np.argpartition(-sc, k_out - 1)[:k_out]
             top = top[np.argsort(-sc[top])]

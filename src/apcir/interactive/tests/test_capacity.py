@@ -225,7 +225,7 @@ def test_mode_requirements_gpu_resident_moves_store_to_vram():
 
 def test_mode_requirements_pq_refine_needs_ram_store_plus_one_gpu():
     r = _dense_fp().mode_requirements("pq_refine")
-    assert r["ram_gb"] == 40.0                 # fp16 rescore store stays in RAM
+    assert r["ram_gb"] == 20.0                 # INT8 rescore store = half the fp16 figure
     # PQ64 codes: 26M x 64B ~ 1.7G, with overhead < 3G, on ONE gpu
     assert 1.0 < r["vram_single_gb"] < 3.0
     assert r["vram_total_gb"] == 0

@@ -520,8 +520,10 @@ class InteractivePipeline:
             elif mode == "pq_refine":
                 alloc = self.capacity.allocate_gpus(unit, mode)
                 try:
+                    # int8 rescore store: half the fp16 footprint (ClueWeb-Qwen 235G -> ~119G);
+                    # rescoring from int8 rows ranks at the refine ceiling (measured).
                     ram = RamBlockSource(fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
-                                         store_dtype=fp.dtype or "float16", progress_cb=blk_cb)
+                                         store_dtype="int8", progress_cb=blk_cb)
                     obj = PQRefineDense(fp.resolved_pq_path(), ram, gpu_id=alloc[0][0],
                                         verbose=False)
                 except Exception:
