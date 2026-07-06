@@ -402,3 +402,48 @@ def test_leg_label_encoder_segment():
         "qwen3@u#Conv:rar"
     # no encoder_label -> unchanged legacy labels
     assert P._leg_label(RetrieverSpec("qwen3", "raw", unit="u")) == "qwen3@u"
+
+
+# --------------------------------------------------------------------------- #
+# Load modes: threading + dispatch + feasibility surface
+# --------------------------------------------------------------------------- #
+def test_set_active_records_load_mode_and_status_exposes_it():
+    pipe = _pipe(free_ram_gb=200.0)
+    pipe.set_active(["qrecc_ance_mini"], modes={"qrecc_ance_mini": "ram_fp16"})
+    st = pipe.models_status()
+    unit = next(u for u in st["units"] if u["name"] == "qrecc_ance_mini")
+    assert "load_modes" in unit and set(unit["load_modes"]) == {"ram_fp16", "gpu_resident", "pq_refine"}
+    assert unit["load_modes"]["ram_fp16"]["fits"] in (True, False)
+    # the mini unit HAS a prebuilt ivfpq64.faiss (shipped for tests) -> pq_refine offered
+    assert unit["load_modes"]["pq_refine"]["fits"] is True
+    # a unit WITHOUT a prebuilt PQ index must be marked unavailable with a clear reason
+    noq = next(u for u in st["units"] if u["name"] == "qrecc_ance")
+    assert noq["load_modes"]["pq_refine"]["fits"] is False
+    assert "PQ" in noq["load_modes"]["pq_refine"]["reason"]
+    assert "qrecc_ance_mini" in st["resident"]
+    assert st["resident_modes"]["qrecc_ance_mini"] == "ram_fp16"
+
+
+def test_search_query_against_ram_dispatches_to_container():
+    """A resident container exposing search_topn(Q, topN) is used directly (gpu_resident /
+    pq_refine objects), bypassing the streaming path."""
+    import numpy as np
+    from apcir.interactive.ram_index import search_query_against_ram
+
+    class FakeContainer:
+        def search_topn(self, Q, topN):
+            return np.full((len(Q), topN), 7.0, dtype=np.float32), \
+                   np.array([["d"] * topN] * len(Q), dtype=object)
+
+    D, I = search_query_against_ram(np.zeros((2, 4), np.float32), FakeContainer(),
+                                    index=None, topN=3)
+    assert D.shape == (2, 3) and I[0][0] == "d" and D[0][0] == 7.0
+
+
+def test_reject_unknown_load_mode():
+    pipe = _pipe(free_ram_gb=200.0)
+    try:
+        pipe.set_active(["qrecc_ance_mini"], modes={"qrecc_ance_mini": "warp_drive"})
+        assert False, "expected ValueError for unknown mode"
+    except ValueError as e:
+        assert "warp_drive" in str(e)

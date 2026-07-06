@@ -209,6 +209,7 @@ class InteractivePipeline:
                            or any(r.qr and r.qr != "none" for r in config.retrievers))
         # --- dynamic residency (RALI Searcher): which capacity units are loaded right now ---
         self._dense: Dict[str, RamBlockSource] = {}   # unit name -> resident dense index
+        self._dense_modes: Dict[str, str] = {}        # unit name -> load mode
         self._resident: set = set()                    # all resident unit names (any kind)
         if registry is None:
             from os.path import join, dirname
@@ -342,19 +343,50 @@ class InteractivePipeline:
         """Names of all currently-resident capacity units."""
         return set(self._resident)
 
+    def _mode_feasibility(self, fp) -> Dict[str, Dict[str, Any]]:
+        """Per load-mode: would loading `fp` under that mode fit RIGHT NOW (live free RAM/VRAM,
+        current residents staying put)? Advisory for the UI dropdown; set_active re-checks."""
+        from .capacity import IndexFootprint
+        out = {}
+        try:
+            free_ram = self.capacity.free_ram_fn()
+            gpu_free = list(self.capacity.free_vram_fn())
+        except Exception:
+            free_ram, gpu_free = 0.0, []
+        for mode in IndexFootprint.MODES:
+            req = fp.mode_requirements(mode)
+            fits, reason = True, ""
+            if mode == "pq_refine" and not fp.has_pq_index:
+                fits, reason = False, "no prebuilt PQ index (build with apcir.indexing.build_ivfpq_index)"
+            elif req["load_peak_ram_gb"] + self.capacity.ram_safety_gb > free_ram:
+                fits, reason = False, f"needs ~{req['load_peak_ram_gb']:.0f}G peak RAM, ~{free_ram:.0f}G free"
+            else:
+                ok, why, _ = self.capacity._vram_fit(
+                    list(gpu_free), [(fp.name, req["vram_single_gb"])],
+                    [(fp.name, req["vram_total_gb"])])
+                if not ok:
+                    fits, reason = False, why
+            out[mode] = {"fits": fits, "reason": reason,
+                         "ram_gb": round(req["ram_gb"], 1),
+                         "vram_gb": round(req["vram_total_gb"] or req["vram_single_gb"], 1)}
+        return out
+
     def models_status(self) -> Dict[str, Any]:
         """Catalog of capacity units + live residency/memory state (for GET /models)."""
         import os
         units = []
         for name in self.registry.names():
             fp = self.registry.get(name)
-            units.append({
+            u = {
                 "name": name, "kind": fp.kind, "corpus": fp.corpus,
                 "resident_ram_gb": fp.resident_ram_gb, "load_peak_ram_gb": fp.load_peak_ram_gb,
                 "vram_gb": fp.vram_gb, "dtype": fp.dtype, "query_encoder": fp.query_encoder,
                 "query_encoders": fp.query_encoders,
                 "available": fp.is_available,
-            })
+            }
+            if fp.kind == "dense":
+                u["load_modes"] = self._mode_feasibility(fp)
+            units.append(u)
         try:                                              # best-effort: torch.cuda probe may fail
             free_vram = [round(v, 1) for v in self.capacity.free_vram_fn()]
         except Exception:
@@ -362,6 +394,7 @@ class InteractivePipeline:
         return {
             "units": units,
             "resident": sorted(self.resident()),
+            "resident_modes": dict(self._dense_modes),
             "free_ram_gb": round(self.capacity.free_ram_fn(), 1),
             "free_vram_gb": free_vram,
         }
@@ -386,20 +419,33 @@ class InteractivePipeline:
         if len(corpora) > 1:
             raise ValueError(f"all active retrieval units must share ONE corpus; got {sorted(corpora)}")
 
-    def set_active(self, active_set, progress_cb=None) -> CapacityPlan:
+    def set_active(self, active_set, progress_cb=None, modes=None) -> CapacityPlan:
         """Make exactly `active_set` resident (active-set semantics): evict units not in it, load
         units missing from it. Refuse (CapacityError) if the set won't fit by load-peak vs live
         free RAM/VRAM. Transactional + locked: holds an exclusive residency lock, validates every
         loader BEFORE mutating (so an unimplemented kind fails clean without first evicting the
         current set), and on a mid-load failure rolls back the partial loads so `_resident` always
         matches the real objects. `progress_cb(msg, frac)` wraps each load/unload.
+        `modes`: optional {unit: load_mode} for dense units — "ram_fp16" (default),
+        "gpu_resident" or "pq_refine"; capacity is checked per mode.
         NOTE: units EVICTED earlier in this call are NOT restored on a later load failure — the
         service may be left with fewer units resident (but `_resident`/`_dense` stay consistent)."""
+        from .capacity import IndexFootprint
+        modes = dict(modes or {})
+        for unit, mode in modes.items():
+            if mode not in IndexFootprint.MODES:
+                raise ValueError(f"unknown load mode {mode!r} for {unit!r}; "
+                                 f"known: {IndexFootprint.MODES}")
+            if mode == "pq_refine" and not self.registry.get(unit).has_pq_index:
+                raise ValueError(f"{unit!r}: pq_refine needs a prebuilt PQ index "
+                                 f"({self.registry.get(unit).resolved_pq_path()} not found) — "
+                                 f"build one with apcir.indexing.build_ivfpq_index")
         with self._residency_lock:
             self._validate_active_set(list(active_set))    # one corpus, <=1 per singleton kind
-            plan = self.capacity.plan(list(active_set), list(self._resident))
+            plan = self.capacity.plan(list(active_set), list(self._resident), modes=modes)
             if not plan.fits:
                 raise CapacityError(plan.reason)
+            self._pending_modes = modes                     # read by load_dense during this call
             for unit in plan.to_load:                       # validate BEFORE touching residency
                 kind = self.registry.get(unit).kind
                 if kind not in self._LOADABLE_KINDS:
@@ -437,25 +483,55 @@ class InteractivePipeline:
         unloader(unit, progress_cb)
 
     def load_dense(self, unit: str, progress_cb=None):
-        """Construct a RAM-resident dense index for `unit` (RamBlockSource preloads all blocks
-        into RAM at construction, so this IS the load). Acquires the residency lock (reentrant)."""
+        """Construct the resident dense container for `unit` per its load mode:
+        ram_fp16 (default) = RamBlockSource streaming store; gpu_resident = fp16 shards resident
+        on capacity-assigned GPUs; pq_refine = prebuilt IVF-PQ64 on one GPU + RAM rescore store.
+        Acquires the residency lock (reentrant)."""
+        from .ram_index import GpuResidentDense, PQRefineDense
         with self._residency_lock:
             fp = self.registry.get(unit)
-            self._progress(progress_cb, f"loading {unit}", 0.0)
-            ram = RamBlockSource(
-                fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
-                store_dtype=fp.dtype or "float16",
-                progress_cb=lambda done, total: self._progress(
-                    progress_cb, f"loading {unit}: block {done}/{total}", done / total))
-            self._dense[unit] = ram
+            mode = getattr(self, "_pending_modes", {}).get(unit, "ram_fp16")
+            self._progress(progress_cb, f"loading {unit} [{mode}]", 0.0)
+            blk_cb = lambda done, total: self._progress(   # noqa: E731
+                progress_cb, f"loading {unit}: block {done}/{total}", done / total)
+            if mode == "gpu_resident":
+                alloc = self.capacity.allocate_gpus(unit, mode)
+                try:
+                    obj = GpuResidentDense(fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
+                                           alloc, verbose=False, progress_cb=blk_cb)
+                except Exception:
+                    self.capacity.release_gpus(unit)
+                    raise
+            elif mode == "pq_refine":
+                alloc = self.capacity.allocate_gpus(unit, mode)
+                try:
+                    ram = RamBlockSource(fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
+                                         store_dtype=fp.dtype or "float16", progress_cb=blk_cb)
+                    obj = PQRefineDense(fp.resolved_pq_path(), ram, gpu_id=alloc[0][0],
+                                        verbose=False)
+                except Exception:
+                    self.capacity.release_gpus(unit)
+                    raise
+            else:
+                obj = RamBlockSource(fp.resolved_index_dir(), fp.block_num, fp.embed_dim,
+                                     store_dtype=fp.dtype or "float16", progress_cb=blk_cb)
+            self._dense[unit] = obj
+            self._dense_modes[unit] = mode
             self._resident.add(unit)
-            self._progress(progress_cb, f"loaded {unit} ({ram.total_vecs:,} vecs)", 1.0)
+            self._progress(progress_cb, f"loaded {unit} [{mode}] ({obj.total_vecs:,} vecs)", 1.0)
 
     def unload_dense(self, unit: str, progress_cb=None):
         """Drop the resident dense index for `unit` and reclaim its RAM/VRAM. Acquires the lock."""
         with self._residency_lock:
             self._progress(progress_cb, f"unloading {unit}", 0.0)
-            self._dense.pop(unit, None)
+            obj = self._dense.pop(unit, None)
+            if obj is not None and hasattr(obj, "close"):
+                try:
+                    obj.close()                            # frees GPU shards / PQ index
+                except Exception:
+                    pass
+            self._dense_modes.pop(unit, None)
+            self.capacity.release_gpus(unit)
             self._resident.discard(unit)
             gc.collect()
             try:

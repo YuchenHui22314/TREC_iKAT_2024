@@ -103,10 +103,10 @@ def test_activate_rejects_concurrent():
     started, release = threading.Event(), threading.Event()
     orig = pipe.set_active
 
-    def slow(units, progress_cb=None):
+    def slow(units, progress_cb=None, modes=None):
         started.set()
         release.wait(5)
-        return orig(units, progress_cb)
+        return orig(units, progress_cb, modes=modes)
 
     pipe.set_active = slow
     r1 = client.post("/activate", json={"units": ["qrecc_ance_mini"]})

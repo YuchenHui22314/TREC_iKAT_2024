@@ -54,6 +54,7 @@ indexes:
       - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_ance_merged
     dtype: float16
     embed_dim: 768
+    num_docs: 116838987
     block_num: 12
     corpus: clueweb
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
@@ -69,6 +70,7 @@ indexes:
       - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/clueweb22b_ikat23_qwen_merged
     dtype: float16
     embed_dim: 1024
+    num_docs: 116838987
     block_num: 6
     corpus: clueweb
     query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
@@ -108,6 +110,7 @@ indexes:
       - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/qrecc_ance_merged
     dtype: float16
     embed_dim: 768
+    num_docs: 54573064
     block_num: 55
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
@@ -123,6 +126,7 @@ indexes:
       - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/qrecc_qwen_emb_0.6_merged
     dtype: float16
     embed_dim: 1024
+    num_docs: 54573064
     block_num: 55
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
@@ -135,6 +139,7 @@ indexes:
     index_dir: /part/01/Tmp/yuchenhui/indexes/qrecc_ance_mini_merged
     dtype: float16
     embed_dim: 768
+    num_docs: 1000
     block_num: 1
     corpus: qrecc
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234
@@ -160,6 +165,7 @@ indexes:
       - /data/rech/huiyuche/TREC_iKAT_2024/data/embeddings/topiocqa_ance_merged
     dtype: float16
     embed_dim: 768
+    num_docs: 25700592
     block_num: 26
     corpus: topiocqa
     query_encoder: /data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234

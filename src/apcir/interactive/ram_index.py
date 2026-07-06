@@ -146,6 +146,11 @@ def search_query_against_ram(query_embeddings: np.ndarray,
     Returns (merged_D, merged_I) numpy arrays (num_query, topN) — feed to
     dense_search.get_dense_ranking_list.
     """
+    # A non-streaming resident container (GpuResidentDense / PQRefineDense) answers directly.
+    if hasattr(ram_src, "search_topn"):
+        D, I = ram_src.search_topn(query_embeddings, topN)
+        return np.asarray(D), np.asarray(I)
+
     # fp16-stored index (e.g. the 491G qwen3 ClueWeb22-B): faiss IndexFlatIP.add() takes ONLY
     # float32, so the faiss path would cast every 41G fp16 block back to an 82G fp32 array per
     # query AND shard-transfer it across GPUs over PCIe == ~180s/query. A fp16 block is 41G and
@@ -226,3 +231,152 @@ def _search_ram_fp16_gpu(query_embeddings, ram_src, topN, merge_fn=merge_topk,
             torch.cuda.empty_cache()
     merged_D, merged_I = merge_fn(sources, topN)
     return np.asarray(merged_D), np.asarray(merged_I)
+
+
+# --------------------------------------------------------------------------- #
+# Resident containers (load modes beyond the default ram_fp16 streaming)
+# --------------------------------------------------------------------------- #
+class GpuResidentDense:
+    """`gpu_resident` mode: fp16 doc shards uploaded ONCE to the assigned GPUs; per request only
+    an fp32-score GEMM (docs upcast per chunk) + top-k + id map. ~100x lower latency than the
+    streaming path (benchmarked 2.73s -> 0.03s at 26M docs) at identical retrieval quality.
+
+    allocation: [(gpu_id, gb), ...] from CapacityManager.allocate_gpus — block rows are split
+    across the GPUs proportionally to their granted VRAM."""
+
+    def __init__(self, index_dir: str, num_blocks: int, dim: int, allocation,
+                 verbose: bool = True, progress_cb=None, row_chunk: int = 2_000_000):
+        import pickle
+        import torch
+        self.store_dtype = np.dtype("float16")   # keeps pipeline dtype checks meaningful
+        self.load_mode = "gpu_resident"
+        self._row_chunk = row_chunk
+        gpus = [g for g, _gb in allocation]
+        weights = np.array([gb for _g, gb in allocation], dtype=np.float64)
+        weights = weights / weights.sum()
+        self._devs = [f"cuda:{g}" for g in gpus]
+        self._shards = []                        # (dev, fp16 tensor, global_row_offset)
+        ids_all, off = [], 0
+        for i in range(num_blocks):
+            with open(os.path.join(index_dir, f"doc_emb_block.{i}.pb"), "rb") as fh:
+                emb32 = pickle.load(fh)
+            emb = np.ascontiguousarray(emb32, dtype=np.float16)
+            del emb32
+            _reclaim_libc_heap()
+            n = emb.shape[0]
+            edges = np.floor(np.concatenate([[0.0], np.cumsum(weights)]) * n).astype(np.int64)
+            edges[-1] = n
+            for gi, dev in enumerate(self._devs):
+                s0, s1 = int(edges[gi]), int(edges[gi + 1])
+                if s1 > s0:
+                    self._shards.append(
+                        (dev, torch.from_numpy(np.ascontiguousarray(emb[s0:s1])).to(dev),
+                         off + s0))
+            with open(os.path.join(index_dir, f"doc_embid_block.{i}.pb"), "rb") as fh:
+                ids = pickle.load(fh)
+            ids_all.append(np.array(ids, dtype=object))
+            off += n
+            del emb
+            _reclaim_libc_heap()
+            if progress_cb:
+                progress_cb(i + 1, num_blocks)
+            if verbose:
+                print(f"[gpu_resident] block {i + 1}/{num_blocks} uploaded", flush=True)
+        self._ids = np.concatenate(ids_all)
+        self.total_vecs = off
+        self.num_blocks = num_blocks
+
+    def search_topn(self, Q: np.ndarray, topN: int):
+        import torch
+        with torch.no_grad():
+            Qf = np.ascontiguousarray(Q, dtype=np.float32)
+            Qt = {d: torch.from_numpy(Qf).to(d) for d in dict.fromkeys(self._devs)}
+            parts = []
+            for dev, t, goff in self._shards:    # issue all GPUs' work before any sync
+                bv = bi = None
+                for s in range(0, t.shape[0], self._row_chunk):
+                    sc = Qt[dev] @ t[s:s + self._row_chunk].float().T   # fp32 scores
+                    v, i = torch.topk(sc, min(topN, sc.shape[1]), dim=1)
+                    i = i + s
+                    if bv is None:
+                        bv, bi = v, i
+                    else:
+                        cat_v = torch.cat([bv, v], dim=1)
+                        cat_i = torch.cat([bi, i], dim=1)
+                        bv, sel = torch.topk(cat_v, min(topN, cat_v.shape[1]), dim=1)
+                        bi = torch.gather(cat_i, 1, sel)
+                parts.append((bv, bi + goff))
+            per = [(v.cpu().numpy(), self._ids[i.cpu().numpy()]) for v, i in parts]
+        return merge_topk(per, topN)
+
+    def close(self):
+        import torch
+        self._shards = []
+        for d in dict.fromkeys(self._devs):
+            with torch.cuda.device(d):
+                torch.cuda.empty_cache()
+
+
+class PQRefineDense:
+    """`pq_refine` mode: prebuilt IVF-PQ64 on ONE GPU proposes top-`cand_k` candidates; the fp16
+    RAM store rescored in fp32 fixes their order (benchmarked NDCG@3 within ~2% of exact on
+    normalized embeddings; PQ alone is NOT acceptable). VRAM = the small PQ index only."""
+
+    def __init__(self, pq_path: str, ram_src: RamBlockSource, gpu_id: int,
+                 nprobe: int = 64, cand_k: int = 512, verbose: bool = True):
+        import faiss
+        self.store_dtype = np.dtype("float16")
+        self.load_mode = "pq_refine"
+        self._ram = ram_src
+        self._cand_k = cand_k
+        cpu = faiss.read_index(pq_path)
+        co = faiss.GpuClonerOptions()
+        co.useFloat16 = True                  # IVFPQ: cloner useFloat16 == fp16 lookup tables
+        self._res = faiss.StandardGpuResources()
+        self._index = faiss.index_cpu_to_gpu(self._res, gpu_id, cpu, co)
+        self._index.nprobe = nprobe
+        # global row -> (block, local row) mapping via block offsets (add order == block order)
+        offs, ids_all = [0], []
+        for _bid, emb, ids in ram_src.iter_blocks():
+            offs.append(offs[-1] + emb.shape[0])
+            ids_all.append(ids)
+        self._offs = np.array(offs)
+        self._ids = np.concatenate(ids_all)
+        self.total_vecs = int(self._offs[-1])
+        self.num_blocks = ram_src.num_blocks
+        assert self._index.ntotal == self._offs[-1], \
+            f"PQ index ntotal {self._index.ntotal} != store vectors {self._offs[-1]} " \
+            f"(index built from a different corpus/blocks?)"
+        if verbose:
+            print(f"[pq_refine] index {pq_path} on cuda:{gpu_id} ntotal={self._index.ntotal}",
+                  flush=True)
+
+    def search_topn(self, Q: np.ndarray, topN: int):
+        Qf = np.ascontiguousarray(Q, dtype=np.float32)
+        _D, I = self._index.search(Qf, self._cand_k)          # (nq, cand_k) global rows
+        I = np.where(I < 0, 0, I)
+        blocks = [b[1] for b in self._ram._blocks]
+        out_D = np.empty((len(Qf), topN), dtype=np.float32)
+        out_I = np.empty((len(Qf), topN), dtype=object)
+        for r in range(len(Qf)):
+            rows = I[r]
+            bidx = np.searchsorted(self._offs, rows, side="right") - 1
+            cand = np.empty((len(rows), Qf.shape[1]), dtype=np.float32)
+            for b in np.unique(bidx):
+                m = bidx == b
+                cand[m] = blocks[b][rows[m] - self._offs[b]].astype(np.float32)
+            sc = cand @ Qf[r]
+            k = min(topN, len(sc))
+            top = np.argpartition(-sc, k - 1)[:k]
+            top = top[np.argsort(-sc[top])]
+            out_D[r, :k] = sc[top]
+            out_I[r, :k] = self._ids[rows[top]]
+        return out_D, out_I
+
+    def close(self):
+        try:
+            self._index.reset()
+        except Exception:
+            pass
+        self._index = None
+        self._res = None

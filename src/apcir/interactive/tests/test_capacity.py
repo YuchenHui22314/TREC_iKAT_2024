@@ -198,3 +198,73 @@ def test_registry_parses_query_encoders_list():
             _yaml.safe_dump(cfg, f)
         reg = IndexRegistry.from_yaml(pth)
     assert reg.get("u").query_encoders[0]["label"] == "ANCE"
+
+
+# --------------------------------------------------------------------------- #
+# Load modes (ram_fp16 / gpu_resident / pq_refine) + per-GPU placement
+# --------------------------------------------------------------------------- #
+def _dense_fp(name="u", ram=40.0, peak=52.0, docs=26_000_000, pq=None):
+    from apcir.interactive.capacity import IndexFootprint
+    return IndexFootprint(name, "dense", ram, peak, index_dir="/nonexistent",
+                          dtype="float16", embed_dim=768, block_num=26,
+                          num_docs=docs, pq_index_path=pq)
+
+
+def test_mode_requirements_ram_fp16_matches_legacy():
+    fp = _dense_fp()
+    r = fp.mode_requirements("ram_fp16")
+    assert r["ram_gb"] == 40.0 and r["load_peak_ram_gb"] == 52.0
+    assert r["vram_total_gb"] == 0 and r["vram_single_gb"] == 0
+
+
+def test_mode_requirements_gpu_resident_moves_store_to_vram():
+    r = _dense_fp().mode_requirements("gpu_resident")
+    assert r["vram_total_gb"] == 40.0          # fp16 store lives on the GPUs, sharded
+    assert r["ram_gb"] < 40.0                  # nothing resident in RAM (stream-through load)
+
+
+def test_mode_requirements_pq_refine_needs_ram_store_plus_one_gpu():
+    r = _dense_fp().mode_requirements("pq_refine")
+    assert r["ram_gb"] == 40.0                 # fp16 rescore store stays in RAM
+    # PQ64 codes: 26M x 64B ~ 1.7G, with overhead < 3G, on ONE gpu
+    assert 1.0 < r["vram_single_gb"] < 3.0
+    assert r["vram_total_gb"] == 0
+
+
+def test_plan_pq_refine_refused_without_gpu_room():
+    from apcir.interactive.capacity import IndexRegistry, CapacityManager
+    fp = _dense_fp()
+    reg = IndexRegistry({"u": fp})
+    cap = CapacityManager(reg, free_ram_fn=lambda: 200.0,
+                          free_vram_fn=lambda: [1.0, 1.0])       # no GPU fits ~2G + safety
+    plan = cap.plan(["u"], [], modes={"u": "pq_refine"})
+    assert not plan.fits and "VRAM" in plan.reason
+
+
+def test_plan_gpu_resident_shards_across_gpus():
+    from apcir.interactive.capacity import IndexRegistry, CapacityManager
+    reg = IndexRegistry({"u": _dense_fp(ram=40.0, peak=52.0)})
+    cap = CapacityManager(reg, free_ram_fn=lambda: 60.0,
+                          free_vram_fn=lambda: [12.0, 12.0, 12.0, 12.0])  # 40G fits only sharded x4
+    assert cap.plan(["u"], [], modes={"u": "gpu_resident"}).fits
+    cap2 = CapacityManager(reg, free_ram_fn=lambda: 60.0,
+                           free_vram_fn=lambda: [12.0, 12.0])            # 2x12 < 40 -> refuse
+    plan = cap2.plan(["u"], [], modes={"u": "gpu_resident"})
+    assert not plan.fits and "VRAM" in plan.reason
+
+
+def test_allocator_places_and_credits_eviction():
+    """Multi-GPU eviction credit via per-unit placement tracking (the documented TODO)."""
+    from apcir.interactive.capacity import IndexRegistry, CapacityManager
+    a = _dense_fp("a", ram=10, peak=12, docs=200_000_000)   # PQ64 ~ 15G -> one GPU
+    b = _dense_fp("b", ram=10, peak=12, docs=200_000_000)
+    reg = IndexRegistry({"a": a, "b": b})
+    free = [17.0, 10.0]
+    cap = CapacityManager(reg, free_ram_fn=lambda: 100.0, free_vram_fn=lambda: list(free))
+    got = cap.allocate_gpus("a", "pq_refine")
+    assert len(got) == 1 and got[0][0] == 0               # placed on the roomier GPU 0
+    free[0] -= got[0][1]                                  # simulate the load consuming VRAM
+    # b (~15G) fits neither GPU now (gpu0 ~1G, gpu1 10G) -> refused when a stays...
+    assert not cap.plan(["a", "b"], ["a"], modes={"a": "pq_refine", "b": "pq_refine"}).fits
+    # ...but replacing a with b fits: the plan credits a's TRACKED placement on gpu0.
+    assert cap.plan(["b"], ["a"], modes={"b": "pq_refine"}).fits

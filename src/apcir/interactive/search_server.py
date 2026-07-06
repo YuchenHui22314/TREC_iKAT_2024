@@ -42,6 +42,8 @@ class RetrieverLeg(BaseModel):
 
 class ActivateRequest(BaseModel):
     units: List[str]                        # capacity units to make resident (the active set)
+    modes: Dict[str, str] = {}              # optional per-dense-unit load mode:
+                                            # ram_fp16 (default) | gpu_resident | pq_refine
 
 
 class SearchRequest(BaseModel):
@@ -231,7 +233,7 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
                 with tasks_lock:
                     tasks[task_id]["progress"].append({"msg": msg, "frac": frac})
             try:
-                pipeline.set_active(req.units, progress_cb=cb)
+                pipeline.set_active(req.units, progress_cb=cb, modes=req.modes)
                 with tasks_lock:
                     tasks[task_id]["state"] = "done"
             except Exception as e:                       # CapacityError / load failure
