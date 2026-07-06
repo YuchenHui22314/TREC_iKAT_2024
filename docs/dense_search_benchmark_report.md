@@ -134,17 +134,68 @@ HNSW here**, which is exactly the point about CPU-query vector DBs (§6).
 interactive-fast — ANN buys sub-ms latency but pays recall, so it is **not worth it at this scale**.
 ANN only becomes *necessary* at ClueWeb-116 M where exact fp16 no longer fits VRAM.
 
+### 5.1b Retrieval-QUALITY impact — NDCG vs qrecc qrels (128 judged queries, 2026-07-03)
+
+recall-vs-GT only says "the ranking changed"; NDCG against real qrels says whether it got *worse*.
+Measured with the same harness (`--ndcg`), binary qrecc rels:
+
+**ANCE (26 M, un-normalized, scores ~700):**
+
+| config | NDCG@3 | NDCG@10 | MRR@10 | R@100 |
+|---|---:|---:|---:|---:|
+| exact fp32 (paper) | 0.4258 | 0.5060 | 0.4508 | 0.8633 |
+| **fp16-doc + fp32-score (FIXED a/c/d)** | **0.4276** | 0.5043 | 0.4486 | 0.8633 |
+| **legacy fp16-out GEMM (pre-fix)** | **0.4096** | 0.5062 | 0.4491 | 0.8750 |
+| IVF-SQ8 nprobe=32 | 0.4258 | 0.4980 | 0.4452 | 0.8359 |
+| IVF-SQ8 nprobe=128 | 0.4258 | 0.4978 | 0.4449 | 0.8438 |
+| IVF-SQfp16 nprobe=128 | 0.4219 | 0.4977 | 0.4448 | 0.8477 |
+| IVF-PQ96 nprobe=128 | 0.0245 | 0.0304 | 0.0265 | 0.1263 |
+| IVF-PQ96 + refine512 | 0.1854 | 0.2038 | 0.1982 | 0.2747 |
+
+Readings: (1) **fp16 doc storage costs NOTHING** once scores are fp32 — the 0.83 recall-vs-GT was
+tie-shuffling among equally-relevant near-duplicates. (2) The **pre-fix path really did hurt**:
+−1.6 pts NDCG@3 (−3.8% rel), concentrated in top-3 — the ulp-tie region. The W1 fix recovers it
+exactly. (3) **IVF-SQ8 at nprobe≥32 is quality-free for top-10** (NDCG@3 = exact; only deep recall
+−3 pts). (4) PQ is unusable on ANCE, and even exact rescoring can't rescue a poisoned candidate
+pool (refine 0.185).
+
+**Qwen (10 M, L2-normalized):**
+
+| config | NDCG@3 | NDCG@10 | MRR@10 | R@100 |
+|---|---:|---:|---:|---:|
+| exact fp32 = fp16 paths = **legacy** (all identical) | 0.4986 | 0.5603 | 0.5067 | 0.8971 |
+| IVF-SQfp16 / SQ8 nprobe=128 | 0.4887 | 0.5508 | 0.4993 | 0.8659 |
+| IVF-SQ4 nprobe=128 | 0.4702 | 0.5365 | 0.4827 | 0.8659 |
+| **IVF-SQ4 + refine512** | **0.4887** | 0.5508 | 0.4993 | 0.8659 |
+| IVF-PQ128 nprobe=128 | 0.4362 | 0.5186 | 0.4636 | 0.8503 |
+| **IVF-PQ128 + refine512** | **0.4887** | 0.5508 | 0.4993 | 0.8659 |
+| IVF-PQ64 nprobe=128 | 0.4020 | 0.4929 | 0.4470 | 0.8190 |
+| IVF-PQ64 + refine512 | 0.4887@3 | 0.5538 | 0.5008 | 0.8346 |
+
+Readings: (1) On normalized embeddings **even the legacy fp16-out GEMM is harmless** (scores ~1.0,
+fp16 ulp 0.0005) — the fp16 damage was ANCE-specific, as hypothesized. (2) **PQ partially recovers
+on normalized embeddings** (0.436 vs ANCE's 0.02) but still costs a real −12.5% NDCG@3. (3) **The
+two-stage refine is the winner**: PQ128+refine = SQ4+refine = **0.4887, within 2% of exact**, at
+PQ128/SQ4's tiny index size. (Note: PQ96 is invalid for 1024-d — subquantizers must divide dim;
+use PQ128/PQ64.)
+
 ### 5.2 ClueWeb-116 M extrapolation
 
 Costs scale ~linearly in N (GEMM + PCIe) and index storage in N×bytes:
 - **Streaming exact (current)**: ~12 s/query (2.73 s × 116/26) — the status quo, correct but slow.
 - **GPU-resident exact fp16**: ANCE 116 M×768×2 = **178 GB**, Qwen 116 M×1024×2 = **237 GB** — both
   exceed 96 GB total VRAM → **impossible on octal31**; stays a streaming (or CPU) job.
-- **IVF-SQ8** (the viable ANN): ANCE ≈ **89 GB** → fits *sharded* across the 4 GPUs (89/96, tight),
-  recall ≈ **0.93**, sub-ms. Qwen 116 M×1024 = 116 GB SQ8 → doesn't fit even sharded; stays streaming
-  or needs a smaller-code scheme.
-- **IVF-PQ96** (11 GB, one GPU): **ruled out** — recall 0.05 on ANCE (0.24 even normalized). Would
-  need OPQ + normalized/whitened embeddings to be worth revisiting.
+- **IVF-SQ8** (the viable ANN for ANCE): ≈ **89 GB** → fits *sharded* across the 4 GPUs (89/96,
+  tight), NDCG@3 = exact at nprobe≥32, sub-ms. Qwen 116 M×1024 = 116 GB SQ8 → doesn't fit even
+  sharded.
+- **ClueWeb-Qwen escape hatch (measured answer): IVF-PQ128 + fp32 refine.** PQ128 index = 116 M ×
+  128 B ≈ **15 GB (one GPU)** for candidates; rescore the top-512 rows per query from the **fp16
+  block store already resident in CPU RAM** (the interactive server holds it anyway) — measured
+  NDCG@3 within 2% of exact on the normalized qwen embeddings. SQ4 (59 GB sharded) + refine ties it.
+  Caveat: the candidate search must run CPU-side or on a fixed faiss build — this pip faiss 1.8
+  GPU kernel aborts for SQ8/SQ4 at k>~100 (SM86); CPU IVF candidates at nprobe=128 are seconds-class
+  and would need tuning (smaller nprobe / GPU PQ k≤100 probing) for interactive latency.
+- **Plain IVF-PQ (no refine): ruled out** — ANCE 0.02 NDCG@3 (unnormalized kills PQ); qwen −12.5%.
 - IVF **build** at 116 M (train 2 M sample + add) extrapolates to ~5–15 min — a one-time cost.
 
 ## 6. Are the RAG/vector-DB libraries "FAISS underneath"? (verified, 2026)
