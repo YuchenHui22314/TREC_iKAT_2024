@@ -367,6 +367,11 @@ class PQRefineDense:
     def __init__(self, pq_path: str, ram_src: RamBlockSource, gpu_id: int,
                  nprobe: int = 64, cand_k: int = 512, verbose: bool = True):
         import faiss
+        import threading
+        # faiss GPU indexes are NOT thread-safe: concurrent .search() corrupts the per-resource
+        # StackDeviceMemory ("p + size == head_" C++ abort = process death). FastAPI handlers run
+        # in a threadpool, so serialize all searches on this index.
+        self._lock = threading.Lock()
         self.store_dtype = np.dtype("float16")
         self.load_mode = "pq_refine"
         self._ram = ram_src
@@ -410,7 +415,8 @@ class PQRefineDense:
         # candidates must cover topN (default retrieval_top_k is 1000 > the 512 default) — GPU
         # PQ64 handles k<=2048 (verified on SM86); beyond that we cap and TRIM the output.
         cand_k = min(max(self._cand_k, topN), 2048, self._index.ntotal)
-        _D, I = self._index.search(Qf, cand_k)                # (nq, cand_k) global rows
+        with self._lock:                                      # faiss GPU search is NOT thread-safe
+            _D, I = self._index.search(Qf, cand_k)            # (nq, cand_k) global rows
         I = np.where(I < 0, 0, I)
         blocks = [b[1] for b in self._ram._blocks]
         int8_store = self._ram.store_dtype == np.int8
