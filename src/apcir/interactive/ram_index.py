@@ -102,6 +102,11 @@ class RamBlockSource:
             for pref in ("doc_emb_block", "doc_embid_block"):
                 p = oj(self.index_dir, f"{pref}.{i}.pb")
                 if not os.path.exists(p):
+                    # an int8 store can load from its npy cache alone (fp32 block not needed)
+                    if (pref == "doc_emb_block" and self.store_dtype == np.int8
+                            and os.path.exists(oj(self.index_dir, f"doc_emb_int8_block.{i}.npy"))
+                            and os.path.exists(oj(self.index_dir, f"doc_emb_int8_scale.{i}.npy"))):
+                        continue
                     raise FileNotFoundError(
                         f"RamBlockSource missing {p} (merged index? right block_num?)")
 
@@ -111,8 +116,6 @@ class RamBlockSource:
         total_vecs = 0
         for block_id in range(self.num_blocks):
             tb = time.time()
-            with open(oj(self.index_dir, f"doc_emb_block.{block_id}.pb"), "rb") as h:
-                emb32 = pickle.load(h)
             with open(oj(self.index_dir, f"doc_embid_block.{block_id}.pb"), "rb") as h:
                 ids = pickle.load(h)
                 if isinstance(ids, list):
@@ -122,10 +125,28 @@ class RamBlockSource:
                     # across 55 blocks) OOM'd the loader. The fp16 embeddings were never the issue.
                     ids = np.array(ids, dtype=object)
             if self.store_dtype == np.int8:      # pq_refine rescore store: int8 + per-row scales
-                emb, sc = quantize_int8(np.asarray(emb32, dtype=np.float32))
+                # disk cache: reading the 119G int8 store beats re-reading 450G fp32 + quantizing
+                # (~13min vs ~70min for ClueWeb-Qwen). Written on the first (cold) load below.
+                c_emb = oj(self.index_dir, f"doc_emb_int8_block.{block_id}.npy")
+                c_sc = oj(self.index_dir, f"doc_emb_int8_scale.{block_id}.npy")
+                if os.path.exists(c_emb) and os.path.exists(c_sc):
+                    emb = np.load(c_emb)
+                    sc = np.load(c_sc)
+                else:
+                    with open(oj(self.index_dir, f"doc_emb_block.{block_id}.pb"), "rb") as h:
+                        emb32 = pickle.load(h)
+                    emb, sc = quantize_int8(np.asarray(emb32, dtype=np.float32))
+                    del emb32
+                    try:
+                        np.save(c_emb, emb)
+                        np.save(c_sc, sc)
+                    except OSError as e:         # cache is an optimization, never a load failure
+                        print(f"[RamBlockSource] int8 cache write failed ({e}) — continuing",
+                              flush=True)
                 self._scales.append(sc)
-                del emb32
             else:
+                with open(oj(self.index_dir, f"doc_emb_block.{block_id}.pb"), "rb") as h:
+                    emb32 = pickle.load(h)
                 emb = np.ascontiguousarray(emb32, dtype=self.store_dtype)
                 if emb is not emb32:
                     del emb32                # drop the fp32 source NOW (always a copy for fp16 store)

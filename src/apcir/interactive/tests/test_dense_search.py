@@ -162,3 +162,26 @@ def test_int8_store_rescore_matches_fp32_ranking():
         a = np.argsort(-exact[r])[:10]
         b = np.argsort(-approx[r])[:10]
         assert len(set(a) & set(b)) >= 9
+
+
+def test_int8_store_disk_cache_roundtrip(tmp_path):
+    """pq_refine int8 store: first load quantizes from fp32 AND writes an on-disk cache
+    (doc_emb_int8_block.{i}.npy + scales); the next load READS the cache (no fp32 touch) and
+    yields identical blocks/scales. Cuts ClueWeb activate ~70min -> ~13min."""
+    import pickle
+    from apcir.interactive.ram_index import RamBlockSource
+    rng = np.random.default_rng(2)
+    emb = rng.standard_normal((50, 16)).astype(np.float32)
+    ids = [f"d{i}" for i in range(50)]
+    with open(tmp_path / "doc_emb_block.0.pb", "wb") as f:
+        pickle.dump(emb, f)
+    with open(tmp_path / "doc_embid_block.0.pb", "wb") as f:
+        pickle.dump(ids, f)
+    s1 = RamBlockSource(str(tmp_path), 1, 16, verbose=False, store_dtype="int8")
+    assert (tmp_path / "doc_emb_int8_block.0.npy").exists()      # cache written on first load
+    assert (tmp_path / "doc_emb_int8_scale.0.npy").exists()
+    (tmp_path / "doc_emb_block.0.pb").unlink()                   # fp32 gone -> cache MUST be used
+    s2 = RamBlockSource(str(tmp_path), 1, 16, verbose=False, store_dtype="int8")
+    assert np.array_equal(s1._blocks[0][1], s2._blocks[0][1])
+    assert np.array_equal(s1._scales[0], s2._scales[0])
+    assert list(s2._blocks[0][2]) == ids
