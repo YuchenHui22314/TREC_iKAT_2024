@@ -82,10 +82,17 @@ class RamBlockSource:
     """
 
     def __init__(self, index_dir: str, num_blocks: int, dim: Optional[int] = None,
-                 verbose: bool = True, store_dtype: str = "float32", progress_cb=None):
+                 verbose: bool = True, store_dtype: str = "float32", progress_cb=None,
+                 int8_mmap: bool = False):
         self.index_dir = index_dir
         self.num_blocks = num_blocks
         self.dim = dim
+        # int8_mmap: attach to the int8 npy cache via SHARED file-backed mmap instead of copying
+        # into private memory. Pages live in the OS page cache -> shared across processes and
+        # SURVIVING server restarts (attach is ~instant when warm; store_daemon keeps them warm).
+        # Only sensible when the cache sits on fast storage (NVMe): cold random gathers on an HDD
+        # would be ~12ms/page. Default off (materialize, HDD-safe).
+        self.int8_mmap = int8_mmap
         # store_dtype="float16" halves RAM (e.g. the 491 GB qwen3 ClueWeb22-B index -> ~245 GB,
         # fitting a 503 GB node). Blocks are cast back to float32 per-block at search time for the
         # faiss add (faiss IndexFlatIP requires float32 input); fp16 storage for inner-product
@@ -130,8 +137,9 @@ class RamBlockSource:
                 c_emb = oj(self.index_dir, f"doc_emb_int8_block.{block_id}.npy")
                 c_sc = oj(self.index_dir, f"doc_emb_int8_scale.{block_id}.npy")
                 if os.path.exists(c_emb) and os.path.exists(c_sc):
-                    emb = np.load(c_emb)
-                    sc = np.load(c_sc)
+                    mode = "r" if self.int8_mmap else None
+                    emb = np.load(c_emb, mmap_mode=mode)
+                    sc = np.load(c_sc, mmap_mode=mode)
                 else:
                     with open(oj(self.index_dir, f"doc_emb_block.{block_id}.pb"), "rb") as h:
                         emb32 = pickle.load(h)

@@ -185,3 +185,45 @@ def test_int8_store_disk_cache_roundtrip(tmp_path):
     assert np.array_equal(s1._blocks[0][1], s2._blocks[0][1])
     assert np.array_equal(s1._scales[0], s2._scales[0])
     assert list(s2._blocks[0][2]) == ids
+
+
+def test_int8_store_mmap_attach(tmp_path):
+    """int8_mmap=True: attach to the npy cache via shared file-backed mmap (no private copy) —
+    the resident-daemon story: pages live in the OS page cache, shared across processes and
+    surviving server restarts; a keeper daemon just keeps them warm."""
+    import pickle
+    from apcir.interactive.ram_index import RamBlockSource
+    rng = np.random.default_rng(3)
+    emb = rng.standard_normal((40, 8)).astype(np.float32)
+    ids = [f"d{i}" for i in range(40)]
+    with open(tmp_path / "doc_emb_block.0.pb", "wb") as f:
+        pickle.dump(emb, f)
+    with open(tmp_path / "doc_embid_block.0.pb", "wb") as f:
+        pickle.dump(ids, f)
+    RamBlockSource(str(tmp_path), 1, 8, verbose=False, store_dtype="int8")   # writes the cache
+    s = RamBlockSource(str(tmp_path), 1, 8, verbose=False, store_dtype="int8", int8_mmap=True)
+    assert isinstance(s._blocks[0][1], np.memmap)            # attached, not copied
+    assert isinstance(s._scales[0], np.memmap)
+    # gather + dequant works off the memmap exactly like the materialized store
+    from apcir.interactive.ram_index import dequantize_int8
+    rows = np.array([3, 17, 29])
+    got = dequantize_int8(s._blocks[0][1][rows], s._scales[0][rows])
+    ref = RamBlockSource(str(tmp_path), 1, 8, verbose=False, store_dtype="int8")
+    want = dequantize_int8(ref._blocks[0][1][rows], ref._scales[0][rows])
+    assert np.array_equal(got, want)
+
+
+def test_store_daemon_touch_pass(tmp_path):
+    """store_daemon warm pass: touches every cached page and reports bytes; idempotent."""
+    import pickle
+    from apcir.interactive.ram_index import RamBlockSource
+    from apcir.interactive.store_daemon import touch_store
+    emb = np.random.default_rng(4).standard_normal((64, 8)).astype(np.float32)
+    with open(tmp_path / "doc_emb_block.0.pb", "wb") as f:
+        pickle.dump(emb, f)
+    with open(tmp_path / "doc_embid_block.0.pb", "wb") as f:
+        pickle.dump([f"d{i}" for i in range(64)], f)
+    RamBlockSource(str(tmp_path), 1, 8, verbose=False, store_dtype="int8")
+    n = touch_store(str(tmp_path), 1)
+    assert n > 0                                              # touched the int8 cache bytes
+    assert touch_store(str(tmp_path), 1) == n                 # idempotent

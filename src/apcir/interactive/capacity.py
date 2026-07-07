@@ -40,6 +40,8 @@ class IndexFootprint:
     num_docs: Optional[int] = None       # dense units: total vectors (sizes the PQ index)
     pq_index_path: Optional[str] = None  # dense units: prebuilt IVF-PQ64 faiss file (pq_refine
                                          # mode); None -> {resolved_index_dir}/ivfpq64.faiss
+    int8_mmap: Optional[bool] = None     # pq_refine: attach the int8 store via shared mmap
+                                         # (instant warm restarts; NVMe-backed dirs only)
 
     # -- load modes (dense units) ------------------------------------------- #
     # ram_fp16     : fp16 blocks in CPU RAM, streamed to GPU per request (exact; default)

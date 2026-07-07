@@ -65,6 +65,7 @@ indexes:
     load_peak_ram_gb: 320.0
     vram_gb: 0.0
     index_dir: /var/tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged  # octal31 NVMe: int8 cache + PQ + docids ONLY (validate() accepts cache-only for int8; fp32 blocks live on /part -> keep /part alt for ram_fp16/gpu_resident modes)
+    int8_mmap: true      # NVMe-backed -> shared-mmap attach (instant warm restart; store_daemon keeps pages warm)
     index_dir_alts:
       - /part/01/Tmp/yuchenhui/indexes/clueweb22b_ikat23_qwen_merged
       - /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
