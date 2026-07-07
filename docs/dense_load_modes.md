@@ -100,3 +100,27 @@ Mode cheat-sheet (the panel's "load as" dropdown; feasibility computed live per 
 - `gpu_resident` — exact, ~100× faster; needs VRAM = the fp16 store; small corpora only.
 - `pq_refine` — ~ −0.5% NDCG@3 / −10% R@100; ~9G VRAM + int8-store RAM; ClueWeb-capable.
 - NEVER use fp16/pq modes for offline eval numbers (papers) — fp32 exact only (house rule).
+
+## 6. Night-shift addenda (2026-07-07)
+
+**Shared-mmap store + keeper daemon (shipped).** `RamBlockSource(int8_mmap=True)` attaches the
+int8 npy cache via file-backed mmap (pages = shared OS page cache, surviving restarts);
+`apcir.interactive.store_daemon` keeps them warm (1 byte/page touch per `--interval`). Measured
+activation chain for ClueWeb-Qwen `pq_refine`: **70 min (cold quantize) → 13 min (HDD int8 cache)
+→ 122 s (NVMe read) → 31 s (warm mmap attach)** — the remaining 31 s is docid pickles (~13 s) +
+PQ GPU clone + BM25 open. Capacity note: mmap'd store pages count as *available* to psutil, so the
+`ram_gb` requirement stays conservative; over-admission degrades to NVMe re-reads, never OOM.
+
+**Format measurements (deferred work, decided by data):**
+- *pickle vs npy, cold sequential 3.07G on HDD*: pickle 22.1 s (139 MB/s) vs npy 26.0 s (118 MB/s)
+  — **a wash; both disk-bound**. npy's real value is mmap-ability (18 ms attach), not read speed.
+  The only lever that cuts load wall-clock is FEWER BYTES (fp16 = ½, int8 = ¼).
+- *docid storage prototype* (offsets-uint64 + utf8-bytes npys + decode-on-access view, vs the
+  current pickle→object-array): clueweb 20M-id block: load 2.2 s → **1 ms**, RAM 1.77 G → **~0**
+  (×6 blocks ≈ −10.6 G, −13 s activation); gather of 1000 ids 0.14 ms → 2.46 ms (Python decode
+  loop — absolute cost still invisible next to the 3.6 ms rescore). Verdict: worthwhile, same
+  batch as the fp16-npy cache work — **both deferred by user decision (2026-07-07)**.
+
+**Per-unit "search" toggle (frontend, shipped).** A resident unit can now sit out of retrieval
+(checkbox next to the badge) while still serving doc-fetch — fixes "a resident BM25 unit always
+runs a 1000-doc search". State is pruned to resident units on every activation (codex fix).
