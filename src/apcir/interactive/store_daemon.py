@@ -38,9 +38,10 @@ def _touch_file(path: str) -> int:
     return size
 
 
-def touch_store(index_dir: str, num_blocks: int) -> int:
+def touch_store(index_dir: str, num_blocks: int, pq_path: str | None = None) -> int:
     """One warm pass over the pq_refine artifacts of `index_dir`: int8 blocks + scales (+ the
-    PQ index file and docid pickles when present). Returns total bytes touched. Idempotent."""
+    PQ index file and docid pickles when present). `pq_path` warms a CUSTOM IndexFootprint
+    pq_index_path outside index_dir. Returns total bytes touched. Idempotent."""
     total = 0
     for i in range(num_blocks):
         for pat in (f"doc_emb_int8_block.{i}.npy", f"doc_emb_int8_scale.{i}.npy",
@@ -50,6 +51,8 @@ def touch_store(index_dir: str, num_blocks: int) -> int:
                 total += _touch_file(p)
     for p in glob.glob(os.path.join(index_dir, "ivfpq64.faiss*")):
         total += _touch_file(p)
+    if pq_path and os.path.exists(pq_path):
+        total += _touch_file(pq_path)
     return total
 
 
@@ -58,10 +61,11 @@ def main():
     ap.add_argument("--index-dir", required=True)
     ap.add_argument("--blocks", type=int, required=True)
     ap.add_argument("--interval", type=int, default=600, help="seconds between warm passes")
+    ap.add_argument("--pq-path", default=None, help="custom pq_index_path to warm too")
     args = ap.parse_args()
     while True:
         t0 = time.time()
-        n = touch_store(args.index_dir, args.blocks)
+        n = touch_store(args.index_dir, args.blocks, pq_path=args.pq_path)
         dt = time.time() - t0
         print(f"[store_daemon {time.strftime('%H:%M:%S')}] touched {n / 1e9:.1f} GB in {dt:.1f}s "
               f"({n / 1e9 / max(dt, 1e-9):.1f} GB/s{'  (was warm)' if dt < 30 else '  (re-read)'})",
