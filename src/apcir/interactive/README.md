@@ -86,6 +86,17 @@ SSD (`/part/01/...`) and fall back to the NFS store (`data/embeddings/`, `data/i
 (The ClueWeb-Qwen 320 GB peak comes from its 6 coarse ~80 GB blocks — re-merging into ~1M-doc
 blocks would drop the peak to ≈ resident + 4 GB.)
 
+## Load modes (dense units)
+
+Each dense unit loads in one of three modes (panel dropdown "load as"; `/activate` `modes`):
+`ram_fp16` (exact, streams the fp16 store per query — slow, eval-faithful), `gpu_resident`
+(exact, fp16 shards resident on GPUs, ~100x faster, needs VRAM = the store), and `pq_refine`
+(prebuilt IVF-PQ64 candidates on ONE GPU + exact fp32 rescore from an INT8 RAM store — measured
+NDCG@3 within 0.5% of exact on iKAT'23, ~9G VRAM, ClueWeb-capable on octal31). Full design
+rationale, alternatives considered, hyperparameters, NVMe storage layout and runbook:
+**[`docs/dense_load_modes.md`](../../../docs/dense_load_modes.md)** + measurements in
+**[`docs/dense_search_benchmark_report.md`](../../../docs/dense_search_benchmark_report.md)**.
+
 ## Invariants worth knowing
 
 - **One corpus per active set**, and at most one unit per singleton kind (sparse / splade /
