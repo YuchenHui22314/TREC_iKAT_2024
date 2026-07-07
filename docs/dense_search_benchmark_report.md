@@ -179,6 +179,35 @@ two-stage refine is the winner**: PQ128+refine = SQ4+refine = **0.4887, within 2
 PQ128/SQ4's tiny index size. (Note: PQ96 is invalid for 1024-d — subquantizers must divide dim;
 use PQ128/PQ64.)
 
+### 5.1c HARD-setting validation — iKAT'23 oracle over the FULL 116M ClueWeb-Qwen (graded qrels)
+
+QReCC is an easy dataset (many near-duplicates); iKAT'23 (176 judged turns, graded 0–4 rels,
+oracle rewrites, base-Qwen encoder) is the adversarial test. Measured with
+`bench_ikat_pq_refine.py` (one 450G disk pass = exact GT + INT8 store; prebuilt
+`ivfpq64.faiss`, 8.55 GB, nlist=32768, built in ~75 min):
+
+| config | NDCG@3 | NDCG@10 | R@100 | MRR |
+|---|---:|---:|---:|---:|
+| exact fp32 | 0.1902 | 0.1657 | 0.1946 | 0.3917 |
+| PQ64-only (nprobe 64/128) | 0.1369 (**−28%**) | 0.1255 | 0.1379 | 0.3218 |
+| **PQ64 + refine-INT8** (nprobe 64) | **0.1892 (−0.5%)** | 0.1668 (+0.7%) | 0.1758 (−9.7%) | 0.3902 |
+
+Readings: (1) the hard set **amplifies raw PQ damage** (−28% vs QReCC's −12.5%) — pure PQ is
+unusable everywhere; (2) **refine holds up even better than on QReCC**: NDCG@3 within 0.5% of
+exact, NDCG@10 at parity — top-10 quality is effectively free; (3) the only real cost is deep
+recall (R@100 −9.7%: docs outside the PQ top-1000 candidates are unrecoverable) — irrelevant for
+the interactive top-10 RAG use, disqualifying for offline eval (already the rule); (4) nprobe
+64→128 changes nothing (candidates already saturated); production default = 64; (5) rescore is
+**3.6 ms/query** with the INT8 store RAM-resident (a 4.5 s/query first-pass figure was page-fault
+re-fill after the OS had reclaimed cold pages — not steady-state).
+
+**INT8 rescore store** (productized): the refine store is int8 + per-row scales instead of fp16 —
+ClueWeb-Qwen 235G → **119G, which FITS octal31**. Quantization roundtrip: IP error < 0.01 on
+normalized rows; corpus-level: the iKAT numbers above ARE the int8-rescore numbers.
+Hardware note: **PQ128 is impossible on A5000** (needs 64KB shared memory; SM86 has 48KB) in any
+faiss version — PQ64 (m=64 subquantizers × 8 bits over 16-dim subvectors) is the ceiling, and
++refine it ties PQ128 anyway.
+
 ### 5.2 ClueWeb-116 M extrapolation
 
 Costs scale ~linearly in N (GEMM + PCIe) and index storage in N×bytes:
