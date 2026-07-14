@@ -91,6 +91,26 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+
+    @field_validator("username")
+    @classmethod
+    def _username_sane(cls, v):
+        v = v.strip()
+        if not v or len(v) > 40:
+            raise ValueError("username must be 1-40 non-blank characters")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def _password_nonempty(cls, v):
+        if not v:
+            raise ValueError("password must not be empty")
+        return v
+
+
 class SessionCreate(BaseModel):
     title: str = ""
 
@@ -309,6 +329,22 @@ def create_app(config: PipelineConfig, eager_load: bool = True,
         if not u:
             raise HTTPException(status_code=401, detail="invalid username or password")
         return {"token": store.create_token(u["id"]), "user": u}
+
+    @app.post("/auth/register")
+    def register(req: RegisterRequest):
+        """Open self-signup for the demo (the service sits behind an SSH tunnel; accounts are
+        non-admin and passwords are hashed). Auto-logs the new user in."""
+        try:
+            uid = store.create_user(req.username, req.password, is_admin=False)
+        except ValueError:
+            raise HTTPException(status_code=409, detail="username already exists")
+        u = store.get_user(uid)
+        return {"token": store.create_token(uid), "user": u}
+
+    @app.get("/auth/users")
+    def users_directory():
+        """Usernames + admin flags for the login screen's account picker (demo affordance)."""
+        return store.list_users()
 
     @app.post("/auth/logout")
     def logout(authorization: Optional[str] = Header(None)):

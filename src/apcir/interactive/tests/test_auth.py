@@ -196,3 +196,34 @@ def test_persist_turn_skips_when_unauthed_or_no_session():
     other = store.create_user("b", "p")
     _persist_turn(store, _FakePipe(), other, SearchRequest(utterance="x", session_id=sid), _FakeResult())
     assert store.list_turns(sid) == []
+
+
+# --------------------------------------------------------------------------- #
+# Demo signup + user directory (open registration behind the SSH tunnel)
+# --------------------------------------------------------------------------- #
+def test_register_creates_user_and_logs_in():
+    client = _app()
+    r = client.post("/auth/register", json={"username": "alice", "password": "pw123"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["user"]["username"] == "alice" and body["user"]["is_admin"] == 0
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {body['token']}"})
+    assert me.status_code == 200 and me.json()["username"] == "alice"
+
+
+def test_register_rejects_duplicate_and_bad_input():
+    client = _app()
+    assert client.post("/auth/register", json={"username": "bob", "password": "pw"}).status_code == 200
+    assert client.post("/auth/register", json={"username": "bob", "password": "x"}).status_code == 409
+    assert client.post("/auth/register", json={"username": "  ", "password": "pw"}).status_code == 422
+    assert client.post("/auth/register", json={"username": "c", "password": ""}).status_code == 422
+
+
+def test_users_directory_lists_usernames_without_auth():
+    client = _app()
+    client.post("/auth/register", json={"username": "zoe", "password": "pw"})
+    r = client.get("/auth/users")
+    assert r.status_code == 200
+    names = [u["username"] for u in r.json()]
+    assert "admin" in names and "zoe" in names
+    assert all(set(u) == {"username", "is_admin"} for u in r.json())   # no ids/hashes leaked

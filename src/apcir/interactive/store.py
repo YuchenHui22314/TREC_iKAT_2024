@@ -106,6 +106,14 @@ class Store:
             return {"id": row["id"], "username": row["username"], "is_admin": row["is_admin"]}
         return None
 
+    def list_users(self) -> List[Dict[str, Any]]:
+        """Public user directory for the demo login screen: usernames + admin flag ONLY
+        (no ids, no hashes)."""
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT username, is_admin FROM users ORDER BY username").fetchall()
+        return [dict(r) for r in rows]
+
     def get_user(self, user_id: int) -> Optional[Dict[str, Any]]:
         with self._lock:
             row = self._conn.execute(
