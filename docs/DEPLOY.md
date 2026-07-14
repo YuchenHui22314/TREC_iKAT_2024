@@ -40,7 +40,7 @@ Each user tunnels `localhost → the service` through the iro gateway. From a la
 long as you can SSH to iro):
 
 ```bash
-ssh -N -L 8500:localhost:8500 -J arcade@iro.umontreal.ca <user>@octal40   # octal31/octal40
+ssh -N -L 8500:localhost:8500 -J huiyuche@arcade.iro.umontreal.ca <user>@octal40   # octal31/octal40
 # then open http://localhost:8500 in the browser; log in with username/password.
 ```
 
