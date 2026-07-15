@@ -297,6 +297,17 @@ def test_parse_citations():
     assert all(c["n"] <= 2 for c in cites)                   # [3] dropped (no docid for it)
 
 
+def test_parse_citations_after_cjk_char():
+    # Chinese answers put [n] right after a CJK char ("本地菜肴[2]。"); unicode \w counts CJK as a
+    # word char, so a (?<!\w) guard silently dropped those markers (they rendered as plain text in
+    # the UI). Only ASCII identifier chars should block a marker (the array[1] guard).
+    from apcir.interactive.generation import parse_citations
+    resp = "可以吃本地菜肴[1]。想放松就去公园 [2]。"
+    cites = parse_citations(resp, ["docA", "docB"])
+    assert [c["docid"] for c in cites] == ["docA", "docB"]
+    assert resp[cites[0]["start"]:cites[0]["end"]] == "[1]"   # the marker right after 肴 is caught
+
+
 def test_leg_label():
     from apcir.interactive.pipeline import RetrieverSpec, InteractivePipeline as P
     assert P._leg_label(RetrieverSpec("BM25", "raw")) == "BM25"

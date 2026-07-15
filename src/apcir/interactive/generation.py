@@ -19,7 +19,9 @@ from apcir.functional.promptor import InteractiveResponseGenPromptor
 # PersonalizedResponseGenPromptor is left untouched. See promptor.InteractiveResponseGenPromptor.
 _GEN_PROMPTOR = InteractiveResponseGenPromptor()
 
-_CITE_RE = re.compile(r"(?<!\w)\[(\d+)\]")   # leading [ not after a word char -> skips array[1]
+# Skip array[1]-style indexing (ASCII identifier char before '[') but NOT CJK text: unicode \w
+# counts CJK as word chars, which silently dropped every marker in Chinese answers ("菜肴[2]。").
+_CITE_RE = re.compile(r"(?<![A-Za-z0-9_])\[(\d+)\]")
 
 
 def parse_citations(response: str, docids: List[str]) -> List[Dict[str, Any]]:
