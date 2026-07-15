@@ -106,7 +106,7 @@ class RegisterRequest(BaseModel):
     @field_validator("password")
     @classmethod
     def _password_nonempty(cls, v):
-        if not v:
+        if not v.strip():   # whitespace-only = effectively blank (kept verbatim otherwise)
             raise ValueError("password must not be empty")
         return v
 

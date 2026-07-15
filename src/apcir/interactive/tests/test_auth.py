@@ -217,6 +217,8 @@ def test_register_rejects_duplicate_and_bad_input():
     assert client.post("/auth/register", json={"username": "bob", "password": "x"}).status_code == 409
     assert client.post("/auth/register", json={"username": "  ", "password": "pw"}).status_code == 422
     assert client.post("/auth/register", json={"username": "c", "password": ""}).status_code == 422
+    # whitespace-only is an effectively blank password (codex review) -> reject too
+    assert client.post("/auth/register", json={"username": "c", "password": "   "}).status_code == 422
 
 
 def test_users_directory_lists_usernames_without_auth():
