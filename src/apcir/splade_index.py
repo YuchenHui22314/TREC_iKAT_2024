@@ -25,21 +25,33 @@ from torch.utils.data import IterableDataset
 from apcir.utils import tensor_to_list, PyScoredDoc
 
 
+# SPLADE impact values are bounded ([0, ~3.46] for splade-v3); store them as int16 with this
+# global linear scale to HALVE the in-RAM value arrays (fp32 ~117GB -> int16 ~59GB) so the index
+# can co-reside with a dense index. Resolution 1/scale = 1.2e-4 is finer than the smallest real
+# impact (~1e-3); empirically top-1000 == fp32 (lossless). Dequantized in numba_score_float.
+# numba cannot do float16 arithmetic, so int16 (not fp16) is the numba-safe path. fp32 kept as
+# an option via value_dtype="float32".
+_SPLADE_INT16_SCALE = 32767.0 / 4.0  # = 8191.75
 
-def load_key(key,file_name):
+
+def load_key(key, file_name, value_dtype="float32"):
     try:
         file = h5py.File(file_name, "r")
         doc_id = np.array(file[f"index_doc_id_{key}"], dtype=np.int32)
         doc_value = np.array(file[f"index_doc_value_{key}"], dtype=np.float32)
+        if value_dtype == "int16":
+            doc_value = np.clip(np.round(doc_value * _SPLADE_INT16_SCALE), -32768, 32767).astype(np.int16)
         file.close()
         return key, doc_id, doc_value
     except:
         file.close()
-        return key, np.array([], dtype=np.int32), np.array([], dtype=np.float32)
+        empty_val = np.array([], dtype=np.int16 if value_dtype == "int16" else np.float32)
+        return key, np.array([], dtype=np.int32), empty_val
 
 
 class IndexDictOfArray:
-    def __init__(self, index_path=None, force_new=False, filename="array_index.h5py", dim_voc=None):
+    def __init__(self, index_path=None, force_new=False, filename="array_index.h5py", dim_voc=None,
+                 value_dtype="float32"):
         # index_path = None # for debug
         if index_path is not None:
             self.index_path = index_path
@@ -58,7 +70,7 @@ class IndexDictOfArray:
                 self.index_doc_value = dict()
 
                 # A parallel version of the commented loop
-                results = p_map(load_key, range(dim), [self.filename]*dim, num_cpus=50)
+                results = p_map(load_key, range(dim), [self.filename]*dim, [value_dtype]*dim, num_cpus=50)
                 self.index_doc_id = {key: doc_id for key, doc_id, _ in results}
                 self.index_doc_value = {key: doc_value for key, _, doc_value in results}
 
@@ -162,7 +174,8 @@ class SparseRetrieval:
                           indexes_to_retrieve: np.ndarray,
                           query_values: np.ndarray,
                           threshold: float,
-                          size_collection: int):
+                          size_collection: int,
+                          inv_scale: float):
         '''
         Get all document scores for a given query
         Args:
@@ -180,6 +193,7 @@ class SparseRetrieval:
         # initialize array with size = size of collection
         # like: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         scores = np.zeros(size_collection, dtype=np.float32)  
+        inv = np.float32(inv_scale)   # dequant scale (1/_SPLADE_INT16_SCALE for int16; 1.0 for fp32)
         n = len(indexes_to_retrieve)
         # for every non-zero tokens in the query
         for _idx in range(n):
@@ -199,7 +213,7 @@ class SparseRetrieval:
             for j in numba.prange(len(retrieved_indexes)):
                 # for each document containing the token, calculate the score
                 # which is the product of the value of the token in the query and the value of the token in the document 
-                scores[retrieved_indexes[j]] += query_float * retrieved_floats[j]
+                scores[retrieved_indexes[j]] += query_float * (np.float32(retrieved_floats[j]) * inv)
         
         # filter the documents with score > threshold
         # filtered_indexes = [3,5,8,...,] (all the indexes where the score > threshold)
@@ -216,11 +230,14 @@ class SparseRetrieval:
         # unused documents => this should be tuned, currently it is set to 0
         return filtered_indexes, -scores[filtered_indexes]
 
-    def __init__(self, index_dir_path, retrieval_output_path, dim_voc, top_k):
-        self.sparse_index = IndexDictOfArray(index_dir_path, dim_voc=dim_voc)
+    def __init__(self, index_dir_path, retrieval_output_path, dim_voc, top_k, value_dtype="float32"):
+        self.sparse_index = IndexDictOfArray(index_dir_path, dim_voc=dim_voc, value_dtype=value_dtype)
         self.doc_ids = pickle.load(open(os.path.join(index_dir_path, "doc_ids.pkl"), "rb"))
         self.top_k = top_k
         self.retrieval_output_path = retrieval_output_path
+        # int16 impacts are dequantized by inv_scale in numba_score_float; fp32 uses 1.0 (no-op).
+        self.value_dtype = value_dtype
+        self.inv_scale = (1.0 / _SPLADE_INT16_SCALE) if value_dtype == "int16" else 1.0
 
         # Convert the python inverted index (~235 GB) to numba typed dicts. MEMORY: build
         # by POPPING each posting list out of the python dict as it is moved into the numba
@@ -265,7 +282,8 @@ class SparseRetrieval:
                 col.cpu().numpy(),
                 values.cpu().numpy().astype(np.float32),
                 threshold=threshold,
-                size_collection=self.sparse_index.nb_docs()
+                size_collection=self.sparse_index.nb_docs(),
+                inv_scale=self.inv_scale
             )
             # threshold set to 0 by default, could be better
             filtered_indexes, scores = self.select_topk(filtered_indexes, scores, k=self.top_k)

@@ -92,6 +92,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--sparse_index_dir_path", default=c.sparse_index_dir_path)
     p.add_argument("--bm25_k1", type=float, default=c.bm25_k1)
     p.add_argument("--bm25_b", type=float, default=c.bm25_b)
+    # SPLADE_v3 learned-sparse leg (retriever name "splade_v3")
+    p.add_argument("--splade_query_encoder_path", default=c.splade_query_encoder_path)
+    p.add_argument("--splade_index_dir_path", default=c.splade_index_dir_path)
+    p.add_argument("--splade_dim_voc", type=int, default=c.splade_dim_voc)
+    p.add_argument("--splade_value_dtype", default=c.splade_value_dtype, choices=["int16", "float32"])
     p.add_argument("--topics", default=c.topics)
     return p
 
@@ -171,6 +176,10 @@ def config_from_args(args) -> PipelineConfig:
         sparse_index_dir_path=args.sparse_index_dir_path,
         bm25_k1=args.bm25_k1,
         bm25_b=args.bm25_b,
+        splade_query_encoder_path=args.splade_query_encoder_path,
+        splade_index_dir_path=args.splade_index_dir_path,
+        splade_dim_voc=args.splade_dim_voc,
+        splade_value_dtype=args.splade_value_dtype,
         topics=args.topics,
     )
 

@@ -9,6 +9,41 @@ from apcir.splade_index import SparseRetrieval
 from apcir.models import Splade
 from .data_format import Retrieval_trec
 
+import threading
+from transformers import AutoModelForMaskedLM
+
+# Cache the SPLADE query encoder (BERT-base MLM) by (path, device) — load once, reuse across turns
+# in the resident interactive server. Encodes via the HF MLM model directly (the standard SPLADE-max
+# aggregation), which avoids the `Splade` class's CPU autocast `NoneType` bug.
+_SPLADE_ENCODER_CACHE = {}
+_SPLADE_ENCODER_LOCK = threading.Lock()
+
+
+def _get_splade_encoder(encoder_path, device):
+    key = (encoder_path, str(device))
+    cached = _SPLADE_ENCODER_CACHE.get(key)
+    if cached is None:                                    # fast path, no lock
+        with _SPLADE_ENCODER_LOCK:
+            cached = _SPLADE_ENCODER_CACHE.get(key)
+            if cached is None:
+                tok = AutoTokenizer.from_pretrained(encoder_path)
+                model = AutoModelForMaskedLM.from_pretrained(encoder_path).to(device).eval()
+                _SPLADE_ENCODER_CACHE[key] = cached = (tok, model)
+    return cached
+
+
+def splade_encode_query(query, encoder_path, device):
+    """Encode a query string into a SPLADE sparse vocab vector (1-D tensor on `device`):
+    SPLADE-max = max over tokens of log(1+relu(MLM logits)) * attention_mask. Cached encoder."""
+    tok, model = _get_splade_encoder(encoder_path, device)
+    enc = tok(query, return_tensors="pt", truncation=True, max_length=256).to(device)
+    with torch.no_grad():
+        logits = model(**enc).logits                                          # (1, seq, vocab)
+        rep = torch.max(torch.log1p(torch.relu(logits))
+                        * enc["attention_mask"].unsqueeze(-1), dim=1).values[0]   # (vocab,)
+    return rep
+
+
 def splade_search(args):
     '''
     Perform Splade Sparse Retrieval.

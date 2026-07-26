@@ -1,0 +1,4023 @@
+iterate:
+  machine:
+  - octal40
+  retrieval_model:
+  - qwen3_e0
+  - qwen3_e1
+  - qwen3_e2
+  - qwen3_e3
+  - qwen3_e4
+  - qwen3_e5
+  - qwen3_e6
+  - qwen3_e7
+  - qwen3_e8
+  - qwen3_e9
+  - qwen3_e10
+  - qwen3_e11
+  - qwen3_e12
+  - qwen3_e13
+  - qwen3_e14
+  - qwen3_e15
+  - qwen3_e16
+  - qwen3_e17
+  - qwen3_e18
+  - qwen3_e19
+  - qwen3_e20
+  - qwen3_e21
+  - qwen3_e22
+  - qwen3_e23
+  - qwen3_e24
+  - qwen3_e25
+  - qwen3_e26
+  - qwen3_e27
+  - qwen3_e28
+  - qwen3_e29
+  - qwen3_e30
+  - qwen3_e31
+  - qwen3_e32
+  - qwen3_e33
+  - qwen3_e34
+  - qwen3_e35
+  - qwen3_e36
+  - qwen3_e37
+  - qwen3_e38
+  - qwen3_e39
+  - qwen3_e40
+  - qwen3_e41
+  - qwen3_e42
+  - qwen3_e43
+  - qwen3_e44
+  - qwen3_e45
+  - qwen3_e46
+  - qwen3_e47
+  - qwen3_e48
+  - qwen3_e49
+  - qwen3_e50
+  - qwen3_e51
+  - qwen3_e52
+  - qwen3_e53
+  - qwen3_e54
+  - qwen3_e55
+  - qwen3_e56
+  - qwen3_e57
+  - qwen3_e58
+  - qwen3_e59
+  - qwen3_e60
+  - qwen3_e61
+  - qwen3_e62
+  - qwen3_e63
+  - qwen3_e64
+  - qwen3_e65
+  - qwen3_e66
+  - qwen3_e67
+  - qwen3_e68
+  - qwen3_e69
+  - qwen3_e70
+  - qwen3_e71
+  - qwen3_e72
+  - qwen3_e73
+  - qwen3_e74
+  - qwen3_e75
+  - qwen3_e76
+  - qwen3_e77
+  - qwen3_e78
+  - qwen3_e79
+  - qwen3_e80
+  - qwen3_e81
+  - qwen3_e82
+  - qwen3_e83
+  - qwen3_e84
+  - qwen3_e85
+  - qwen3_e86
+  - qwen3_e87
+  - qwen3_e88
+  - qwen3_e89
+  - qwen3_e90
+  - qwen3_e91
+  - qwen3_e92
+  - qwen3_e93
+  - qwen3_e94
+  - qwen3_e95
+  - qwen3_e96
+  - qwen3_e97
+  - qwen3_e98
+  - qwen3_e99
+  - qwen3_e100
+  - qwen3_e101
+  - qwen3_e102
+  - qwen3_e103
+  - qwen3_e104
+  - qwen3_e105
+  - qwen3_e106
+  - qwen3_e107
+  - qwen3_e108
+  - qwen3_e109
+  - qwen3_e110
+  - qwen3_e111
+  - qwen3_e112
+  - qwen3_e113
+  - qwen3_e114
+  - qwen3_e115
+  - qwen3_e116
+  - qwen3_e117
+  - qwen3_e118
+  - qwen3_e119
+  - qwen3_e120
+  - qwen3_e121
+  - qwen3_e122
+  - qwen3_e123
+  - qwen3_e124
+  - qwen3_e125
+  - qwen3_e126
+  - qwen3_e127
+  - qwen3_e128
+  - qwen3_e129
+  - qwen3_e130
+  - qwen3_e131
+  - qwen3_e132
+  - qwen3_e133
+  - qwen3_e134
+  - qwen3_e135
+  - qwen3_e136
+  - qwen3_e137
+  - qwen3_e138
+  - qwen3_e139
+  - qwen3_e140
+  - qwen3_e141
+  - qwen3_e142
+  - qwen3_e143
+  - qwen3_e144
+  - qwen3_e145
+  - qwen3_e146
+  - qwen3_e147
+  - qwen3_e148
+  - qwen3_e149
+  - qwen3_e150
+  - qwen3_e151
+  - qwen3_e152
+  - qwen3_e153
+  - qwen3_e154
+  - qwen3_e155
+  - qwen3_e156
+  - qwen3_e157
+  - qwen3_e158
+  - qwen3_e159
+  - qwen3_e160
+  - qwen3_e161
+  - qwen3_e162
+  - qwen3_e163
+  - qwen3_e164
+  - qwen3_e165
+  - qwen3_e166
+  - qwen3_e167
+  - qwen3_e168
+  - qwen3_e169
+  - qwen3_e170
+  - qwen3_e171
+  - qwen3_e172
+  - qwen3_e173
+  - qwen3_e174
+  - qwen3_e175
+  - qwen3_e176
+  - qwen3_e177
+  - qwen3_e178
+  - qwen3_e179
+  - qwen3_e180
+  - qwen3_e181
+  - qwen3_e182
+  - qwen3_e183
+  - qwen3_e184
+  - qwen3_e185
+  - qwen3_e186
+  - qwen3_e187
+  - qwen3_e188
+  - qwen3_e189
+  - qwen3_e190
+  - qwen3_e191
+  - qwen3_e192
+  - qwen3_e193
+  - qwen3_e194
+  - qwen3_e195
+  - qwen3_e196
+  - qwen3_e197
+  - qwen3_e198
+  - qwen3_e199
+  - qwen3_e200
+  - qwen3_e201
+  - qwen3_e202
+  - qwen3_e203
+  - qwen3_e204
+  - qwen3_e205
+  - qwen3_e206
+  - qwen3_e207
+  - qwen3_e208
+  - qwen3_e209
+  - qwen3_e210
+  - qwen3_e211
+  - qwen3_e212
+  - qwen3_e213
+  - qwen3_e214
+  - qwen3_e215
+  - qwen3_e216
+  - qwen3_e217
+  - qwen3_e218
+  - qwen3_e219
+  - qwen3_e220
+  - qwen3_e221
+  - qwen3_e222
+  - qwen3_e223
+  - qwen3_e224
+  - qwen3_e225
+  - qwen3_e226
+  - qwen3_e227
+  - qwen3_e228
+  - qwen3_e229
+  - qwen3_e230
+  - qwen3_e231
+  - qwen3_e232
+  - qwen3_e233
+  - qwen3_e234
+  - qwen3_e235
+  - qwen3_e236
+  - qwen3_e237
+  - qwen3_e238
+  - qwen3_e239
+  - qwen3_e240
+  - qwen3_e241
+  - qwen3_e242
+  - qwen3_e243
+  - qwen3_e244
+  - qwen3_e245
+  - qwen3_e246
+  - qwen3_e247
+  - qwen3_e248
+  - qwen3_e249
+  - qwen3_e250
+  - qwen3_e251
+  - qwen3_e252
+  - qwen3_e253
+  - qwen3_e254
+  - qwen3_e255
+  - qwen3_e256
+  - qwen3_e257
+  - qwen3_e258
+  - qwen3_e259
+  - qwen3_e260
+  - qwen3_e261
+  - qwen3_e262
+  - qwen3_e263
+  - qwen3_e264
+  - qwen3_e265
+  - qwen3_e266
+  - qwen3_e267
+  - qwen3_e268
+  - qwen3_e269
+  - qwen3_e270
+  - qwen3_e271
+  - qwen3_e272
+  - qwen3_e273
+  - qwen3_e274
+  - qwen3_e275
+  - qwen3_e276
+  - qwen3_e277
+  - qwen3_e278
+  - qwen3_e279
+  - qwen3_e280
+  - qwen3_e281
+  - qwen3_e282
+  - qwen3_e283
+  - qwen3_e284
+  - qwen3_e285
+  - qwen3_e286
+  - qwen3_e287
+  - qwen3_e288
+  - qwen3_e289
+  - qwen3_e290
+  - qwen3_e291
+  - qwen3_e292
+  - qwen3_e293
+  - qwen3_e294
+  - qwen3_e295
+  - qwen3_e296
+  - qwen3_e297
+  - qwen3_e298
+  - qwen3_e299
+  - qwen3_e300
+  - qwen3_e301
+  - qwen3_e302
+  - qwen3_e303
+  - qwen3_e304
+  - qwen3_e305
+  - qwen3_e306
+  - qwen3_e307
+  - qwen3_e308
+  - qwen3_e309
+  - qwen3_e310
+  - qwen3_e311
+  - qwen3_e312
+  - qwen3_e313
+  - qwen3_e314
+  - qwen3_e315
+  - qwen3_e316
+  - qwen3_e317
+  - qwen3_e318
+  - qwen3_e319
+  - qwen3_e320
+  - qwen3_e321
+  - qwen3_e322
+  - qwen3_e323
+  - qwen3_e324
+  - qwen3_e325
+  - qwen3_e326
+  - qwen3_e327
+  - qwen3_e328
+  - qwen3_e329
+  - qwen3_e330
+  - qwen3_e331
+  - qwen3_e332
+  - qwen3_e333
+  - qwen3_e334
+  - qwen3_e335
+  - qwen3_e336
+  - qwen3_e337
+  - qwen3_e338
+  - qwen3_e339
+  - qwen3_e340
+  - qwen3_e341
+  - qwen3_e342
+  - qwen3_e343
+  - qwen3_e344
+  - qwen3_e345
+  - qwen3_e346
+  - qwen3_e347
+  - qwen3_e348
+  - qwen3_e349
+  - qwen3_e350
+  - qwen3_e351
+  - qwen3_e352
+  - qwen3_e353
+  - qwen3_e354
+  - qwen3_e355
+  - qwen3_e356
+  - qwen3_e357
+  - qwen3_e358
+  - qwen3_e359
+  - qwen3_e360
+  - qwen3_e361
+  - qwen3_e362
+  - qwen3_e363
+  - qwen3_e364
+  - qwen3_e365
+  - qwen3_e366
+  - qwen3_e367
+  - qwen3_e368
+  - qwen3_e369
+  - qwen3_e370
+  - qwen3_e371
+  - qwen3_e372
+  - qwen3_e373
+  - qwen3_e374
+  - qwen3_e375
+  - qwen3_e376
+  - qwen3_e377
+  - qwen3_e378
+  - qwen3_e379
+  - qwen3_e380
+  - qwen3_e381
+  - qwen3_e382
+  - qwen3_e383
+  - qwen3_e384
+  - qwen3_e385
+  - qwen3_e386
+  - qwen3_e387
+  - qwen3_e388
+  - qwen3_e389
+  - qwen3_e390
+  - qwen3_e391
+  - qwen3_e392
+  - qwen3_e393
+  - qwen3_e394
+  - qwen3_e395
+  - qwen3_e396
+  - qwen3_e397
+  - qwen3_e398
+  - qwen3_e399
+  - qwen3_e400
+  - qwen3_e401
+  - qwen3_e402
+  - qwen3_e403
+  - qwen3_e404
+  - qwen3_e405
+  - qwen3_e406
+  - qwen3_e407
+  - qwen3_e408
+  - qwen3_e409
+  - qwen3_e410
+  - qwen3_e411
+  - qwen3_e412
+  - qwen3_e413
+  - qwen3_e414
+  - qwen3_e415
+  - qwen3_e416
+  - qwen3_e417
+  - qwen3_e418
+  - qwen3_e419
+  - qwen3_e420
+  - qwen3_e421
+  - qwen3_e422
+  - qwen3_e423
+  - qwen3_e424
+  - qwen3_e425
+  - qwen3_e426
+  - qwen3_e427
+  - qwen3_e428
+  - qwen3_e429
+  - qwen3_e430
+  - qwen3_e431
+  - qwen3_e432
+  - qwen3_e433
+  - qwen3_e434
+  - qwen3_e435
+  - qwen3_e436
+  - qwen3_e437
+  - qwen3_e438
+  - qwen3_e439
+  - qwen3_e440
+  - qwen3_e441
+  - qwen3_e442
+  - qwen3_e443
+  - qwen3_e444
+  - qwen3_e445
+  - qwen3_e446
+  - qwen3_e447
+  - qwen3_e448
+  - qwen3_e449
+  - qwen3_e450
+  - qwen3_e451
+  - qwen3_e452
+  - qwen3_e453
+  - qwen3_e454
+  - qwen3_e455
+  - qwen3_e456
+  - qwen3_e457
+  - qwen3_e458
+  - qwen3_e459
+  - qwen3_e460
+  - qwen3_e461
+  - qwen3_e462
+  - qwen3_e463
+  - qwen3_e464
+  - qwen3_e465
+  - qwen3_e466
+  - qwen3_e467
+  - qwen3_e468
+  - qwen3_e469
+  - qwen3_e470
+  - qwen3_e471
+  - qwen3_e472
+  - qwen3_e473
+  - qwen3_e474
+  - qwen3_e475
+  - qwen3_e476
+  - qwen3_e477
+  - qwen3_e478
+  - qwen3_e479
+  - qwen3_e480
+  - qwen3_e481
+  - qwen3_e482
+  - qwen3_e483
+  - qwen3_e484
+  - qwen3_e485
+  - qwen3_e486
+  - qwen3_e487
+  - qwen3_e488
+  - qwen3_e489
+  - qwen3_e490
+  - qwen3_e491
+  - qwen3_e492
+  - qwen3_e493
+  - qwen3_e494
+  - qwen3_e495
+  - qwen3_e496
+  - qwen3_e497
+  - qwen3_e498
+  - qwen3_e499
+  - qwen3_e500
+  - qwen3_e501
+  - qwen3_e502
+  - qwen3_e503
+  - qwen3_e504
+  - qwen3_e505
+  - qwen3_e506
+  - qwen3_e507
+  - qwen3_e508
+  - qwen3_e509
+  - qwen3_e510
+  - qwen3_e511
+  - qwen3_e512
+  - qwen3_e513
+  - qwen3_e514
+  - qwen3_e515
+  - qwen3_e516
+  - qwen3_e517
+  - qwen3_e518
+  - qwen3_e519
+  - qwen3_e520
+  - qwen3_e521
+  - qwen3_e522
+  - qwen3_e523
+  - qwen3_e524
+  - qwen3_e525
+  - qwen3_e526
+  - qwen3_e527
+  - qwen3_e528
+  - qwen3_e529
+  - qwen3_e530
+  - qwen3_e531
+  - qwen3_e532
+  - qwen3_e533
+  - qwen3_e534
+  - qwen3_e535
+  - qwen3_e536
+  - qwen3_e537
+  - qwen3_e538
+  - qwen3_e539
+  - qwen3_e540
+  - qwen3_e541
+  - qwen3_e542
+  - qwen3_e543
+  - qwen3_e544
+  - qwen3_e545
+  - qwen3_e546
+  - qwen3_e547
+  - qwen3_e548
+  - qwen3_e549
+  - qwen3_e550
+  - qwen3_e551
+  - qwen3_e552
+  - qwen3_e553
+  - qwen3_e554
+  - qwen3_e555
+  - qwen3_e556
+  - qwen3_e557
+  - qwen3_e558
+  - qwen3_e559
+  - qwen3_e560
+  - qwen3_e561
+  retrieval_query_type:
+  - perso_dense_val_ptkb
+  - perso_dense_val_rel_ptkb
+  reranker:
+  - none
+  topics:
+  - perso_dense_val
+param_mapping:
+  retrieval_model:
+    qwen3_e0:
+      dense_query_encoder_path: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: base_ZS
+    qwen3_e1:
+      dense_query_encoder_path: /data/rech/huiyuche/huggingface/continual_ir/instruct3fp32_qwen_nosched/checkpoint-step-94
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: conv_ZS
+    qwen3_e2:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@17
+    qwen3_e3:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@34
+    qwen3_e4:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@51
+    qwen3_e5:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@68
+    qwen3_e6:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@85
+    qwen3_e7:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@102
+    qwen3_e8:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@119
+    qwen3_e9:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@136
+    qwen3_e10:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@153
+    qwen3_e11:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@170
+    qwen3_e12:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@187
+    qwen3_e13:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@204
+    qwen3_e14:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@221
+    qwen3_e15:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@238
+    qwen3_e16:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@255
+    qwen3_e17:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@272
+    qwen3_e18:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@289
+    qwen3_e19:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@306
+    qwen3_e20:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@323
+    qwen3_e21:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap16_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap16_ae@340
+    qwen3_e22:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@17
+    qwen3_e23:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@34
+    qwen3_e24:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@51
+    qwen3_e25:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@68
+    qwen3_e26:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@85
+    qwen3_e27:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@102
+    qwen3_e28:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@119
+    qwen3_e29:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@136
+    qwen3_e30:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@153
+    qwen3_e31:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@170
+    qwen3_e32:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@187
+    qwen3_e33:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@204
+    qwen3_e34:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@221
+    qwen3_e35:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@238
+    qwen3_e36:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@255
+    qwen3_e37:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@272
+    qwen3_e38:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@289
+    qwen3_e39:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@306
+    qwen3_e40:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@323
+    qwen3_e41:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap32_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap32_ae@340
+    qwen3_e42:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@17
+    qwen3_e43:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@34
+    qwen3_e44:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@51
+    qwen3_e45:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@68
+    qwen3_e46:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@85
+    qwen3_e47:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@102
+    qwen3_e48:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@119
+    qwen3_e49:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@136
+    qwen3_e50:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@153
+    qwen3_e51:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@170
+    qwen3_e52:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@187
+    qwen3_e53:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@204
+    qwen3_e54:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@221
+    qwen3_e55:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@238
+    qwen3_e56:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@255
+    qwen3_e57:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@272
+    qwen3_e58:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@289
+    qwen3_e59:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@306
+    qwen3_e60:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@323
+    qwen3_e61:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_cap64_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_cap64_ae@340
+    qwen3_e62:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@17
+    qwen3_e63:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@34
+    qwen3_e64:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@51
+    qwen3_e65:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@68
+    qwen3_e66:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@85
+    qwen3_e67:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@102
+    qwen3_e68:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@119
+    qwen3_e69:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@136
+    qwen3_e70:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@153
+    qwen3_e71:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@170
+    qwen3_e72:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@187
+    qwen3_e73:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@204
+    qwen3_e74:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@221
+    qwen3_e75:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@238
+    qwen3_e76:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@255
+    qwen3_e77:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@272
+    qwen3_e78:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@289
+    qwen3_e79:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@306
+    qwen3_e80:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@323
+    qwen3_e81:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r16_capall_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r16_capall_ae@340
+    qwen3_e82:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@17
+    qwen3_e83:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@34
+    qwen3_e84:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@51
+    qwen3_e85:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@68
+    qwen3_e86:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@85
+    qwen3_e87:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@102
+    qwen3_e88:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@119
+    qwen3_e89:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@136
+    qwen3_e90:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@153
+    qwen3_e91:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@170
+    qwen3_e92:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@187
+    qwen3_e93:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@204
+    qwen3_e94:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@221
+    qwen3_e95:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@238
+    qwen3_e96:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@255
+    qwen3_e97:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@272
+    qwen3_e98:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@289
+    qwen3_e99:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@306
+    qwen3_e100:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@323
+    qwen3_e101:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap16_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap16_ae@340
+    qwen3_e102:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@17
+    qwen3_e103:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@34
+    qwen3_e104:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@51
+    qwen3_e105:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@68
+    qwen3_e106:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@85
+    qwen3_e107:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@102
+    qwen3_e108:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@119
+    qwen3_e109:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@136
+    qwen3_e110:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@153
+    qwen3_e111:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@170
+    qwen3_e112:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@187
+    qwen3_e113:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@204
+    qwen3_e114:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@221
+    qwen3_e115:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@238
+    qwen3_e116:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@255
+    qwen3_e117:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@272
+    qwen3_e118:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@289
+    qwen3_e119:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@306
+    qwen3_e120:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@323
+    qwen3_e121:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap32_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap32_ae@340
+    qwen3_e122:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@17
+    qwen3_e123:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@34
+    qwen3_e124:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@51
+    qwen3_e125:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@68
+    qwen3_e126:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@85
+    qwen3_e127:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@102
+    qwen3_e128:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@119
+    qwen3_e129:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@136
+    qwen3_e130:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@153
+    qwen3_e131:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@170
+    qwen3_e132:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@187
+    qwen3_e133:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@204
+    qwen3_e134:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@221
+    qwen3_e135:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@238
+    qwen3_e136:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@255
+    qwen3_e137:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@272
+    qwen3_e138:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@289
+    qwen3_e139:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@306
+    qwen3_e140:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@323
+    qwen3_e141:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_cap64_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_cap64_ae@340
+    qwen3_e142:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@17
+    qwen3_e143:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@34
+    qwen3_e144:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@51
+    qwen3_e145:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@68
+    qwen3_e146:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@85
+    qwen3_e147:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@102
+    qwen3_e148:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@119
+    qwen3_e149:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@136
+    qwen3_e150:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@153
+    qwen3_e151:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@170
+    qwen3_e152:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@187
+    qwen3_e153:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@204
+    qwen3_e154:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@221
+    qwen3_e155:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@238
+    qwen3_e156:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@255
+    qwen3_e157:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@272
+    qwen3_e158:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@289
+    qwen3_e159:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@306
+    qwen3_e160:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@323
+    qwen3_e161:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r32_capall_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r32_capall_ae@340
+    qwen3_e162:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@17
+    qwen3_e163:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@34
+    qwen3_e164:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@51
+    qwen3_e165:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@68
+    qwen3_e166:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@85
+    qwen3_e167:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@102
+    qwen3_e168:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@119
+    qwen3_e169:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@136
+    qwen3_e170:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@153
+    qwen3_e171:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@170
+    qwen3_e172:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@187
+    qwen3_e173:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@204
+    qwen3_e174:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@221
+    qwen3_e175:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@238
+    qwen3_e176:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@255
+    qwen3_e177:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@272
+    qwen3_e178:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@289
+    qwen3_e179:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@306
+    qwen3_e180:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@323
+    qwen3_e181:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap16_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap16_ae@340
+    qwen3_e182:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@17
+    qwen3_e183:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@34
+    qwen3_e184:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@51
+    qwen3_e185:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@68
+    qwen3_e186:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@85
+    qwen3_e187:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@102
+    qwen3_e188:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@119
+    qwen3_e189:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@136
+    qwen3_e190:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@153
+    qwen3_e191:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@170
+    qwen3_e192:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@187
+    qwen3_e193:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@204
+    qwen3_e194:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@221
+    qwen3_e195:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@238
+    qwen3_e196:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@255
+    qwen3_e197:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@272
+    qwen3_e198:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@289
+    qwen3_e199:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@306
+    qwen3_e200:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@323
+    qwen3_e201:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap32_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap32_ae@340
+    qwen3_e202:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@17
+    qwen3_e203:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@34
+    qwen3_e204:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@51
+    qwen3_e205:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@68
+    qwen3_e206:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@85
+    qwen3_e207:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@102
+    qwen3_e208:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@119
+    qwen3_e209:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@136
+    qwen3_e210:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@153
+    qwen3_e211:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@170
+    qwen3_e212:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@187
+    qwen3_e213:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@204
+    qwen3_e214:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@221
+    qwen3_e215:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@238
+    qwen3_e216:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@255
+    qwen3_e217:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@272
+    qwen3_e218:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@289
+    qwen3_e219:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@306
+    qwen3_e220:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@323
+    qwen3_e221:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_cap64_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_cap64_ae@340
+    qwen3_e222:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@17
+    qwen3_e223:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@34
+    qwen3_e224:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@51
+    qwen3_e225:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@68
+    qwen3_e226:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@85
+    qwen3_e227:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@102
+    qwen3_e228:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@119
+    qwen3_e229:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@136
+    qwen3_e230:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@153
+    qwen3_e231:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@170
+    qwen3_e232:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@187
+    qwen3_e233:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@204
+    qwen3_e234:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@221
+    qwen3_e235:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@238
+    qwen3_e236:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@255
+    qwen3_e237:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@272
+    qwen3_e238:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@289
+    qwen3_e239:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@306
+    qwen3_e240:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@323
+    qwen3_e241:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r64_capall_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r64_capall_ae@340
+    qwen3_e242:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@17
+    qwen3_e243:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@34
+    qwen3_e244:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@51
+    qwen3_e245:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@68
+    qwen3_e246:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@85
+    qwen3_e247:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@102
+    qwen3_e248:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@119
+    qwen3_e249:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@136
+    qwen3_e250:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@153
+    qwen3_e251:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@170
+    qwen3_e252:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@187
+    qwen3_e253:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@204
+    qwen3_e254:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@221
+    qwen3_e255:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@238
+    qwen3_e256:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@255
+    qwen3_e257:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@272
+    qwen3_e258:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@289
+    qwen3_e259:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@306
+    qwen3_e260:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@323
+    qwen3_e261:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap16_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap16_ae@340
+    qwen3_e262:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@17
+    qwen3_e263:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@34
+    qwen3_e264:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@51
+    qwen3_e265:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@68
+    qwen3_e266:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@85
+    qwen3_e267:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@102
+    qwen3_e268:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@119
+    qwen3_e269:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@136
+    qwen3_e270:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@153
+    qwen3_e271:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@170
+    qwen3_e272:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@187
+    qwen3_e273:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@204
+    qwen3_e274:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@221
+    qwen3_e275:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@238
+    qwen3_e276:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@255
+    qwen3_e277:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@272
+    qwen3_e278:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@289
+    qwen3_e279:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@306
+    qwen3_e280:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@323
+    qwen3_e281:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap32_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap32_ae@340
+    qwen3_e282:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@17
+    qwen3_e283:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@34
+    qwen3_e284:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@51
+    qwen3_e285:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@68
+    qwen3_e286:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@85
+    qwen3_e287:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@102
+    qwen3_e288:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@119
+    qwen3_e289:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@136
+    qwen3_e290:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@153
+    qwen3_e291:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@170
+    qwen3_e292:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@187
+    qwen3_e293:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@204
+    qwen3_e294:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@221
+    qwen3_e295:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@238
+    qwen3_e296:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@255
+    qwen3_e297:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@272
+    qwen3_e298:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@289
+    qwen3_e299:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@306
+    qwen3_e300:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@323
+    qwen3_e301:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_cap64_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_cap64_ae@340
+    qwen3_e302:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@17
+    qwen3_e303:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@34
+    qwen3_e304:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@51
+    qwen3_e305:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@68
+    qwen3_e306:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@85
+    qwen3_e307:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@102
+    qwen3_e308:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@119
+    qwen3_e309:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@136
+    qwen3_e310:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@153
+    qwen3_e311:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@170
+    qwen3_e312:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@187
+    qwen3_e313:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@204
+    qwen3_e314:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@221
+    qwen3_e315:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@238
+    qwen3_e316:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@255
+    qwen3_e317:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@272
+    qwen3_e318:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@289
+    qwen3_e319:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@306
+    qwen3_e320:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@323
+    qwen3_e321:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1_lora_r8_capall_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1_lora_r8_capall_ae@340
+    qwen3_e322:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@17
+    qwen3_e323:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@34
+    qwen3_e324:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@51
+    qwen3_e325:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@68
+    qwen3_e326:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@85
+    qwen3_e327:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@102
+    qwen3_e328:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@119
+    qwen3_e329:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@136
+    qwen3_e330:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@153
+    qwen3_e331:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@170
+    qwen3_e332:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@187
+    qwen3_e333:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@204
+    qwen3_e334:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@221
+    qwen3_e335:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@238
+    qwen3_e336:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@255
+    qwen3_e337:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@272
+    qwen3_e338:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@289
+    qwen3_e339:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@306
+    qwen3_e340:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@323
+    qwen3_e341:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-4_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-4_ae@340
+    qwen3_e342:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@17
+    qwen3_e343:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@34
+    qwen3_e344:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@51
+    qwen3_e345:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@68
+    qwen3_e346:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@85
+    qwen3_e347:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@102
+    qwen3_e348:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@119
+    qwen3_e349:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@136
+    qwen3_e350:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@153
+    qwen3_e351:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@170
+    qwen3_e352:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@187
+    qwen3_e353:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@204
+    qwen3_e354:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@221
+    qwen3_e355:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@238
+    qwen3_e356:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@255
+    qwen3_e357:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@272
+    qwen3_e358:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@289
+    qwen3_e359:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@306
+    qwen3_e360:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@323
+    qwen3_e361:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr1e-5_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr1e-5_ae@340
+    qwen3_e362:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@17
+    qwen3_e363:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@34
+    qwen3_e364:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@51
+    qwen3_e365:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@68
+    qwen3_e366:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@85
+    qwen3_e367:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@102
+    qwen3_e368:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@119
+    qwen3_e369:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@136
+    qwen3_e370:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@153
+    qwen3_e371:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@170
+    qwen3_e372:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@187
+    qwen3_e373:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@204
+    qwen3_e374:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@221
+    qwen3_e375:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@238
+    qwen3_e376:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@255
+    qwen3_e377:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@272
+    qwen3_e378:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@289
+    qwen3_e379:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@306
+    qwen3_e380:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@323
+    qwen3_e381:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1b_lora_r16_capall_lr5e-4_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1b_lora_r16_capall_lr5e-4_ae@340
+    qwen3_e382:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@17
+    qwen3_e383:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@34
+    qwen3_e384:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@51
+    qwen3_e385:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@68
+    qwen3_e386:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@85
+    qwen3_e387:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@102
+    qwen3_e388:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@119
+    qwen3_e389:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@136
+    qwen3_e390:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@153
+    qwen3_e391:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@170
+    qwen3_e392:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@187
+    qwen3_e393:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@204
+    qwen3_e394:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@221
+    qwen3_e395:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@238
+    qwen3_e396:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@255
+    qwen3_e397:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@272
+    qwen3_e398:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@289
+    qwen3_e399:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@306
+    qwen3_e400:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@323
+    qwen3_e401:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr1e-5_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr1e-5_ae@340
+    qwen3_e402:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@17
+    qwen3_e403:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@34
+    qwen3_e404:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@51
+    qwen3_e405:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@68
+    qwen3_e406:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@85
+    qwen3_e407:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@102
+    qwen3_e408:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@119
+    qwen3_e409:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@136
+    qwen3_e410:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@153
+    qwen3_e411:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@170
+    qwen3_e412:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@187
+    qwen3_e413:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@204
+    qwen3_e414:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@221
+    qwen3_e415:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@238
+    qwen3_e416:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@255
+    qwen3_e417:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@272
+    qwen3_e418:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@289
+    qwen3_e419:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@306
+    qwen3_e420:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@323
+    qwen3_e421:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr5e-4_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr5e-4_ae@340
+    qwen3_e422:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@17
+    qwen3_e423:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@34
+    qwen3_e424:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@51
+    qwen3_e425:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@68
+    qwen3_e426:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@85
+    qwen3_e427:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@102
+    qwen3_e428:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@119
+    qwen3_e429:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@136
+    qwen3_e430:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@153
+    qwen3_e431:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@170
+    qwen3_e432:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@187
+    qwen3_e433:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@204
+    qwen3_e434:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@221
+    qwen3_e435:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@238
+    qwen3_e436:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@255
+    qwen3_e437:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@272
+    qwen3_e438:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@289
+    qwen3_e439:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@306
+    qwen3_e440:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@323
+    qwen3_e441:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s1c_ft_capall_lr6e-6_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s1c_ft_capall_lr6e-6_ae@340
+    qwen3_e442:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@17
+    qwen3_e443:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@34
+    qwen3_e444:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@51
+    qwen3_e445:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@68
+    qwen3_e446:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@85
+    qwen3_e447:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@102
+    qwen3_e448:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@119
+    qwen3_e449:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@136
+    qwen3_e450:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@153
+    qwen3_e451:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@170
+    qwen3_e452:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@187
+    qwen3_e453:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@204
+    qwen3_e454:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@221
+    qwen3_e455:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@238
+    qwen3_e456:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@255
+    qwen3_e457:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@272
+    qwen3_e458:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@289
+    qwen3_e459:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@306
+    qwen3_e460:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@323
+    qwen3_e461:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_ft_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_ft_ae@340
+    qwen3_e462:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@17
+    qwen3_e463:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@34
+    qwen3_e464:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@51
+    qwen3_e465:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@68
+    qwen3_e466:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@85
+    qwen3_e467:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@102
+    qwen3_e468:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@119
+    qwen3_e469:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@136
+    qwen3_e470:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@153
+    qwen3_e471:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@170
+    qwen3_e472:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@187
+    qwen3_e473:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@204
+    qwen3_e474:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@221
+    qwen3_e475:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@238
+    qwen3_e476:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@255
+    qwen3_e477:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@272
+    qwen3_e478:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@289
+    qwen3_e479:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@306
+    qwen3_e480:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@323
+    qwen3_e481:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_base_lora_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_base_lora_ae@340
+    qwen3_e482:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@17
+    qwen3_e483:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@34
+    qwen3_e484:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@51
+    qwen3_e485:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@68
+    qwen3_e486:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@85
+    qwen3_e487:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@102
+    qwen3_e488:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@119
+    qwen3_e489:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@136
+    qwen3_e490:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@153
+    qwen3_e491:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@170
+    qwen3_e492:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@187
+    qwen3_e493:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@204
+    qwen3_e494:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@221
+    qwen3_e495:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@238
+    qwen3_e496:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@255
+    qwen3_e497:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@272
+    qwen3_e498:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@289
+    qwen3_e499:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@306
+    qwen3_e500:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@323
+    qwen3_e501:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_ft_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_ft_ae@340
+    qwen3_e502:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@17
+    qwen3_e503:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@34
+    qwen3_e504:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@51
+    qwen3_e505:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@68
+    qwen3_e506:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@85
+    qwen3_e507:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@102
+    qwen3_e508:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@119
+    qwen3_e509:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@136
+    qwen3_e510:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@153
+    qwen3_e511:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@170
+    qwen3_e512:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@187
+    qwen3_e513:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@204
+    qwen3_e514:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@221
+    qwen3_e515:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@238
+    qwen3_e516:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@255
+    qwen3_e517:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@272
+    qwen3_e518:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@289
+    qwen3_e519:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@306
+    qwen3_e520:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@323
+    qwen3_e521:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_ptkb_conv_lora_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_ptkb_conv_lora_ae@340
+    qwen3_e522:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@17
+    qwen3_e523:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@34
+    qwen3_e524:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@51
+    qwen3_e525:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@68
+    qwen3_e526:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@85
+    qwen3_e527:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@102
+    qwen3_e528:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@119
+    qwen3_e529:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@136
+    qwen3_e530:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@153
+    qwen3_e531:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@170
+    qwen3_e532:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@187
+    qwen3_e533:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@204
+    qwen3_e534:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@221
+    qwen3_e535:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@238
+    qwen3_e536:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@255
+    qwen3_e537:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@272
+    qwen3_e538:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@289
+    qwen3_e539:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@306
+    qwen3_e540:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@323
+    qwen3_e541:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_ft_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_ft_ae@340
+    qwen3_e542:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-17
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@17
+    qwen3_e543:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-34
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@34
+    qwen3_e544:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-51
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@51
+    qwen3_e545:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-68
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@68
+    qwen3_e546:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-85
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@85
+    qwen3_e547:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-102
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@102
+    qwen3_e548:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-119
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@119
+    qwen3_e549:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-136
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@136
+    qwen3_e550:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-153
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@153
+    qwen3_e551:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-170
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@170
+    qwen3_e552:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-187
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@187
+    qwen3_e553:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-204
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@204
+    qwen3_e554:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-221
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@221
+    qwen3_e555:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-238
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@238
+    qwen3_e556:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-255
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@255
+    qwen3_e557:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-272
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@272
+    qwen3_e558:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-289
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@289
+    qwen3_e559:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-306
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@306
+    qwen3_e560:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-323
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@323
+    qwen3_e561:
+      dense_query_encoder_path: /part/01/Tmp/yuchen/continual_ir/s2_relptkb_conv_lora_ae/checkpoint-step-340
+      dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: s2_relptkb_conv_lora_ae@340
+  topics:
+    perso_dense_val:
+      input_query_path: ../data/topics/perso_dense_val/perso_dense_val.json
+      qrel_file_path: ../data/qrels/perso_dense_val_qrel.txt
+fixed:
+  collection: ClueWeb_ikat
+  topics: perso_dense_val
+  input_query_path: ../data/topics/perso_dense_val/perso_dense_val.json
+  sparse_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+  output_dir_path: ../results
+  qrel_file_path: ../data/qrels/perso_dense_val_qrel.txt
+  seed: 42
+  save_results_to_object: false
+  save_ranking_list: true
+  run_rag: true
+  run_eval: true
+  retrieval_model: qwen3
+  retrieval_top_k: 1000
+  personalization_group: all
+  query_gpu_id: 0
+  query_encoder_batch_size: 8
+  splade_query_encoder_path: /data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879
+  splade_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: /data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418
+  dense_index_dir_path: /part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged
+  faiss_n_gpu: 4
+  use_gpu_for_faiss: true
+  embed_dim: 1024
+  tempmem: -1
+  passage_block_num: 6
+  bm25_k1: 0.9
+  bm25_b: 0.4
+  qe_type: none
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+  fusion_type: none
+  QRs_to_rank:
+  - mistral_rar_rw
+  - mistral_rar_rwrs
+  - mistral_judge_and_rewrite_rw
+  fuse_weights:
+  - 0.1
+  - 0.4
+  fusion_normalization: none
+  level_type: gpt-3.5_judge_and_rewrite
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: group
+  target_metrics: mrr,ndcg@3,recall@10,recall@100
+  optimize_step: 0.01
+  reranker: none
+  rerank_top_k: 50
+  cache_dir: /data/rech/huiyuche/huggingface
+  rerank_batch_size: 67
+  rerank_quant: none
+  rankgpt_llm: gpt-3.5-turbo
+  window_size: 4
+  step: 1
+  generation_model: none
+  generation_prompt: none
+  generation_top_k: 3
+  save_to_wandb: false
+  wandb_run_name: ''
+  metrics: map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank
+  metrics_to_print:
+  - recip_rank
+  - ndcg_cut_3
+  - recall_10
+  - recall_100
+  given_ranking_list_path: none
+  run_name: none
+  retrieval_query_type: perso_dense_val_rel_ptkb
+  reranking_query_type: none
+  generation_query_type: none
+  generate_ikat_submission: false

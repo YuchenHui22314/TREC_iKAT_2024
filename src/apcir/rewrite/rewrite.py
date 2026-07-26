@@ -83,6 +83,7 @@ def get_args():
         "gpt-3.5-turbo-16k", 
         "gpt-4-0613",
         "gpt-4o-2024-08-06",
+        "qwen3-32b",
         "mistral-8b",
         "llama3-8b",
         'none'])
@@ -125,6 +126,7 @@ def get_args():
         "gpt-3.5_MQ4CS_persq",
         "llama3.1_MQ4CS_persq",
         "mistral_MQ4CS_persq",
+        "qwen3-32b_MQ4CS_persq",
         "llama3.1_fengran_10_qr",
         "result_topic_entropy",
         "DEPS"
@@ -359,8 +361,15 @@ if __name__ == '__main__':
         model_name = rewrite_model,
         n = 1,
         max_tokens=2048,
-        wait_till_success=True 
+        wait_till_success=True
         )
+
+    if rewrite_model == "qwen3-32b":
+        # local Qwen3-32B-AWQ behind the interactive vLLM server (port 8100); thinking disabled
+        # so the promptors' strict parsers see a clean answer. generate_text matches OpenAILM's.
+        from apcir.interactive.llm_client import SharedLLMClient
+        rewriter = SharedLLMClient(backend="local_vllm", model="qwen3-32b",
+                                   enable_thinking=False, max_tokens=512, temperature=0.0)
 
     if "llm_rm" in  reformulation_name:
         llm_model = LM(

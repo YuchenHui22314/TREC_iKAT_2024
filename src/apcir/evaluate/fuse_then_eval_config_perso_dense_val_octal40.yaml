@@ -1,0 +1,98 @@
+# =============================================================================
+# perso_dense_val — full-ClueWeb offline eval on the HELD-OUT (val-split) turns of the
+# personalized graded-dense-retriever experiment (44 turns: ik23=19, ik24=20, ik25=5).
+# Query = the PRE-BUILT per-form query string, baked as a reformulation in the topics file:
+#   retrieval_query_type = perso_dense_val_ptkb       (full-PTKB form)
+#                        = perso_dense_val_rel_ptkb   (relevant-PTKB form)
+# Point `dense_query_encoder_path` at the checkpoint to evaluate (a trained graded model,
+# or base qwen3 / conv-qwen3 for a zero-shot reference). retrieval_model "qwen3" just loads
+# whatever QwenEmbedding lives at that path. Retrieval-only (no rerank/generation).
+#   cd src && PATH=/data/rech/huiyuche/envs/trec_ikat/bin:$PATH \
+#   python -m apcir.evaluate.run_experiments_grouped \
+#     --config ./apcir/evaluate/fuse_then_eval_config_perso_dense_val.yaml --merge topk
+# =============================================================================
+
+iterate:
+  machine: ["octal40"]
+  retrieval_model: ["qwen3"]
+  retrieval_query_type: ["perso_dense_val_ptkb", "perso_dense_val_rel_ptkb"]
+  reranker: ["none"]
+  topics: ["perso_dense_val"]
+
+param_mapping:
+  retrieval_model:
+    qwen3:
+      # <-- EDIT THIS to the checkpoint you want to evaluate (trained graded model / base / conv).
+      dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
+      dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged"
+      embed_dim: 1024
+      passage_block_num: 6
+      wandb_run_name: "perso_dense_val"
+  topics:
+    perso_dense_val:
+      input_query_path: "../data/topics/perso_dense_val/perso_dense_val.json"
+      qrel_file_path: "../data/qrels/perso_dense_val_qrel.txt"
+
+fixed:
+  collection: "ClueWeb_ikat"
+  topics: "perso_dense_val"
+  input_query_path: "../data/topics/perso_dense_val/perso_dense_val.json"
+  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged"
+  output_dir_path: "../results"
+  qrel_file_path: "../data/qrels/perso_dense_val_qrel.txt"
+  seed: 42
+  save_results_to_object: false
+  save_ranking_list: true
+  run_rag: true
+  run_eval: true
+  retrieval_model: "qwen3"
+  retrieval_top_k: 1000
+  personalization_group: "all"
+  query_gpu_id: 0
+  query_encoder_batch_size: 8
+  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged"
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--Qwen--Qwen3-Embedding-0.6B/snapshots/c54f2e6e80b2d7b7de06f51cec4959f6b3e03418"
+  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/clueweb22b_ikat23_qwen_merged"
+  faiss_n_gpu: 4
+  use_gpu_for_faiss: true
+  embed_dim: 1024
+  tempmem: -1
+  passage_block_num: 6
+  bm25_k1: 0.9
+  bm25_b: 0.4
+  qe_type: "none"
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+  fusion_type: 'none'
+  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  fuse_weights: [0.1, 0.4]
+  fusion_normalization: "none"
+  level_type: "gpt-3.5_judge_and_rewrite"
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: "group"
+  target_metrics: "mrr,ndcg@3,recall@10,recall@100"
+  optimize_step: 0.01
+  reranker: "none"
+  rerank_top_k: 50
+  cache_dir: "/data/rech/huiyuche/huggingface"
+  rerank_batch_size: 67
+  rerank_quant: "none"
+  rankgpt_llm: "gpt-3.5-turbo"
+  window_size: 4
+  step: 1
+  generation_model: "none"
+  generation_prompt: "none"
+  generation_top_k: 3
+  save_to_wandb: false
+  wandb_run_name: ""
+  metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.1000,recip_rank"
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
+  given_ranking_list_path: "none"
+  run_name: "none"
+  retrieval_query_type: "perso_dense_val_rel_ptkb"
+  reranking_query_type: "none"
+  generation_query_type: "none"
+  generate_ikat_submission: false

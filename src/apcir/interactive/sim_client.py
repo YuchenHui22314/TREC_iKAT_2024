@@ -117,6 +117,7 @@ class SimClient:
         mode: str = "debug",
         timeout: float = 120.0,
         token: Optional[str] = None,
+        verify: Optional[bool] = None,
     ):
         if mode not in ("debug", "run"):
             raise ValueError(f"mode must be 'debug' or 'run', got {mode!r}")
@@ -132,6 +133,18 @@ class SimClient:
         self._session = requests.Session()
         # The token lives only in this header; never logged or repr'd.
         self._session.headers.update({"Authorization": f"Bearer {tok}"})
+        # TLS verification ON by default. The webis host can present a hostname-mismatched cert
+        # (CN=web.webis.de served for scai-ikat26.webis.de — a server-side vhost glitch, the LE
+        # cert is otherwise valid); set verify=False or env IKAT_SIM_INSECURE=1 to keep submitting.
+        if verify is None:
+            verify = os.environ.get("IKAT_SIM_INSECURE", "").lower() not in ("1", "true", "yes")
+        self._session.verify = verify
+        if not verify:
+            try:
+                import urllib3
+                urllib3.disable_warnings()
+            except Exception:
+                pass
 
     def __repr__(self) -> str:  # never leak the token
         return f"SimClient(base_url={self.base_url!r}, mode={self.mode!r})"
