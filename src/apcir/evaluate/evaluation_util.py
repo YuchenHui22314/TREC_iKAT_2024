@@ -77,7 +77,8 @@ def get_query_list(args):
     # TODO: for reranking and generation, conceptually we use LLM readable format full conversation, right?
 
     # apply topic specific processing
-    if "ikat" in args.topics or "topiocqa" in args.topics or args.topics.startswith("perso_dense"):
+    if ("ikat" in args.topics or "topiocqa" in args.topics
+            or args.topics.startswith("perso_dense") or args.topics.startswith("cast_")):
         turn_list = load_turns_from_json(
             input_topic_path=args.input_query_path,
             range_start=0,
@@ -152,6 +153,12 @@ def get_query_list(args):
         elif args.topics == "ikat_25_test":
             evaluated_turn_list = filter_ikat_25_evaluated_turns(turn_list)
         elif "topiocqa" in args.topics:
+            evaluated_turn_list = turn_list
+        elif args.topics.startswith("cast_"):
+            # CAsT topics are converted by apcir/preprocess/build_cast_topics.py and already
+            # contain exactly the turns of the official topic file; turn_id == the qrel qid
+            # ("{topic}_{turn}"), so every turn is an evaluated turn. Turns absent from the
+            # qrel are simply not scored by pytrec_eval.
             evaluated_turn_list = turn_list
         elif args.topics.startswith("perso_dense"):
             # The perso_dense_{val,train} topics file already contains ONLY the held-out / train-split

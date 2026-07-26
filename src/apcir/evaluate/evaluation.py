@@ -31,9 +31,9 @@ def build_parser():
     ########################
 
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
-                        choices=["ClueWeb_ikat","topiocqa_wiki"])
+                        choices=["ClueWeb_ikat","topiocqa_wiki","cast_marco_car"])
     parser.add_argument("--topics", type=str, default="ikat_23_test",
-                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa", "perso_dense_val", "perso_dense_train"])
+                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa", "perso_dense_val", "perso_dense_train", "cast_19_test", "cast_20_test"])
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
     parser.add_argument("--output_dir_path", type=str, default="../../results")
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
@@ -420,7 +420,9 @@ if __name__ == "__main__":
         "ikat_25_test": "TREC_iKAT_2025",
         "topiocqa": "continual_ir",
         "perso_dense_val": "TREC_iKAT_personalized",
-        "perso_dense_train": "TREC_iKAT_personalized"
+        "perso_dense_train": "TREC_iKAT_personalized",
+        "cast_19_test": "TREC_CAsT_2019",
+        "cast_20_test": "TREC_CAsT_2020"
     }
     project_name = topic_name_map[args.topics] 
 
