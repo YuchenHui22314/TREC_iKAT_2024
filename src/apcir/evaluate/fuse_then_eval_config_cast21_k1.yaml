@@ -1,0 +1,114 @@
+# =============================================================================
+# TREC CAsT 2021, BM25 only.
+#
+# Collection: MS MARCO v1 DOCUMENTS + KILT Wikipedia + Washington Post V4, split by the
+# organizers into canonical passages of <=250 words. 40,235,494 passages, built locally by
+#   python -m apcir.indexing.cast21_tsv_to_jsonl   (see that file for the TSV quirks)
+#   python -m pyserini.index -collection JsonCollection ... -index data/indexes/index-cast2021
+# This is a DIFFERENT collection from 2019/2020 (which is MS MARCO v1 passages + TREC CAR)
+# and from 2022 (MS MARCO v2); check_collection_matches_topics() enforces the pairing.
+#
+# EVALUATION IS AT DOCUMENT LEVEL. Per the track overview, participants running different
+# spaCy versions submitted passage ids that did not exist, so NIST truncated passage ids,
+# applied max-passage, and de-duplicated. evaluation.py therefore passes passage_to_doc=True
+# for cast_21_test. Verified: that procedure reproduces the overview's org_auto_bm25_t5 row
+# exactly (Recall .636 / MAP .291 / MRR .607 / NDCG .504 / NDCG@3 .436).
+#
+# Official scoring uses cutoff 500 and a BINARY RELEVANCE THRESHOLD OF 2. The pipeline's
+# pytrec_eval call uses graded qrels, so MRR/MAP/Recall here are NOT comparable to the
+# overview tables; NDCG is (it uses graded gains).
+#
+# Run:  cd src && PATH=/data/rech/huiyuche/envs/trec_ikat/bin:$PATH \
+#       python -m apcir.evaluate.run_experiments \
+#         --config ./apcir/evaluate/fuse_then_eval_config_cast21.yaml
+# =============================================================================
+
+iterate:
+  machine: ["octal31"]
+  retrieval_model: ["BM25"]
+  retrieval_query_type: ["oracle"]
+  reranker: ["none"]
+  topics: ["cast_21_test"]
+
+param_mapping:
+  retrieval_model:
+    BM25:
+      wandb_run_name: "bm25_cast21_officialparams"
+  topics:
+    cast_21_test:
+      input_query_path: "../data/topics/cast21/cast_21_test.json"
+      qrel_file_path: "../data/qrels/cast_21_qrel.txt"
+
+fixed:
+  collection: "cast_marco_wapo_kilt"
+  topics: "cast_21_test"
+  input_query_path: "../data/topics/cast21/cast_21_test.json"
+  sparse_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/indexes/index-cast2021"
+  output_dir_path: "../results_cast21_k1sweep"
+  qrel_file_path: "../data/qrels/cast_21_qrel.txt"
+  seed: 42
+  save_results_to_object: false
+  save_ranking_list: true
+  run_rag: true
+  run_eval: true
+
+  retrieval_model: "BM25"
+  retrieval_top_k: 1000
+  personalization_group: "all"
+  query_gpu_id: 0
+  query_encoder_batch_size: 200
+
+  splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
+  splade_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/indexes/index-cast2021"
+
+  use_pyserini_dense_search: false
+  dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
+  dense_index_dir_path: "/data/rech/huiyuche/TREC_iKAT_2024/data/indexes/index-cast2021"
+  faiss_n_gpu: 1
+  use_gpu_for_faiss: true
+  embed_dim: 768
+  tempmem: -1
+  passage_block_num: 12
+
+  bm25_k1: 4.46
+  bm25_b: 0.82
+
+  qe_type: "none"
+  fb_terms: 20
+  fb_docs: 10
+  original_query_weight: 0.5
+
+  fusion_type: 'none'
+  QRs_to_rank: ["mistral_rar_rw", "mistral_rar_rwrs", "mistral_judge_and_rewrite_rw"]
+  fuse_weights: [0.1, 0.4]
+  fusion_normalization: "none"
+  level_type: "gpt-3.5_judge_and_rewrite"
+  per_query_weight_max_value: 1.2
+  optimize_level_weights: "group"
+  target_metrics: "mrr,ndcg@3,recall@10,recall@100"
+  optimize_step: 0.01
+
+  reranker: "none"
+  rerank_top_k: 50
+  cache_dir: "/data/rech/huiyuche/huggingface"
+  rerank_batch_size: 67
+  rerank_quant: "none"
+  rankgpt_llm: "gpt-3.5-turbo"
+  window_size: 4
+  step: 1
+
+  generation_model: "none"
+  generation_prompt: "none"
+  generation_top_k: 3
+
+  save_to_wandb: false
+  wandb_run_name: ""
+  metrics: "map,ndcg,ndcg_cut.1,ndcg_cut.3,ndcg_cut.5,ndcg_cut.10,P.1,P.3,P.5,P.10,P.20,recall.5,recall.10,recall.20,recall.50,recall.100,recall.500,recall.1000,recip_rank"
+  metrics_to_print: ["recip_rank", "ndcg_cut_3", "recall_10", "recall_100"]
+  given_ranking_list_path: "none"
+
+  run_name: "none"
+  retrieval_query_type: "oracle"
+  reranking_query_type: "none"
+  generation_query_type: "none"
+  generate_ikat_submission: false
