@@ -30,6 +30,7 @@ Let us get started!
 - [📝 Download TREC iKAT topics and relevance judgement](#-download-trec-ikat-topics-and-relevance-judgement)
   - [Topics file preprocessing](#topics-file-preprocessing)
   - [Qrels file preprocessing](#qrels-file-preprocessing)
+- [🗂 TREC CAsT 2019–2022 (topics, collections, indexes)](#-trec-cast-20192022-topics-collections-indexes)
 - [✍ Query Rewrite](#-query-rewrite)
   - [Prompts](#prompts)
   - [Conversational query types (dense, no LLM rewrite)](#conversational-query-types-dense-no-llm-rewrite)
@@ -254,6 +255,154 @@ the corresponding output should look like:
 
 ### Qrels file preprocessing 
 We use `data_preprocessing_scripts/preprocess_qrel.py` to preprocess qrel file downloaded from ikat website. This just replaces _ with - for unifying iKAT 23, 24 and 25 qrel files. 
+
+## 🗂 TREC CAsT 2019–2022 (topics, collections, indexes)
+
+All four CAsT years run through the same pipeline as iKAT. The thing to internalise first:
+**the four years do NOT share a collection.**
+
+| Year | Collection | Passage id | Judged at | Turns / judged |
+|---|---|---|---|---|
+| 2019 | MS MARCO v1 **passages** + TREC CAR | `MARCO_<n>`, `CAR_<hash>` | passage | 479 / 173 |
+| 2020 | same as 2019 | same | passage | 216 / 208 |
+| 2021 | MS MARCO v1 **documents** + KILT + Washington Post **V4** | `MARCO_D1167206_1` | **document** | 239 / 158 |
+| 2022 | MS MARCO **v2** + the *same* KILT & WaPo V4 as 2021 | `MARCO_02_1687136851-3` | passage | 205 / 163 |
+
+`check_collection_matches_topics()` in `src/apcir/evaluate/evaluation.py` rejects a mismatched
+`--topics` / `--collection` pair, because a mismatch does not error — it just scores 0 everywhere.
+
+### 1. Topics
+
+```bash
+cd src
+R=<clone of github.com/daltonj/treccastweb>
+
+python -m apcir.preprocess.build_cast_topics --year 19 \
+  --raw_topics  $R/2019/data/evaluation/evaluation_topics_v1.0.json \
+  --manual_tsv  $R/2019/data/evaluation/evaluation_topics_annotated_resolved_v1.0.tsv \
+  --out ../data/topics/cast19/cast_19_test.json
+
+python -m apcir.preprocess.build_cast_topics --year 20 \
+  --raw_topics    $R/2020/2020_automatic_evaluation_topics_v1.0.json \
+  --manual_topics $R/2020/2020_manual_evaluation_topics_v1.0.json \
+  --out ../data/topics/cast20/cast_20_test.json
+
+# 2021 ships raw + manual + automatic rewrites in ONE file, so pass it as both
+python -m apcir.preprocess.build_cast_topics --year 21 \
+  --raw_topics    $R/2021/2021_manual_evaluation_topics_v1.0.json \
+  --manual_topics $R/2021/2021_manual_evaluation_topics_v1.0.json \
+  --out ../data/topics/cast21/cast_21_test.json
+
+# 2022 has a different schema (`utterance`, inline `response`) and TREE topics
+python -m apcir.preprocess.build_cast_topics --year 22 \
+  --raw_topics  $R/2022/2022_evaluation_topics_flattened_duplicated_v1.0.json \
+  --auto_topics $R/2022/2022_automatic_evaluation_topics_flattened_duplicated_v1.0.json \
+  --out ../data/topics/cast22/cast_22_test.json
+```
+
+Expect exactly 479 / 216 / 239 / 205 turns. The human rewrite lands in `oracle_utterance`; the
+organisers' automatic rewrite becomes the reformulation `cast_automatic_rewrite` (2019 has none).
+CAsT has no user profile, so `ptkb` is `{}` and any profile query type raises rather than
+silently building an empty `User Profile:` block.
+
+2022's `flattened_duplicated` file lists 50 root-to-leaf **paths** = 284 entries for 205 distinct
+turns. De-duplicating by `turn_id` is safe: every node has one parent, so a turn always carries
+the same ancestor chain (verified on all 205).
+
+### 2. Qrels
+
+```bash
+# 2019 / 2020 — curl to trec.nist.gov is refused from some hosts; ir_datasets works
+python -c "import ir_datasets; ds=ir_datasets.load('trec-cast/v1/2019/judged'); \
+  [print(q.query_id,0,q.doc_id,q.relevance) for q in ds.qrels_iter()]" > ../data/qrels/cast_19_qrel.txt
+# 2021 — ships inside the treccastweb clone
+cp $R/2021/trec-cast-qrels-docs.2021.qrel ../data/qrels/cast_21_qrel.txt
+# 2022 — note the filename is 2022-qrels.txt, NOT 2022qrels.txt
+curl -o ../data/qrels/cast_22_qrel.txt https://trec.nist.gov/data/cast/2022-qrels.txt
+```
+
+**Official scoring uses `relevance_level=2` (binary threshold), cutoff 500 for 2021 and 1000 for
+2022.** The pipeline's default pytrec_eval call uses graded qrels, so its MRR/MAP/Recall are not
+comparable to the overview tables; NDCG is (it uses graded gains).
+
+**2021 is judged at document level.** Differing spaCy versions made participants submit passage
+ids that did not exist, so NIST truncated passage ids, applied max-passage and de-duplicated.
+`evaluation.py` therefore passes `passage_to_doc=True` for `cast_21_test` only.
+
+### 3. Collections and indexes
+
+**2019 / 2020** need no building — use the Pyserini prebuilt `cast2019` index (21.3 GB,
+38,429,835 docs, serves both years):
+
+```bash
+curl -o data/indexes/index-cast2019.tar.gz \
+  https://rgw.cs.uwaterloo.ca/pyserini/indexes/index-cast2019.tar.gz
+tar xzf data/indexes/index-cast2019.tar.gz -C data/indexes/   # unpacks to index-cast2019/
+```
+
+**2021** comes as one TSV tarball — `docid \t body \t title \t url`, four fields, and 376 records
+span two physical lines because a body may contain a newline:
+
+```bash
+cd src
+python -m apcir.indexing.cast21_tsv_to_jsonl \
+  --tar ../data/collections/cast21_collection.tsv.tar.gz \
+  --out ../data/collections/cast21_jsonl --shards 16 --index_title      # 40,235,494 passages
+cd .. && python -m pyserini.index -collection JsonCollection \
+  -generator DefaultLuceneDocumentGenerator -threads 32 \
+  -input data/collections/cast21_jsonl -index <local-ssd>/index-cast2021 \
+  -storePositions -storeDocvectors -storeRaw
+```
+
+`--index_title` is not really optional: 61% of KILT passages never contain their own page title,
+so they are unreachable without it. Enabling it lifts every metric (NDCG@3 .360 → .384, with
+Recall/MRR/NDCG then above the official `org_manual_bm25` baseline). The url stays out of the index.
+
+**2022** is rebuilt with the organisers' own tools, which need **spaCy 3.3.0 +
+en_core_web_sm-3.3.0**. Build a Python 3.10 venv and pin `numpy<2` — spaCy 3.3.0 does not compile
+on 3.12, and numpy 2 breaks its ABI:
+
+```bash
+git clone https://github.com/grill-lab/trec-cast-tools
+# Sources: KILT (public), MS MARCO v2 docs (public — use msmarco.z22.web.core.windows.net;
+# the blob.core.windows.net URL now returns 409), duplicates list (in the treccastweb clone).
+# WaPo V4 is NIST-gated, but the 2021 collection already contains it:
+cd src && python -m apcir.indexing.wapo_from_cast21 \
+  --tar ../data/collections/cast21_collection.tsv.tar.gz --out <build>/wapo_docs.jl
+# wrap as WashingtonPost.v4/data/TREC_Washington_Post_collection.v4.jl inside a tar, then:
+cd trec-cast-tools/corpus_processing && python main.py --output_type jsonlines \
+  --kilt_collection ... --marco_v2_collection ... --wapo_collection <that tar> \
+  --duplicates_file <treccastweb>/2022/duplicate_files/all_duplicates.txt --output_dir <build>
+# the official output nests passages under `contents`; flatten for Anserini:
+cd src && python -m apcir.indexing.cast22_to_anserini --in <build>/jsonlines --out <build>/anserini
+```
+
+Expected counts, which double as a check that the tools ran correctly: KILT 5,903,530 →
+5,903,219, MARCO v2 11,959,635 → 10,965,836 (993,799 removed, matching the overview's "roughly
+1 million documents"), WaPo 724,509 → 713,594; together **17,582,649 documents → 106,498,386
+passages**.
+
+**Verify the chunking before evaluating.** The official `all_hashes.csv` now returns 403, so
+instead look up the passage ids the 2022 qrels reference in the rebuilt collection: we measured
+**32,235/32,235 = 100%**, including 1,543/1,543 for WaPo, which is what confirms the
+reconstruct-then-rechunk detour reproduces official passage boundaries. Anything well below 100%
+means shifted boundaries — the ids would silently mismatch and every metric would be understated.
+
+### 4. Running an evaluation
+
+Configs sit next to the iKAT ones: `fuse_then_eval_config_cast.yaml` (2019+2020),
+`..._cast21.yaml`, `..._cast22.yaml`.
+
+```bash
+cd src && PATH=<env>/bin:$PATH python -m apcir.evaluate.run_experiments \
+  --config ./apcir/evaluate/fuse_then_eval_config_cast22.yaml
+```
+
+Two traps worth knowing. The result filename stem does **not** encode `bm25_k1` / `bm25_b`, so a
+parameter sweep re-run in the same `output_dir_path` silently reloads the previous ranking —
+give each sweep its own output directory. And `evaluation.py` asserts that `output_dir_path`
+already exists rather than creating it.
+
 ## ✍ Query Rewrite
 Once the topics have been processed, we are ready for getting query reformulations. Please view files in `src/apcir/rewrite` to run query rewriting. Specifically, you can run
 ```bash
