@@ -31,9 +31,9 @@ def build_parser():
     ########################
 
     parser.add_argument("--collection", type=str, default="ClueWeb_ikat", 
-                        choices=["ClueWeb_ikat","topiocqa_wiki","cast_marco_car"])
+                        choices=["ClueWeb_ikat","topiocqa_wiki","cast_marco_car","cast_marco_wapo_kilt","cast_marcov2_wapo_kilt"])
     parser.add_argument("--topics", type=str, default="ikat_23_test",
-                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa", "perso_dense_val", "perso_dense_train", "cast_19_test", "cast_20_test"])
+                        choices = ["ikat_23_test", "ikat_24_test", "ikat_25_test", "topiocqa", "perso_dense_val", "perso_dense_train", "cast_19_test", "cast_20_test", "cast_21_test", "cast_22_test"])
     parser.add_argument("--input_query_path", type=str, default="../../data/topics/ikat_2023_test.json")
     parser.add_argument("--output_dir_path", type=str, default="../../results")
     parser.add_argument("--qrel_file_path", type=str, default="../../data/qrels/ikat_23_qrel.txt")
@@ -321,6 +321,9 @@ def build_parser():
                             "qwen_conversation_rel_ptkb",
                             "qwen_conversation_rel_ptkb_previous_conv_as_ptkb",
                             "qwen_conversation_rel_new_ptkb",
+                            # TREC CAsT 2020 ships an official automatic rewrite alongside
+                            # the manual one; CAsT 2019 does not.
+                            "cast_automatic_rewrite",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -371,6 +374,24 @@ def get_args():
     
 
 
+# Which collection each topic set is judged against. Mixing them silently produces a run
+# whose docids cannot match the qrels (every metric 0), so check up front.
+TOPIC_TO_COLLECTION = {
+    "cast_19_test": "cast_marco_car",
+    "cast_20_test": "cast_marco_car",
+    "cast_21_test": "cast_marco_wapo_kilt",
+    "cast_22_test": "cast_marcov2_wapo_kilt",
+}
+
+
+def check_collection_matches_topics(args):
+    expected = TOPIC_TO_COLLECTION.get(args.topics)
+    if expected and args.collection != expected:
+        raise ValueError(
+            f"--topics {args.topics} is judged against collection {expected!r}, "
+            f"but --collection is {args.collection!r}. The docids would not match the qrels.")
+
+
 if __name__ == "__main__":
 
     ##########
@@ -384,6 +405,8 @@ if __name__ == "__main__":
     # print current time:
     print("current time: ", os.popen('date').read())
     
+
+    check_collection_matches_topics(args)
 
     ###############
     # check args
@@ -422,7 +445,9 @@ if __name__ == "__main__":
         "perso_dense_val": "TREC_iKAT_personalized",
         "perso_dense_train": "TREC_iKAT_personalized",
         "cast_19_test": "TREC_CAsT_2019",
-        "cast_20_test": "TREC_CAsT_2020"
+        "cast_20_test": "TREC_CAsT_2020",
+        "cast_21_test": "TREC_CAsT_2021",
+        "cast_22_test": "TREC_CAsT_2022"
     }
     project_name = topic_name_map[args.topics] 
 
@@ -583,7 +608,9 @@ if __name__ == "__main__":
             args.qrel_file_path,
             ranking_list_path,
             metrics_list,
-            metrics_list_key_form
+            metrics_list_key_form,
+            # CAsT 2021 ships DOCUMENT-level qrels while its collection is passage-split
+            passage_to_doc=(args.topics == "cast_21_test")
             )
 
         ##########################
@@ -682,4 +709,8 @@ if __name__ == "__main__":
             wandb.run.summary["formatted_metrics"] = formatted_metrics
 
     print("done.")
-        
+       
+
+
+
+ 

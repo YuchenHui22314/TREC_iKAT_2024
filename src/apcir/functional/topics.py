@@ -124,7 +124,15 @@ class Turn:
         '''
         Get the turn order in the conversation
         '''
-        return int(self.turn_id.split("-")[-1])
+        # iKAT turn_ids look like "9-1"/"1-2-3"; CAsT 2019-2021 use "{topic}_{turn}"
+        # (e.g. "106_10") and CAsT 2022 uses "{topic}_{branch}-{turn}" (e.g. "132_1-3").
+        # Splitting on "-" alone raises ValueError on "106_10" and makes "132_1-3" and
+        # "132_2-3" collide, so strip the topic prefix first and use the full remainder.
+        tail = self.turn_id.split("_", 1)[-1] if "_" in self.turn_id else self.turn_id
+        parts = [p for p in tail.replace("-", " ").split() if p.isdigit()]
+        if not parts:
+            raise ValueError(f"cannot derive a turn order from turn_id {self.turn_id!r}")
+        return int(parts[-1]) if len(parts) == 1 else int("".join(f"{int(p):04d}" for p in parts))
 
     def find_result(
         self, 
@@ -616,13 +624,29 @@ class Turn:
                 # `fullconv_ctx` = [u1, r1, ..., u_{i-1}, r_{i-1}], then the current utterance.
                 interleaved = getattr(self, "fullconv_ctx", []) + [self.current_utterance]
             final_query = json.dumps(interleaved, ensure_ascii=False)
+        elif query_type == "full_conversation_sparse":
+            # Lexical counterpart of full_conversation_dense: BM25/SPLADE cannot consume the
+            # JSON turn list, so the whole conversation is concatenated into plain text.
+            # get_query_list() rewrites "full_conversation" -> this for BM25; without this
+            # branch it fell through to find_reformulation() and every query became "".
+            if "topiocqa" in getattr(args, "topics", ""):
+                interleaved = self.context_utterances + [self.current_utterance]
+            else:
+                interleaved = getattr(self, "fullconv_ctx", None)
+                if interleaved is None:          # CAsT: only prior user utterances are stored
+                    interleaved = list(self.context_utterances)
+                interleaved = list(interleaved) + [self.current_utterance]
+            final_query = " ".join(x for x in interleaved if x and x.strip())
         else:
             reformulation = self.find_reformulation(query_type)
             if reformulation is not None:
                 final_query = reformulation.reformulated_query
             else:
-                final_query = ""
-                warnings.warn(f"################################# ATTENTION!!!!! \nReformulation {query_type} not found in turn {self.turn_id} !!!!!!!!!\n#################################")
+                # Returning "" here used to produce a plausible-looking run built entirely from
+                # empty queries (every metric ~0) with only a warning. Fail loudly instead.
+                raise ValueError(
+                    f"reformulation {query_type!r} not found in turn {self.turn_id!r}. "
+                    f"Available: {[r.reformulation_name for r in (self.reformulations or [])]}")
 
 
         return final_query

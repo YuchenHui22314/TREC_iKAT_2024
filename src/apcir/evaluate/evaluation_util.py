@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import json
+import re
 from typing import List, Any, Dict
 import pytrec_eval
 
@@ -155,6 +156,16 @@ def get_query_list(args):
         elif "topiocqa" in args.topics:
             evaluated_turn_list = turn_list
         elif args.topics.startswith("cast_"):
+            # CAsT has NO user profile (build_cast_topics writes ptkb={}). A profile- or
+            # conversation-template query type would therefore silently build a query with an
+            # empty "User Profile:" section and still produce a plausible-looking run named
+            # after the profile method. Fail loudly instead.
+            _profile_qts = ("ptkb", "perso", "personalized", "qwen_conversation")
+            if any(k in args.retrieval_query_type for k in _profile_qts):
+                raise ValueError(
+                    f"--retrieval_query_type={args.retrieval_query_type!r} needs a user profile, "
+                    f"but CAsT topics ({args.topics}) have none. Use raw / oracle / "
+                    f"cast_automatic_rewrite, or a non-profile reformulation.")
             # CAsT topics are converted by apcir/preprocess/build_cast_topics.py and already
             # contain exactly the turns of the official topic file; turn_id == the qrel qid
             # ("{topic}_{turn}"), so every turn is an evaluated turn. Turns absent from the
@@ -219,12 +230,60 @@ def get_query_list(args):
 
 
 
+def collapse_passages_to_docs(run: dict, sep: str = "_"):
+    """Collapse passage ids to document ids, keeping each document's best passage score
+    (the "max passage" rule) and dropping duplicate documents.
+
+    WHY. TREC CAsT 2021 is judged at DOCUMENT level. Per the track overview this was not
+    the plan: NIST found that participants running different spaCy versions produced
+    different passage segmentations, so some submitted passage ids did not exist. NIST
+    therefore "truncated passage identifiers, used a max passage algorithm to convert
+    passage runs to document runs, and removed duplicate retrieved documents". There is no
+    passage-level 2021 qrel, so a passage-level run must be mapped down before scoring or
+    every metric comes out 0.
+
+    VERIFIED. Applying this function to the official baseline passage run
+    (`org_automatic_results_1000.v1.0.run`) and scoring at cutoff 500 with
+    relevance_level=2 reproduces the overview's `org_auto_bm25_t5` row EXACTLY:
+    Recall .636, MAP .291, MRR .607, NDCG .504, NDCG@3 .436.
+
+    Note the pre-converted `document_runs/` files shipped in the treccastweb repo do NOT
+    reproduce those numbers (.623/.282/.597/.493/.424): they cut Washington Post ids at the
+    first hyphen, so `WAPO_50658292-34ef-11e2-92f0-496af208bf23-0` becomes `WAPO_50658292`,
+    which matches no qrel entry. The qrels use the FULL uuid. Keep the uuid intact.
+
+    SEPARATOR. The passage index differs by source: the released 2021 collection uses
+    `_<n>` (`MARCO_D1167206_1`) while the official 2021 run files use `-<n>`
+    (`MARCO_D1599536-11`). Pass `sep` accordingly. Do NOT accept both at once: WaPo uuids
+    are hyphen-separated, so a `-\\d+$` rule would corrupt any uuid whose final group is
+    all digits.
+
+    GUARD. Stripping is skipped when it would leave only the corpus prefix, so a run that
+    already carries document-level ids (e.g. `KILT_1001165`, where the id itself ends in
+    `_<digits>`) passes through unchanged instead of collapsing to `KILT`.
+    """
+    pat = re.compile(re.escape(sep) + r"\d+$")
+    prefixes = {"MARCO", "WAPO", "KILT", "CAR"}
+    collapsed = {}
+    for qid, docs in run.items():
+        best = {}
+        for pid, score in docs.items():
+            did = pat.sub("", pid)
+            if did in prefixes:          # would have destroyed the id
+                did = pid
+            if did not in best or score > best[did]:
+                best[did] = score
+        collapsed[qid] = best
+    return collapsed
+
+
 def evaluate(
     run: dict,
     qrel_file_path: str,
     ranking_list_path: str,
     metrics_list: List[str],
-    metrics_list_key_form: List[str]
+    metrics_list_key_form: List[str],
+    passage_to_doc: bool = False
 ):
 
     '''
@@ -264,7 +323,26 @@ def evaluate(
         with open(ranking_list_path, 'r') as f_run:
             run = pytrec_eval.parse_run(f_run)
 
-    # filter qrel according to run
+    # CAsT 2021: passage-level run -> document-level qrels (see collapse_passages_to_docs)
+    if passage_to_doc:
+        n_before = sum(len(v) for v in run.values())
+        run = collapse_passages_to_docs(run)
+        n_after = sum(len(v) for v in run.values())
+        print(f"passage->doc collapse: {n_before} passages -> {n_after} documents")
+
+    # Filter the qrels down to the qids the run actually covers.
+    # NOTE pytrec_eval.parse_qrel returns a defaultdict, so a qid absent from the qrels
+    # yields {} rather than raising; pytrec_eval then SKIPS such queries instead of
+    # scoring them 0. That is what we want for CAsT, where only a subset of turns is
+    # judged (2019: 173/479, 2021: 158/239, 2022: 163/205). But it also means a judged
+    # qid MISSING FROM THE RUN is silently dropped instead of counting as 0 the way
+    # trec_eval would, which would inflate the average -- so warn about it.
+    n_judged = sum(1 for v in qrel.values() if v)
+    covered = sum(1 for qid in run.keys() if qrel[qid])
+    if covered < n_judged:
+        print(f"WARNING: run covers only {covered}/{n_judged} judged queries; "
+              f"{n_judged - covered} judged queries are missing from the run and will "
+              f"NOT be counted as 0 (this inflates the averages)")
     qrel = {qid: qrel[qid] for qid in run.keys()}
 
     #  evaluate
