@@ -16,7 +16,7 @@ Field mapping (CAsT -> Turn):
   current_utterance   = raw_utterance                    (the context-dependent question)
   oracle_utterance    = the MANUAL rewrite               (2019: separate .tsv; 2020: manual topics file)
   context_utterances  = all previous raw utterances of the same conversation
-  reformulations      = [{"reformulation_name": "cast_automatic_rewrite", ...}] when the year
+  reformulations      = [{"reformulation_name": "T5_rewrite", ...}] when the year
                         ships an automatic rewrite (2020 does, 2019 does not)
 
 There is NO user profile in CAsT: `ptkb` is written as an empty dict so that any
@@ -110,7 +110,7 @@ def build_2022(eval_topics_path, auto_topics_path, out_path):
                 reformulations = []
                 if tid in auto:
                     reformulations.append({
-                        "reformulation_name": "cast_automatic_rewrite",
+                        "reformulation_name": "T5_rewrite",
                         "reformulated_query": auto[tid],
                         "ptkb_provenance": [],
                     })
@@ -159,7 +159,7 @@ def build(raw_topics_path, manual_map, out_path):
             auto = (t.get("automatic_rewritten_utterance") or "").strip()
             if auto:
                 reformulations.append({
-                    "reformulation_name": "cast_automatic_rewrite",
+                    "reformulation_name": "T5_rewrite",
                     "reformulated_query": auto,
                     "ptkb_provenance": [],
                 })

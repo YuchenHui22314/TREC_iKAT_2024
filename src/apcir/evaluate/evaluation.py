@@ -323,7 +323,7 @@ def build_parser():
                             "qwen_conversation_rel_new_ptkb",
                             # TREC CAsT 2020 ships an official automatic rewrite alongside
                             # the manual one; CAsT 2019 does not.
-                            "cast_automatic_rewrite",
+                            "T5_rewrite",
                             ],)
 
     parser.add_argument("--reranking_query_type", type=str, default="oracle_utterance", 
@@ -348,6 +348,10 @@ def build_parser():
                             # conversation (NO Instruct: header — the instruction rides in
                             # the reranker template's <Instruct>: slot)
                             "qwen_3_rerank_instruct_full",
+                            # CAsT 2020/2021/2022 ship an organiser-provided automatic rewrite;
+                            # it must be selectable for reranking too, otherwise the automatic
+                            # leg would have to be reranked with the human rewrite.
+                            "T5_rewrite",
                             ],)
 
     parser.add_argument("--generation_query_type", type=str, default="oracle_utterance", 
@@ -362,7 +366,7 @@ def build_parser():
                             "rar_personalized_cotN_rw",
                             "gpt-4o_rar_personalized_cot1_rw",
                             'gpt-4o_rar_non_personalized_cot1_rw',
-                            ],)
+                            , "T5_rewrite"],)
 
 
     return parser

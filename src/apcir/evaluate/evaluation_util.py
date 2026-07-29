@@ -165,7 +165,7 @@ def get_query_list(args):
                 raise ValueError(
                     f"--retrieval_query_type={args.retrieval_query_type!r} needs a user profile, "
                     f"but CAsT topics ({args.topics}) have none. Use raw / oracle / "
-                    f"cast_automatic_rewrite, or a non-profile reformulation.")
+                    f"T5_rewrite, or a non-profile reformulation.")
             # CAsT topics are converted by apcir/preprocess/build_cast_topics.py and already
             # contain exactly the turns of the official topic file; turn_id == the qrel qid
             # ("{topic}_{turn}"), so every turn is an evaluated turn. Turns absent from the

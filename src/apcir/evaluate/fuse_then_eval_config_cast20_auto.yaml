@@ -24,7 +24,7 @@
 iterate:
   machine: ["octal31"]
   retrieval_model: ["BM25"]
-  retrieval_query_type: ["cast_automatic_rewrite"]
+  retrieval_query_type: ["T5_rewrite"]
   reranker: ["none"]
   topics: ["cast_20_test"]
 

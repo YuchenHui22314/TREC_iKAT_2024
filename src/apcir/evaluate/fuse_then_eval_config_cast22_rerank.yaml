@@ -26,26 +26,33 @@
 iterate:
   machine: ["octal31"]
   retrieval_model: ["BM25"]
-  retrieval_query_type: ["raw", "oracle", "T5_rewrite"]
-  reranker: ["none"]
-  topics: ["cast_21_test"]
+  retrieval_query_type: ["oracle", "T5_rewrite"]
+  reranker: ["monot5_base"]
+  topics: ["cast_22_test"]
 
 param_mapping:
   retrieval_model:
     BM25:
-      wandb_run_name: "bm25_cast21"
+      wandb_run_name: "bm25_cast22_monot5"
+  # the reranker must see the SAME query the retriever used, otherwise the automatic leg
+  # would be reranked with the human rewrite and stop being an automatic run
+  retrieval_query_type:
+    oracle:
+      reranking_query_type: "oracle"
+    T5_rewrite:
+      reranking_query_type: "T5_rewrite"
   topics:
-    cast_21_test:
-      input_query_path: "../data/topics/cast21/cast_21_test.json"
-      qrel_file_path: "../data/qrels/cast_21_qrel.txt"
+    cast_22_test:
+      input_query_path: "../data/topics/cast22/cast_22_test.json"
+      qrel_file_path: "../data/qrels/cast_22_qrel.txt"
 
 fixed:
-  collection: "cast_marco_wapo_kilt"
-  topics: "cast_21_test"
-  input_query_path: "../data/topics/cast21/cast_21_test.json"
-  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/index-cast2021-title"
-  output_dir_path: "../results_cast21_title"
-  qrel_file_path: "../data/qrels/cast_21_qrel.txt"
+  collection: "cast_marcov2_wapo_kilt"
+  topics: "cast_22_test"
+  input_query_path: "../data/topics/cast22/cast_22_test.json"
+  sparse_index_dir_path: "/part/01/Tmp/yuchen/indexes/index-cast2022"
+  output_dir_path: "../results_cast22"
+  qrel_file_path: "../data/qrels/cast_22_qrel.txt"
   seed: 42
   save_results_to_object: false
   save_ranking_list: true
@@ -59,11 +66,11 @@ fixed:
   query_encoder_batch_size: 200
 
   splade_query_encoder_path: "/data/rech/huiyuche/huggingface/models--naver--splade-v3/snapshots/8291b13eb8f4e24cc745c542825f14eb87296879"
-  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/index-cast2021-title"
+  splade_index_dir_path: "/part/01/Tmp/yuchen/indexes/index-cast2022"
 
   use_pyserini_dense_search: false
   dense_query_encoder_path: "/data/rech/huiyuche/huggingface/models--castorini--ance-msmarco-passage/snapshots/6d7e7d6b6c59dd691671f280bc74edb4297f8234"
-  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/index-cast2021-title"
+  dense_index_dir_path: "/part/01/Tmp/yuchen/indexes/index-cast2022"
   faiss_n_gpu: 1
   use_gpu_for_faiss: true
   embed_dim: 768
@@ -88,10 +95,10 @@ fixed:
   target_metrics: "mrr,ndcg@3,recall@10,recall@100"
   optimize_step: 0.01
 
-  reranker: "none"
-  rerank_top_k: 50
+  reranker: "monot5_base"
+  rerank_top_k: 1000
   cache_dir: "/data/rech/huiyuche/huggingface"
-  rerank_batch_size: 67
+  rerank_batch_size: 128
   rerank_quant: "none"
   rankgpt_llm: "gpt-3.5-turbo"
   window_size: 4
@@ -109,6 +116,6 @@ fixed:
 
   run_name: "none"
   retrieval_query_type: "oracle"
-  reranking_query_type: "none"
+  reranking_query_type: "oracle"
   generation_query_type: "none"
   generate_ikat_submission: false
