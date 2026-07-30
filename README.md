@@ -403,6 +403,60 @@ parameter sweep re-run in the same `output_dir_path` silently reloads the previo
 give each sweep its own output directory. And `evaluation.py` asserts that `output_dir_path`
 already exists rather than creating it.
 
+
+### 5. Measured results, and one open question
+
+Our BM25 numbers, scored with `relevance_level=2` and the official cutoff. The official CAsT
+baselines are BM25 **plus a monoT5 reranker** (the `BART` in their run name is only the
+response-generation summariser and does not touch the ranking), so the like-for-like comparison
+is the reranked row.
+
+CAsT-2021, cutoff 500, 158 judged turns:
+
+| run | Recall | MAP | MRR | NDCG | NDCG@3 |
+|---|---|---|---|---|---|
+| raw | .310 | .060 | .211 | .184 | .127 |
+| `T5_rewrite` | .619 | .166 | .476 | .400 | .300 |
+| `oracle` | .743 | .224 | .605 | .498 | .384 |
+| *official `org_manual_bm25` (pure BM25)* | *.471* | *.213* | *.594* | *.400* | *.407* |
+
+CAsT-2022, cutoff 1000, 163 judged turns:
+
+| run | Recall | MAP | MRR | NDCG | NDCG@3 |
+|---|---|---|---|---|---|
+| `T5_rewrite` | .385 | .075 | .313 | .251 | .180 |
+| `T5_rewrite` + monoT5 | .385 | .159 | .514 | .330 | .342 |
+| *official `BM25_T5_BART_automatic`* | *.324* | *.150* | *.527* | *.299* | *.362* |
+| `oracle` | .534 | .106 | .385 | .340 | .223 |
+| `oracle` + monoT5 | .534 | .244 | .711 | .460 | .488 |
+| *official `BM25_T5_BART_manual`* | *.465* | *.231* | *.716* | *.423* | *.503* |
+
+Reranking is what closes the top of the ranking: NDCG@3 goes .180 → .342 and .223 → .488. After
+that, Recall / MAP / NDCG all **exceed** the official runs and only NDCG@3 stays .015–.023 short.
+
+**That residual gap is unexplained, and we would rather say so than invent a cause.** Two
+hypotheses were tested and both fail:
+
+- *Chunking differences.* Real for 2021 — the `cast21_collection.tsv.tar.gz` we have is a
+  third-party re-serialisation (passage numbering starts at 1 rather than 0, and 1.05% of its
+  passages exceed the official 250-word limit) — but it cannot explain 2022, whose collection was
+  rebuilt with the official chunker and verified at 100% qrel passage-id coverage.
+- *Candidate-pool shape.* The official first stage retrieves **documents** and hands the reranker
+  all of their passages (measured on 2022: ~841 passages from 99 documents, 8.5 per document),
+  whereas ours retrieves passages directly (1000 passages from 765 documents, 1.35 per document),
+  so their reranker can pick the best passage *within* a document while ours mostly compares
+  across documents. Plausible, and **directly refuted**: rebuilding an official-shaped pool with
+  `apcir/indexing/expand_docs_to_passages.py` (top-100 documents expanded to all their passages,
+  1551 passages from 100 documents) and reranking that made every metric worse — NDCG@3
+  .488 → .475, Recall .534 → .398. Narrowing to 100 documents costs more recall than the
+  within-document choice gains.
+
+The one candidate still untested is that the official first stage is a **true document-level
+BM25**, scoring over whole-document term statistics rather than scoring passages and aggregating
+them. That is also the setting their `k1=4.46, b=0.82` was tuned for; those parameters measurably
+hurt our passage-level retrieval (2021 NDCG@3 .360 → .299). Checking it would mean building a
+document-level index by re-joining passages, which we have not done.
+
 ## ✍ Query Rewrite
 Once the topics have been processed, we are ready for getting query reformulations. Please view files in `src/apcir/rewrite` to run query rewriting. Specifically, you can run
 ```bash

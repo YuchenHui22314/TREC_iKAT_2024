@@ -366,7 +366,8 @@ def build_parser():
                             "rar_personalized_cotN_rw",
                             "gpt-4o_rar_personalized_cot1_rw",
                             'gpt-4o_rar_non_personalized_cot1_rw',
-                            , "T5_rewrite"],)
+                            "T5_rewrite",
+                            ])
 
 
     return parser

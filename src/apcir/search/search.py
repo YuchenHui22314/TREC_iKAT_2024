@@ -203,7 +203,14 @@ def search(
     # First stage retrieval
     #######################
     
-    assert (not args.retrieval_model == "none") or ( not args.fusion_type == "none"), "retrieval model and fusion can not be none at the same time." 
+    # `retrieval_model == "none"` is legitimate on its own when a ranking list has already been
+    # loaded above from --given_ranking_list_path (the rerank-only / generate-only path). The
+    # original assert only allowed it together with fusion, so "load a run and just rerank it"
+    # died here even though `hits` was already populated.
+    assert (args.retrieval_model != "none") or (args.fusion_type != "none") \
+           or (args.given_ranking_list_path != "none"), \
+        ("retrieval_model, fusion_type and given_ranking_list_path cannot all be none: "
+         "there would be nothing to rank.")
 
     # No fusion
     if args.fusion_type == "none" and not args.retrieval_model == "none":
