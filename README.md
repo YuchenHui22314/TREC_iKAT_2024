@@ -1,3 +1,5 @@
+
+
 ![Overview of the APCIR Framwork](./figures/overview.jpg)
 # 🤖Towards Adaptive Personalized Conversational Information Retrieval
 <p>
@@ -106,11 +108,11 @@ For index building, one should first download the collection following the [inst
 `/src/indexing/ikat_23_jsonl_sparse_indexing.sh` 
 
 #### 2. Dense index building
-First, download the collection as mentioned above. We should then transform the `.jsonl` file to `.tsv` format using `/data_preprocessing_scripts/jsonl_to_tsv.py`. Finally, run the multi GPU dense index building script as follows:
+First, download the collection as mentioned above. We should then transform the `.jsonl` file to `.tsv` format using `data_preprocessing_scripts/jsonl_to_tsv.py`. Finally, run the dense index building script as follows:
 
 ```bash
-cd /src/indexing/dense
-torchrun --nproc_per_node 4 distributed_dense_index.py \
+cd src/indexing/dense
+python dense_index.py \
   --local-rank -1 \
   --n_gpu 4 \
   --model_type ance \   
@@ -413,5 +415,3 @@ series = {CIKM '25}
 
 # Acknowledgement
 Huge thanks to Prof. Nie for his continuous support and supervision; Thanks [Fabrizio Gotti](https://www.linkedin.com/in/fabrizio-gotti/), [Raouf Bencheraiet](bencherr@iro.umontreal.ca), and [Milan Mao](https://www.linkedin.com/in/milan-mao-6b8824198/) for their invaluable help for the project.
-
-
